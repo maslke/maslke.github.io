@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh/cn">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="java,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="ExecutorExecutor&amp;#x4E2D;&amp;#x53EA;&amp;#x5B9A;&amp;#x4E49;&amp;#x4E86;&amp;#x4E00;&amp;#x4E2A;execute&amp;#x65B9;&amp;#x6CD5;&amp;#xFF0C;&amp;#x53EF;&amp;#x4EE5;&amp;#x901A;&amp;#x8FC7;execute&amp;#x65B9;&amp;#x6CD5;&amp;#x5411;Executor&amp;#x4E2D;&amp;#x63D0;&amp;#x4EA4;&amp;#">
+<meta name="keywords" content="java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Executor和ExecutorService分析">
+<meta property="og:url" content="http://yoursite.com/2019/10/10/Executor和ExecutorService分析/index.html">
+<meta property="og:site_name" content="maslke&#39;s blog">
+<meta property="og:description" content="ExecutorExecutor&amp;#x4E2D;&amp;#x53EA;&amp;#x5B9A;&amp;#x4E49;&amp;#x4E86;&amp;#x4E00;&amp;#x4E2A;execute&amp;#x65B9;&amp;#x6CD5;&amp;#xFF0C;&amp;#x53EF;&amp;#x4EE5;&amp;#x901A;&amp;#x8FC7;execute&amp;#x65B9;&amp;#x6CD5;&amp;#x5411;Executor&amp;#x4E2D;&amp;#x63D0;&amp;#x4EA4;&amp;#">
+<meta property="og:locale" content="zh/cn">
+<meta property="og:updated_time" content="2019-10-17T12:01:07.111Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Executor和ExecutorService分析">
+<meta name="twitter:description" content="ExecutorExecutor&amp;#x4E2D;&amp;#x53EA;&amp;#x5B9A;&amp;#x4E49;&amp;#x4E86;&amp;#x4E00;&amp;#x4E2A;execute&amp;#x65B9;&amp;#x6CD5;&amp;#xFF0C;&amp;#x53EF;&amp;#x4EE5;&amp;#x901A;&amp;#x8FC7;execute&amp;#x65B9;&amp;#x6CD5;&amp;#x5411;Executor&amp;#x4E2D;&amp;#x63D0;&amp;#x4EA4;&amp;#">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/10/10/Executor和ExecutorService分析/">
+
+
+
+
+
+  <title>Executor和ExecutorService分析 | maslke's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh/cn">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">maslke's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/10/Executor和ExecutorService分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="feng.dianjun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="maslke's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Executor和ExecutorService分析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-10T22:45:19+08:00">
+                2019-10-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Executor"><a href="#Executor" class="headerlink" title="Executor"></a>Executor</h2><p>Executor&#x4E2D;&#x53EA;&#x5B9A;&#x4E49;&#x4E86;&#x4E00;&#x4E2A;execute&#x65B9;&#x6CD5;&#xFF0C;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;execute&#x65B9;&#x6CD5;&#x5411;Executor&#x4E2D;&#x63D0;&#x4EA4;&#x53EF;&#x8FD0;&#x884C;&#x7684;&#x4EFB;&#x52A1;&#xFF08;&#x5B9E;&#x73B0;Runnable&#x63A5;&#x53E3;&#xFF09;&#x3002;&#x65B9;&#x6CD5;&#x7684;&#x5177;&#x4F53;&#x5B9A;&#x4E49;&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">execute</span><span class="params">(Runnable command)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>&#x5B83;&#x63D0;&#x4F9B;&#x4E86;&#x4E00;&#x79CD;&#x5C06;&#x4EFB;&#x52A1;&#x7684;&#x63D0;&#x4EA4;&#x548C;&#x4EFB;&#x52A1;&#x8FD0;&#x884C;&#x4E4B;&#x95F4;&#x7684;&#x89E3;&#x8026;&#x673A;&#x5236;&#x3002;&#x4EFB;&#x52A1;&#x5177;&#x4F53;&#x8FD0;&#x884C;&#x7EC6;&#x8282;&#xFF0C;&#x53EF;&#x4EE5;&#x6709;&#x591A;&#x79CD;&#x673A;&#x5236;&#x3002;&#x5728;&#x5B9E;&#x73B0;&#x5C42;&#x9762;&#x4E0A;&#xFF0C;&#x53EF;&#x4EE5;&#x76F4;&#x63A5;&#x5728;&#x63D0;&#x4EA4;&#x4EFB;&#x52A1;&#x7684;&#x7EBF;&#x7A0B;&#x4E2D;&#x8FD0;&#x884C;&#x6B64;&#x4EFB;&#x52A1;&#xFF0C;&#x4E5F;&#x53EF;&#x4EE5;&#x7ED9;&#x6BCF;&#x4E2A;&#x63D0;&#x4EA4;&#x7684;&#x4EFB;&#x52A1;&#x5206;&#x914D;&#x4E00;&#x4E2A;&#x65B0;&#x7684;&#x7EBF;&#x7A0B;&#x6765;&#x6267;&#x884C;&#xFF0C;&#x8FD8;&#x53EF;&#x4EE5;&#x5C06;&#x63D0;&#x4EA4;&#x7684;&#x4EFB;&#x52A1;&#x653E;&#x5165;&#x5230;&#x53E6;&#x5916;&#x7684;&#x4E00;&#x4E2A;Executor&#x4E2D;&#x53BB;&#x6267;&#x884C;&#x3002;</p>
+<h2 id="ExecutorService"><a href="#ExecutorService" class="headerlink" title="ExecutorService"></a>ExecutorService</h2><p>ExecutorService&#x662F;&#x4E00;&#x4E2A;&#x529F;&#x80FD;&#x66F4;&#x4E3A;&#x4E30;&#x5BCC;&#x7684;Executor&#xFF0C;&#x5B83;&#x672C;&#x8EAB;&#x7EE7;&#x627F;&#x4E86;Executor&#x63A5;&#x53E3;&#x3002;&#x9664;&#x4E86;Executor&#x63A5;&#x53E3;&#x672C;&#x8EAB;&#x5177;&#x6709;&#x7684;&#x89E3;&#x8026;&#x4EFB;&#x52A1;&#x63D0;&#x4EA4;&#x548C;&#x4EFB;&#x52A1;&#x8FD0;&#x884C;&#x529F;&#x80FD;&#x4E4B;&#x5916;&#xFF0C;&#x8FD8;&#x63D0;&#x4F9B;&#x4E86;&#x7EC8;&#x6B62;&#x4EFB;&#x52A1;&#x529F;&#x80FD;&#xFF0C;&#x5E76;&#x63D0;&#x4F9B;&#x4E86;submit&#x65B9;&#x6CD5;&#x53EF;&#x4EE5;&#x6839;&#x636E;&#x8FD4;&#x56DE;&#x7ED3;&#x679C;&#x6765;&#x8DDF;&#x8E2A;&#x4EFB;&#x52A1;&#x8FD0;&#x884C;&#x7684;&#x72B6;&#x6001;&#x3002;</p>
+<ol>
+<li>submit&#x65B9;&#x6CD5;</li>
+</ol>
+<p>submit&#x65B9;&#x6CD5;&#xFF0C;&#x53EF;&#x4EE5;&#x7528;&#x4E8E;&#x4EFB;&#x52A1;&#x63D0;&#x4EA4;&#x3002;&#x4E0E;execute&#x4E0D;&#x540C;&#x7684;&#x662F;&#xFF0C;&#x7ECF;&#x8FC7;submit&#x63D0;&#x4EA4;&#x7684;Runnable&#x6216;&#x662F;Callable&#x4EFB;&#x52A1;&#xFF0C;&#x80FD;&#x591F;&#x8FD4;&#x56DE;Future&#x5BF9;&#x8C61;&#x3002;&#x6211;&#x4EEC;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;Future&#x5BF9;&#x8C61;&#xFF0C;&#x6765;&#x8DDF;&#x8E2A;&#x4EFB;&#x52A1;&#x8FD0;&#x884C;&#x7684;&#x72B6;&#x6001;&#x3002;&#x5728;&#x4EFB;&#x52A1;&#x8FD0;&#x884C;&#x7ED3;&#x675F;&#x4E4B;&#x540E;&#xFF0C;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;Future&#x7684;get&#x65B9;&#x6CD5;&#x6765;&#x83B7;&#x53D6;&#x4EFB;&#x52A1;&#x8FD0;&#x884C;&#x7684;&#x7ED3;&#x679C;&#x3002;&#x5728;&#x4EFB;&#x52A1;&#x8FD0;&#x884C;&#x5C1A;&#x672A;&#x7ED3;&#x675F;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x8C03;&#x7528;get&#x65B9;&#x6CD5;&#x5C06;&#x4F1A;&#x963B;&#x585E;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;T&gt; <span class="function">Future&lt;T&gt; <span class="title">sumbit</span><span class="params">(Callable&lt;T&gt; task)</span></span>;</span><br><span class="line">Future&lt;?&gt; submit(Runnable task);</span><br><span class="line">&lt;T&gt; <span class="function">Future&lt;T&gt; <span class="title">submit</span><span class="params">(Runnable task, T result)</span></span></span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>shutdown&#x548C;shutdownNow</li>
+</ol>
+<p>ExecutorService&#x63D0;&#x4F9B;&#x4E86;shutdown&#x548C;shutdownNow&#x65B9;&#x6CD5;&#x7528;&#x4E8E;&#x5173;&#x95ED;ExecutorService&#x3002;&#x5173;&#x95ED;&#x4E4B;&#x540E;&#xFF0C;&#x5C06;&#x4E0D;&#x80FD;&#x518D;&#x5411;ExecutorService&#x4E2D;&#x63D0;&#x4EA4;&#x65B0;&#x7684;&#x4EFB;&#x52A1;&#x3002;</p>
+<a id="more"></a>
+
+<p>shutdown&#x548C;shutdownNow&#x7684;&#x533A;&#x522B;&#x5728;&#x4E8E;&#x8C03;&#x7528;shutdown&#x4E4B;&#x540E;&#xFF0C;ExecutorService&#x4F1A;&#x7B49;&#x5F85;&#x539F;&#x5148;&#x5DF2;&#x63D0;&#x4EA4;&#x7684;&#x4EFB;&#x52A1;&#x6267;&#x884C;&#x5B8C;&#x6210;&#x3002;&#x800C;shutdownNow&#x8C03;&#x7528;&#x4E4B;&#x540E;&#xFF0C;&#x4F1A;&#x963B;&#x6B62;&#x539F;&#x6765;&#x5DF2;&#x63D0;&#x4EA4;&#x7684;&#x5C1A;&#x672A;&#x5F00;&#x59CB;&#x6267;&#x884C;&#x7684;&#x4EFB;&#x52A1;&#x7684;&#x5F00;&#x59CB;&#x6267;&#x884C;&#xFF0C;&#x5E76;&#x4E14;&#x4F1A;&#x5C1D;&#x8BD5;&#x505C;&#x6B62;&#x6B63;&#x5728;&#x8FD0;&#x884C;&#x7684;&#x4EFB;&#x52A1;&#x3002;</p>
+<p>&#x5176;&#x4E2D;&#xFF0C;shutdownNow&#x7684;&#x5B9A;&#x4E49;&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">List&lt;Runnable&gt; <span class="title">shutdownNow</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>&#x8C03;&#x7528;shutdownNow&#x65B9;&#x6CD5;&#x7684;&#x8FD4;&#x56DE;&#x7ED3;&#x679C;&#xFF0C;&#x662F;&#x7B49;&#x5F85;&#x6267;&#x884C;&#x7684;&#x65B9;&#x6CD5;&#x7684;&#x5217;&#x8868;&#x3002;</p>
+<p>&#x8C03;&#x7528;shutdown&#x6216;&#x662F;shutdownNow&#x4E4B;&#x540E;&#xFF0C;&#x65B9;&#x6CD5;isShutdown()&#x5C06;&#x4F1A;&#x8FD4;&#x56DE;true&#x3002;</p>
+<p>&#x5173;&#x4E8E;&#x5173;&#x95ED;ExecutorService&#x7684;&#x65B9;&#x6CD5;&#x3002;&#x5728;&#x5B98;&#x65B9;&#x7684;&#x6CE8;&#x91CA;&#x4E2D;&#xFF0C;&#x63D0;&#x4F9B;&#x4E86;&#x5982;&#x4E0B;&#x7684;&#x4EE3;&#x7801;&#x7F16;&#x5199;&#x65B9;&#x5F0F;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">shutdownAndAwaitTermination</span><span class="params">(ExecutorService pool)</span> </span>{</span><br><span class="line">    pool.shutdown();</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        <span class="keyword">if</span> (!pool.awaitTermination(<span class="number">60</span>, TimeUnit.SECONDS)) {</span><br><span class="line">            pool.shutdownNow();</span><br><span class="line">            <span class="keyword">if</span> (!pool.awaitTermination(<span class="number">60</span>, TimeUnit.SECONDS)) {</span><br><span class="line">                System.err.println(<span class="string">&quot;Pool did not terminate&quot;</span>);</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    } <span class="keyword">catch</span> (InterruptedException ie) {</span><br><span class="line">        pool.shutdownNow();</span><br><span class="line">        Thread.currentThread.interrupt();</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>isTerminated</li>
+</ol>
+<p>terminated&#x662F;&#x8FD9;&#x6837;&#x4E00;&#x79CD;&#x72B6;&#x6001;&#xFF0C;&#x5F53;&#x8C03;&#x7528;shutdown&#x6216;&#x662F;shutdownNow&#x65B9;&#x6CD5;&#x4E4B;&#x540E;&#xFF0C;&#x5F53;Executor&#x4E2D;&#x6CA1;&#x6709;&#x6B63;&#x5728;&#x6267;&#x884C;&#x7684;&#x4EFB;&#x52A1;&#xFF0C;&#x6CA1;&#x6709;&#x7B49;&#x5F85;&#x6267;&#x884C;&#x7684;&#x4EFB;&#x52A1;&#x65F6;&#x3002;</p>
+<p>&#x5982;&#x679C;&#x4EE5;&#x4E0A;&#x7684;&#x72B6;&#x6001;&#x6210;&#x7ACB;&#xFF0C;&#x8C03;&#x7528;isTerminated()&#xFF0C;&#x5C06;&#x4F1A;&#x8FD4;&#x56DE;true&#x3002;</p>
+<ol start="4">
+<li>awaitTermination</li>
+</ol>
+<p>&#x4E0E;isTerminated()&#x65B9;&#x6CD5;&#x7C7B;&#x4F3C;&#xFF0C;awaitTermination&#x65B9;&#x6CD5;&#x4E00;&#x822C;&#x5728;&#x8C03;&#x7528;shutdown&#x6216;&#x662F;shutdownNow&#x65B9;&#x6CD5;&#x4E4B;&#x540E;&#xFF0C;&#x7528;&#x4E8E;&#x7B49;&#x5F85;&#x6240;&#x6709;&#x7684;&#x4EFB;&#x52A1;&#x6267;&#x884C;&#x5B8C;&#x6BD5;&#x3002;&#x5B83;&#x4F1A;&#x963B;&#x585E;&#x7EBF;&#x7A0B;&#xFF0C;&#x76F4;&#x5230;&#x6240;&#x6709;&#x7684;&#x4EFB;&#x52A1;&#x6267;&#x884C;&#x5B8C;&#x6210;&#x6216;&#x662F;&#x7B49;&#x5F85;&#x65F6;&#x95F4;&#x8D85;&#x65F6;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">awaitTermination</span><span class="params">(<span class="keyword">long</span> timeout, TimeUnit unit)</span> <span class="keyword">throws</span> InterruptedException</span></span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>invoke</li>
+</ol>
+<p>&#x5728;ExecutorService&#x4E2D;&#x63D0;&#x4F9B;&#x4E86;invokeAll&#x548C;invokeAny&#x65B9;&#x6CD5;&#x3002;&#x6839;&#x636E;&#x662F;&#x5426;&#x53EF;&#x4EE5;&#x8BBE;&#x7F6E;&#x8D85;&#x65F6;&#x65F6;&#x95F4;&#xFF0C;&#x6BCF;&#x4E2A;&#x65B9;&#x6CD5;&#x90FD;&#x5305;&#x542B;&#x4E86;&#x4E24;&#x4E2A;&#x4E0D;&#x540C;&#x7684;&#x7248;&#x672C;&#x3002;invokeAll&#x65B9;&#x6CD5;&#xFF0C;&#x6267;&#x884C;&#x6240;&#x6709;&#x7684;&#x4EFB;&#x52A1;&#xFF0C;&#x5E76;&#x8FD4;&#x56DE;&#x4EE3;&#x8868;&#x6267;&#x884C;&#x4EFB;&#x52A1;&#x7ED3;&#x679C;&#x7684;Future&#x3002;invokeAny&#x65B9;&#x6CD5;&#xFF0C;&#x6267;&#x884C;&#x6240;&#x6709;&#x7684;&#x4EFB;&#x52A1;&#xFF0C;&#x8FD4;&#x56DE;&#x4E00;&#x4E2A;&#x6267;&#x884C;&#x5B8C;&#x6210;&#x7684;&#x4EFB;&#x52A1;&#x7684;&#x7ED3;&#x679C;&#x3002;</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/10/ExecutorCompletionService源码分析/" rel="next" title="ExecutorCompletionService源码分析">
+                <i class="fa fa-chevron-left"></i> ExecutorCompletionService源码分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/10/10/AbstractExecutorService实现分析/" rel="prev" title="AbstractExecutorService实现分析">
+                AbstractExecutorService实现分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="feng.dianjun">
+          <p class="site-author-name" itemprop="name">feng.dianjun</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Executor"><span class="nav-number">1.</span> <span class="nav-text">Executor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ExecutorService"><span class="nav-number">2.</span> <span class="nav-text">ExecutorService</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng.dianjun</span>
+</div>
+
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="https://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Gemini
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

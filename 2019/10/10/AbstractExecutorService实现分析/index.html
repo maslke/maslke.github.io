@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh/cn">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="java,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="AbstractExecutorService&amp;#x63D0;&amp;#x4F9B;&amp;#x4E86;ExecutorService&amp;#x4E2D;submit&amp;#x3001;invokeAll&amp;#x3001;invokeAny&amp;#x65B9;&amp;#x6CD5;&amp;#x7684;&amp;#x9ED8;&amp;#x8BA4;&amp;#x5B9E;&amp;#x73B0;&amp;#x3002; &amp;#x5728;AbstractExecutorS">
+<meta name="keywords" content="java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AbstractExecutorService实现分析">
+<meta property="og:url" content="http://yoursite.com/2019/10/10/AbstractExecutorService实现分析/index.html">
+<meta property="og:site_name" content="maslke&#39;s blog">
+<meta property="og:description" content="AbstractExecutorService&amp;#x63D0;&amp;#x4F9B;&amp;#x4E86;ExecutorService&amp;#x4E2D;submit&amp;#x3001;invokeAll&amp;#x3001;invokeAny&amp;#x65B9;&amp;#x6CD5;&amp;#x7684;&amp;#x9ED8;&amp;#x8BA4;&amp;#x5B9E;&amp;#x73B0;&amp;#x3002; &amp;#x5728;AbstractExecutorS">
+<meta property="og:locale" content="zh/cn">
+<meta property="og:updated_time" content="2019-10-16T15:28:22.836Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="AbstractExecutorService实现分析">
+<meta name="twitter:description" content="AbstractExecutorService&amp;#x63D0;&amp;#x4F9B;&amp;#x4E86;ExecutorService&amp;#x4E2D;submit&amp;#x3001;invokeAll&amp;#x3001;invokeAny&amp;#x65B9;&amp;#x6CD5;&amp;#x7684;&amp;#x9ED8;&amp;#x8BA4;&amp;#x5B9E;&amp;#x73B0;&amp;#x3002; &amp;#x5728;AbstractExecutorS">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/10/10/AbstractExecutorService实现分析/">
+
+
+
+
+
+  <title>AbstractExecutorService实现分析 | maslke's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh/cn">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">maslke's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/10/AbstractExecutorService实现分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="feng.dianjun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="maslke's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">AbstractExecutorService实现分析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-10T22:45:33+08:00">
+                2019-10-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>AbstractExecutorService&#x63D0;&#x4F9B;&#x4E86;ExecutorService&#x4E2D;submit&#x3001;invokeAll&#x3001;invokeAny&#x65B9;&#x6CD5;&#x7684;&#x9ED8;&#x8BA4;&#x5B9E;&#x73B0;&#x3002;</p>
+<p>&#x5728;AbstractExecutorService&#x4E2D;&#xFF0C;&#x5B9A;&#x4E49;&#x4E86;protected&#x7684;&#x65B9;&#x6CD5;newTaskFor&#xFF0C;&#x7528;&#x4E8E;&#x5305;&#x88C5;Runnable&#x5BF9;&#x8C61;&#x6216;&#x662F;Callable&#x5BF9;&#x8C61;&#xFF0C;&#x8FD4;&#x56DE;Future&#x5BF9;&#x8C61;&#xFF0C;&#x9ED8;&#x8BA4;&#x5B9E;&#x73B0;&#x4E3A;&#x8FD4;&#x56DE;FutureTask&#x3002;&#x5728;AbstractExecutorService&#x7684;&#x5B50;&#x7C7B;&#x5B9E;&#x73B0;&#x4E2D;&#xFF0C;&#x53EF;&#x4EE5;&#x8986;&#x76D6;newTaskFor&#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#xFF0C;&#x8FD4;&#x56DE;&#x65B0;&#x7684;Future&#x5B9E;&#x73B0;&#x3002;&#x5982;&#x4E0B;&#x6240;&#x793A;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CustomeThreadPoolExecutor</span> <span class="keyword">extends</span> <span class="title">ThreadPoolExecutor</span> </span>{</span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">CustomTask</span>&lt;<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">RunnableFuture</span>&lt;<span class="title">V</span>&gt; </span>{}</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">protected</span> &lt;V&gt; <span class="function">RunnableFuture&lt;V&gt; <span class="title">newTaskFor</span><span class="params">(Callable&lt;V&gt; c)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> CustomTask&lt;V&gt;(c);</span><br><span class="line">    }</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">protected</span> &lt;V&gt; <span class="function">RunnableFuture&lt;V&gt; <span class="title">newTaskFor</span><span class="params">(Runnable r, V v)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> CustomeTask&lt;V&gt;(r, v);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x6709;&#x4E86;newTaskFor&#x65B9;&#x6CD5;&#x4E4B;&#x540E;&#xFF0C;submit&#x65B9;&#x6CD5;&#x7684;&#x5178;&#x578B;&#x5B9E;&#x73B0;&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">Future&lt;T&gt; <span class="title">submit</span><span class="params">(Runnable task, T result)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (task == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">    RunnableFuture&lt;T&gt; ftask = newTaskFor(task, result);</span><br><span class="line">    execute(ftask);</span><br><span class="line">    <span class="keyword">return</span> ftask;</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> &lt;T&gt; <span class="function">RunnableFuture&lt;T&gt; <span class="title">newTaskFor</span><span class="params">(Runnable runnable, T )</span> </span>{</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> FutureTask&lt;T&gt;(runnable, value);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x53EF;&#x4EE5;&#x770B;&#x5230;&#xFF0C;submit&#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x975E;&#x5E38;&#x7684;&#x7B80;&#x5355;&#x3002;&#x5C06;task&#x548C;result&#x5305;&#x88C5;&#x6210;RunnableFuture&#x4E4B;&#x540E;&#xFF0C;&#x4EA4;&#x7ED9;execute&#x6765;&#x6267;&#x884C;&#x3002;&#x5728;AbstractExecutorService&#x4E2D;&#xFF0C;execute&#x5E76;&#x6CA1;&#x6709;&#x5B9E;&#x73B0;&#xFF0C;&#x800C;&#x662F;&#x4EA4;&#x7531;&#x5177;&#x4F53;&#x7684;&#x5B50;&#x7C7B;&#x6765;&#x5B9E;&#x73B0;&#x3002;</p>
+<a id="more"></a>
+
+<p>invokeAll&#x65B9;&#x6CD5;&#xFF0C;&#x6709;&#x4E24;&#x4E2A;&#x7248;&#x672C;&#xFF1A;&#x53EF;&#x4EE5;&#x8BBE;&#x7F6E;&#x8D85;&#x65F6;&#x7684;&#x7248;&#x672C;&#x548C;&#x4E0D;&#x53EF;&#x8BBE;&#x7F6E;&#x8D85;&#x65F6;&#x7684;&#x7248;&#x672C;&#x3002;&#x4E0B;&#x9762;&#x5C31;&#x6765;&#x5206;&#x6790;&#x4E00;&#x4E0B;&#x53EF;&#x4EE5;&#x8BBE;&#x7F6E;&#x8D85;&#x65F6;&#x7684;invokeAll&#x7248;&#x672C;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> &lt;T&gt; List&lt;Future&lt;T&gt;&gt; invokeAll(Collection&lt;? extends Callable&lt;T&gt;&gt; tasks, <span class="keyword">long</span> timeunit, TimeUnit unit) <span class="keyword">throws</span> InterruptedException {</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (tasks == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// &#x8F6C;&#x6362;&#x65F6;&#x95F4;&#x5927;&#x5C0F;</span></span><br><span class="line">    <span class="keyword">long</span> nanos = unit.toNanos(timeout);</span><br><span class="line">    ArrayList&lt;Future&lt;T&gt;&gt; futures = <span class="keyword">new</span> ArrayList&lt;&gt;(tasks.size());</span><br><span class="line">    <span class="keyword">boolean</span> done = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        <span class="comment">// &#x751F;&#x6210;&#x6240;&#x6709;&#x7684;Future&#xFF0C;&#x9ED8;&#x8BA4;&#x7684;Future&#x5B9E;&#x73B0;&#x4E3A;FutureTask</span></span><br><span class="line">        <span class="keyword">for</span> (Callable&lt;T&gt; t : tasks) {</span><br><span class="line">            futures.add(newTaskFor(t));</span><br><span class="line">        }</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// &#x5F53;&#x524D;&#x7684;&#x7CFB;&#x7EDF;&#x65F6;&#x95F4;&#x52A0;&#x4E0A;&#x8D85;&#x65F6;&#x7684;&#x65F6;&#x95F4;&#xFF0C;&#x5C31;&#x662F;&#x622A;&#x6B62;&#x65F6;&#x95F4;</span></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">long</span> deadline = System.nanoTime() + nanos;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> size = futures.size();</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; size; i++) {</span><br><span class="line">            execute((Runnable) futures.get(i));</span><br><span class="line">            nanos = deadline - System.nanoTime();</span><br><span class="line">            <span class="keyword">if</span> (nanos &lt;= <span class="number">0L</span>) <span class="keyword">return</span> futures;</span><br><span class="line">        }</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; size; i++) {</span><br><span class="line">            Future&lt;T&gt; f = futures.get(i);</span><br><span class="line">            <span class="comment">// &#x5224;&#x65AD;&#x5F53;&#x524D;&#x7684;&#x4EFB;&#x52A1;&#x662F;&#x5426;&#x5DF2;&#x7ECF;&#x5B8C;&#x6210;&#x3002;&#x5982;&#x679C;&#x6CA1;&#x6709;&#x5B8C;&#x6210;&#x7684;&#x8BDD;&#xFF0C;&#x4F7F;&#x7528;get&#x64CD;&#x4F5C;&#x6765;&#x83B7;&#x53D6;&#x4EFB;&#x52A1;&#x7684;&#x7ED3;&#x679C;&#x3002;get&#x64CD;&#x4F5C;&#x4F7F;&#x7528;&#x53EF;&#x8BBE;&#x7F6E;&#x8D85;&#x65F6;&#x65F6;&#x95F4;&#x7684;&#x7248;&#x672C;&#x3002;</span></span><br><span class="line">            <span class="keyword">if</span> (!f.isDone()) {</span><br><span class="line">                <span class="keyword">if</span> (nanos &lt;= <span class="number">0L</span>) <span class="keyword">return</span> futures;</span><br><span class="line">                <span class="keyword">try</span> {</span><br><span class="line">                    f.get(nanos, TimeUnit.NANOSECONDS);</span><br><span class="line">                } <span class="keyword">catch</span> (CancellationException ignore) {}</span><br><span class="line">                <span class="keyword">catch</span> (ExecutionException ignore) {</span><br><span class="line">                    </span><br><span class="line">                } <span class="keyword">catch</span> (TimeoutException toe) {<span class="keyword">return</span> futures;}</span><br><span class="line">                <span class="comment">// &#x622A;&#x6B62;&#x65F6;&#x95F4;&#x51CF;&#x6389;&#x7CFB;&#x7EDF;&#x7684;&#x5F53;&#x524D;&#x65F6;&#x95F4;&#xFF0C;&#x5C31;&#x662F;&#x5269;&#x4F59;&#x7684;&#x53EF;&#x7528;&#x65F6;&#x95F4;</span></span><br><span class="line">                nanos = deadline - System.nanoTime();</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">        <span class="comment">// &#x6267;&#x884C;&#x5230;&#x6B64;&#x5904;&#xFF0C;&#x8BBE;&#x7F6E;deon&#x4E3A;true&#xFF0C;&#x8BF4;&#x660E;&#x6240;&#x6709;&#x7684;&#x4EFB;&#x52A1;&#x5728;&#x622A;&#x6B62;&#x65F6;&#x95F4;&#x4E4B;&#x524D;&#x90FD;&#x5DF2;&#x7ECF;&#x6267;&#x884C;&#x5B8C;&#x6210;&#x3002;</span></span><br><span class="line">        done = <span class="keyword">true</span>;</span><br><span class="line">        <span class="keyword">return</span> futures;</span><br><span class="line">     } <span class="keyword">finally</span> {</span><br><span class="line">        <span class="comment">// finally&#x5904;&#x7406;&#x3002;done&#x4E3A;false&#xFF0C;&#x8BF4;&#x660E;&#x524D;&#x9762;&#x7684;&#x6267;&#x884C;&#x629B;&#x51FA;&#x4E86;&#x5F02;&#x5E38;&#x3002;&#x9700;&#x8981;&#x5C06;&#x4EFB;&#x52A1;&#x6267;&#x884C;&#x53D6;&#x6D88;&#x64CD;&#x4F5C;</span></span><br><span class="line">        <span class="keyword">if</span> (!done) {</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, size = futures.size(); i &lt; size; i++) {</span><br><span class="line">                futures.get(i).cancel(<span class="keyword">true</span>);</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>invokeAny&#x65B9;&#x6CD5;&#xFF0C;&#x662F;&#x8C03;&#x7528;&#x5185;&#x90E8;&#x65B9;&#x6CD5;doInvokeAny&#x65B9;&#x6CD5;&#x5B9E;&#x73B0;&#x7684;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> &lt;T&gt; <span class="function">T <span class="title">doInvokeAny</span><span class="params">(Collection&lt;? extends Callable&lt;T&gt;&gt; tasks, <span class="keyword">boolean</span> timed, <span class="keyword">long</span> nanos)</span> <span class="keyword">throws</span> InterruptedException,ExecutionException,TimeoutException </span>{</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (tasks == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">    <span class="keyword">int</span> ntasks = tasks.size();</span><br><span class="line">    <span class="keyword">if</span> (ntasks == <span class="number">0</span>) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException();</span><br><span class="line">    </span><br><span class="line">    ArrayList&lt;Future&lt;T&gt;&gt; futures = <span class="keyword">new</span> ArrayList&lt;&gt;(ntasks);</span><br><span class="line">    <span class="comment">//&#x6784;&#x9020;CompletionService&#x7684;&#x5B9E;&#x4F8B;&#xFF0C;&#x5C06;this&#x4F20;&#x5165;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E2D;&#xFF0C;&#x5F53;&#x4F5C;Executor&#xFF0C;&#x5185;&#x90E8;&#x961F;&#x5217;&#x4F7F;&#x7528;&#x9ED8;&#x8BA4;&#x7684;LinkedBlockingQueue</span></span><br><span class="line">    ExecutorCompletionService&lt;T&gt; ecs = <span class="keyword">new</span> ExecutorCompletionService&lt;&gt;(<span class="keyword">this</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        ExecutorException ee = <span class="keyword">null</span>;</span><br><span class="line">        <span class="comment">//&#x8BBE;&#x7F6E;&#x622A;&#x6B62;&#x65F6;&#x95F4;</span></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">long</span> deadline = timed ? System.nanoTime() + nanos : <span class="number">0L</span>;</span><br><span class="line">        </span><br><span class="line">        Iterator&lt;? extends Callable&lt;T&gt;&gt; it = tasks.iterator();</span><br><span class="line">        <span class="comment">//&#x9996;&#x5148;&#x63D0;&#x4EA4;&#x7B2C;&#x4E00;&#x4E2A;&#x4EFB;&#x52A1;&#x3002;</span></span><br><span class="line">        futures.add(ecs.submit(it.next()));</span><br><span class="line">        --ntasks;</span><br><span class="line">        <span class="comment">//&#x6D3B;&#x8DC3;&#x4EFB;&#x52A1;&#x8BA1;&#x6570;</span></span><br><span class="line">        <span class="keyword">int</span> active = <span class="number">1</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (;;) {</span><br><span class="line">            <span class="comment">// &#x4ECE;CompletionService&#x4E2D;&#x83B7;&#x53D6;&#x5DF2;&#x5B8C;&#x6210;&#x4EFB;&#x52A1;&#x3002;&#x5982;&#x679C;&#x5185;&#x90E8;&#x961F;&#x5217;&#x4E2D;&#x6CA1;&#x6709;&#x4EFB;&#x52A1;&#x5DF2;&#x7ECF;&#x5B8C;&#x6210;&#xFF0C;&#x5219;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;null</span></span><br><span class="line">        	Future&lt;T&gt; f = ecs.poll();</span><br><span class="line">            <span class="comment">// &#x5F53;&#x524D;&#x6CA1;&#x6709;&#x4EFB;&#x52A1;&#x5B8C;&#x6210;&#x7684;&#x72B6;&#x6001;</span></span><br><span class="line">            <span class="keyword">if</span> (f == <span class="keyword">null</span>) {</span><br><span class="line">                </span><br><span class="line">                <span class="keyword">if</span> (ntasks &gt; <span class="number">0</span>) {</span><br><span class="line">                    --ntasks;</span><br><span class="line">                    futures.add(ecs.submit(it.next()));</span><br><span class="line">                    ++active;</span><br><span class="line">                }</span><br><span class="line">                <span class="comment">// &#x6CA1;&#x6709;&#x63D0;&#x524D;&#x8FD4;&#x56DE;&#x7684;&#x60C5;&#x51B5;&#xFF0C;&#x5E76;&#x4E14;active&#x4E3A;0&#xFF0C;&#x8868;&#x793A;&#x6CA1;&#x6709;&#x518D;&#x6B21;&#x7684;&#x63D0;&#x4EA4;&#x4EFB;&#x52A1;&#xFF0C;&#x8868;&#x793A;&#x53D1;&#x751F;&#x4E86;&#x5F02;&#x5E38;</span></span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (active == <span class="number">0</span>) {</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                }</span><br><span class="line">                <span class="comment">// &#x8BBE;&#x7F6E;&#x8D85;&#x65F6;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x4F7F;&#x7528;&#x5E26;&#x6709;&#x8D85;&#x65F6;&#x65F6;&#x95F4;&#x7684;poll&#x65B9;&#x6CD5;&#x3002;</span></span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (timed) {</span><br><span class="line">                    f = ecs.poll(nanos, TimeUnit.NANOSECONDS);</span><br><span class="line">                    <span class="keyword">if</span> (f == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> TimeoutException();</span><br><span class="line">                    nanos = deadline - System.nanoTime();</span><br><span class="line">                }</span><br><span class="line">                <span class="comment">// &#x5426;&#x5219;&#x4F7F;&#x7528;&#x963B;&#x585E;&#x7EBF;&#x7A0B;&#x7684;take&#x65B9;&#x6CD5;&#x3002;</span></span><br><span class="line">                <span class="keyword">else</span> {</span><br><span class="line">                    f = ecs.take();</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line">            <span class="comment">// &#x6709;&#x4EFB;&#x52A1;&#x5DF2;&#x7ECF;&#x5B8C;&#x6210;</span></span><br><span class="line">            <span class="keyword">if</span> (f != <span class="keyword">null</span>) {</span><br><span class="line">                --active;</span><br><span class="line">                <span class="keyword">try</span> {</span><br><span class="line">                    <span class="keyword">return</span> f.get();</span><br><span class="line">                } <span class="keyword">catch</span> (ExecutionException eex) {</span><br><span class="line">                    <span class="comment">// &#x5F53;&#x524D;&#x4EFB;&#x52A1;&#x629B;&#x51FA;&#x5F02;&#x5E38;&#x7684;&#x8BDD;&#xFF0C;&#x5F02;&#x5E38;&#x5E76;&#x6CA1;&#x6709;&#x629B;&#x51FA;&#x53BB;&#xFF0C;&#x800C;&#x662F;&#x4FDD;&#x5B58;&#x4E86;&#x8D77;&#x6765;&#xFF0C;&#x53BB;&#x67E5;&#x770B;&#x5176;&#x4ED6;&#x7684;&#x4EFB;&#x52A1;&#x7684;&#x60C5;&#x51B5;&#x3002;&#x5982;&#x679C;&#x540E;&#x7EED;&#x7684;&#x4EFB;&#x52A1;&#x80FD;&#x591F;&#x6267;&#x884C;&#x5B8C;&#x6210;&#xFF0C;&#x5219;&#x5F02;&#x5E38;&#x5E76;&#x4E0D;&#x4F1A;&#x8FD4;&#x56DE;&#x7ED9;&#x4E0A;&#x5C42;&#x8C03;&#x7528;&#x3002;</span></span><br><span class="line">                    ee = eex;</span><br><span class="line">                } <span class="keyword">catch</span> (RuntimeException rex) {</span><br><span class="line">                    ee = <span class="keyword">new</span> ExecutionException(rex);</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (ee == <span class="keyword">null</span>) {</span><br><span class="line">			ee = <span class="keyword">new</span> ExecutionException();</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">throw</span> ee;</span><br><span class="line">    }</span><br><span class="line">    <span class="comment">// finally&#x5757;&#x4E2D;&#x7684;&#x4EE3;&#x7801;&#xFF0C;&#x4F1A;&#x5728;return&#x4E4B;&#x524D;&#x8FD4;&#x56DE;&#x3002;&#x6B63;&#x5E38;&#x8FD4;&#x56DE;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x4E5F;&#x9700;&#x8981;&#x5C06;&#x4EFB;&#x52A1;&#x53D6;&#x6D88;</span></span><br><span class="line">    <span class="keyword">finally</span> {</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, size = futures.size(); i &lt; size; i++) {</span><br><span class="line">            futures.get(i).cancel(<span class="keyword">true</span>);</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/10/Executor和ExecutorService分析/" rel="next" title="Executor和ExecutorService分析">
+                <i class="fa fa-chevron-left"></i> Executor和ExecutorService分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/10/16/CyclicBarrier源码分析/" rel="prev" title="CyclicBarrier源码分析">
+                CyclicBarrier源码分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="feng.dianjun">
+          <p class="site-author-name" itemprop="name">feng.dianjun</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng.dianjun</span>
+</div>
+
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="https://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Gemini
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

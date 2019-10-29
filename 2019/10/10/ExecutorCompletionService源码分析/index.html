@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh/cn">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="java,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="CompletionServiceCompletionService&amp;#x5C06;&amp;#x5F02;&amp;#x6B65;&amp;#x4EFB;&amp;#x52A1;&amp;#x7684;&amp;#x63D0;&amp;#x4EA4;&amp;#x548C;&amp;#x5BF9;&amp;#x5B8C;&amp;#x6210;&amp;#x4EFB;&amp;#x52A1;&amp;#x7ED3;&amp;#x679C;&amp;#x7684;&amp;#x6D88;&amp;#x8D39;&amp;#x8FDB;&amp;#x884">
+<meta name="keywords" content="java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ExecutorCompletionService源码分析">
+<meta property="og:url" content="http://yoursite.com/2019/10/10/ExecutorCompletionService源码分析/index.html">
+<meta property="og:site_name" content="maslke&#39;s blog">
+<meta property="og:description" content="CompletionServiceCompletionService&amp;#x5C06;&amp;#x5F02;&amp;#x6B65;&amp;#x4EFB;&amp;#x52A1;&amp;#x7684;&amp;#x63D0;&amp;#x4EA4;&amp;#x548C;&amp;#x5BF9;&amp;#x5B8C;&amp;#x6210;&amp;#x4EFB;&amp;#x52A1;&amp;#x7ED3;&amp;#x679C;&amp;#x7684;&amp;#x6D88;&amp;#x8D39;&amp;#x8FDB;&amp;#x884">
+<meta property="og:locale" content="zh/cn">
+<meta property="og:updated_time" content="2019-10-17T11:59:12.650Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ExecutorCompletionService源码分析">
+<meta name="twitter:description" content="CompletionServiceCompletionService&amp;#x5C06;&amp;#x5F02;&amp;#x6B65;&amp;#x4EFB;&amp;#x52A1;&amp;#x7684;&amp;#x63D0;&amp;#x4EA4;&amp;#x548C;&amp;#x5BF9;&amp;#x5B8C;&amp;#x6210;&amp;#x4EFB;&amp;#x52A1;&amp;#x7ED3;&amp;#x679C;&amp;#x7684;&amp;#x6D88;&amp;#x8D39;&amp;#x8FDB;&amp;#x884">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/10/10/ExecutorCompletionService源码分析/">
+
+
+
+
+
+  <title>ExecutorCompletionService源码分析 | maslke's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh/cn">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">maslke's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/10/ExecutorCompletionService源码分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="feng.dianjun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="maslke's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ExecutorCompletionService源码分析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-10T19:57:16+08:00">
+                2019-10-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="CompletionService"><a href="#CompletionService" class="headerlink" title="CompletionService"></a>CompletionService</h2><p>CompletionService&#x5C06;&#x5F02;&#x6B65;&#x4EFB;&#x52A1;&#x7684;&#x63D0;&#x4EA4;&#x548C;&#x5BF9;&#x5B8C;&#x6210;&#x4EFB;&#x52A1;&#x7ED3;&#x679C;&#x7684;&#x6D88;&#x8D39;&#x8FDB;&#x884C;&#x4E86;&#x89E3;&#x8026;&#xFF1A;&#x751F;&#x4EA7;&#x8005;&#x8D1F;&#x8D23;&#x63D0;&#x4EA4;&#x5F02;&#x6B65;&#x4EFB;&#x52A1;&#xFF0C;&#x6D88;&#x8D39;&#x8005;&#x6309;&#x7167;&#x5F02;&#x6B65;&#x4EFB;&#x52A1;&#x5B8C;&#x6210;&#x7684;&#x987A;&#x5E8F;&#x6765;&#x83B7;&#x53D6;&#x5BF9;&#x5E94;&#x7684;&#x4EFB;&#x52A1;&#x7ED3;&#x679C;&#x3002;</p>
+<p>&#x5728;&#x4EE3;&#x7801;&#x5B9E;&#x73B0;&#x4E0A;&#xFF0C;&#x5F02;&#x6B65;&#x4EFB;&#x52A1;&#x7684;&#x63D0;&#x4EA4;&#x548C;&#x8FD0;&#x884C;&#xFF0C;&#x4F9D;&#x9760;&#x4E00;&#x4E2A;Executor&#x6765;&#x5B9E;&#x73B0;&#x3002;&#x5BF9;&#x4EFB;&#x52A1;&#x7ED3;&#x679C;&#x7684;&#x987A;&#x5E8F;&#x83B7;&#x53D6;&#xFF0C;&#x4F9D;&#x9760;&#x7684;&#x662F;&#x5185;&#x90E8;&#x7684;&#x4E00;&#x4E2A;&#x961F;&#x5217;&#x3002;&#x56E0;&#x6B64;&#xFF0C;&#x5728;CompletionService&#x7684;&#x5B9E;&#x73B0;&#x7C7B;&#x4E2D;&#xFF0C;&#x4F1A;&#x5305;&#x542B;&#x4E00;&#x4E2A;Executor&#x7C7B;&#x578B;&#x7684;&#x5C40;&#x90E8;&#x53D8;&#x91CF;&#x548C;&#x4E00;&#x4E2A;BlockingQueue&#x7C7B;&#x578B;&#x7684;&#x5C40;&#x90E8;&#x53D8;&#x91CF;&#x3002;</p>
+<p>submit&#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x4F9D;&#x9760;Executor&#xFF0C;&#x65B9;&#x6CD5;&#x7684;&#x542B;&#x4E49;&#x548C;Executor&#x4E2D;&#x7684;submit&#x65B9;&#x6CD5;&#x76F8;&#x540C;&#x3002;</p>
+<p>take&#x65B9;&#x6CD5;&#x548C;poll&#x65B9;&#x6CD5;&#x7528;&#x4E8E;&#x83B7;&#x53D6;&#x5DF2;&#x5B8C;&#x6210;&#x7684;&#x5F02;&#x6B65;&#x4EFB;&#x52A1;&#x7684;&#x7ED3;&#x679C;&#x3002;&#x4E0D;&#x540C;&#x70B9;&#x5728;&#x4E8E;&#xFF0C;take&#x65B9;&#x6CD5;&#x5728;&#x6CA1;&#x6709;&#x4EFB;&#x52A1;&#x5B8C;&#x6210;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x5C06;&#x4F1A;&#x963B;&#x585E;&#x7EBF;&#x7A0B;&#x7B49;&#x5F85;&#x4EFB;&#x52A1;&#x5B8C;&#x6210;&#x3002;poll&#x65B9;&#x6CD5;&#x5C06;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;null&#xFF0C;&#x4E0D;&#x4F1A;&#x963B;&#x585E;&#x7EBF;&#x7A0B;&#x3002;&#x9664;&#x6B64;&#x4E4B;&#x5916;&#xFF0C;poll&#x65B9;&#x6CD5;&#x8FD8;&#x652F;&#x6301;&#x4E00;&#x4E2A;&#x8BBE;&#x7F6E;&#x8D85;&#x65F6;&#x65F6;&#x95F4;&#x7684;&#x7248;&#x672C;&#x3002;</p>
+<h2 id="ExecutorCompletionService"><a href="#ExecutorCompletionService" class="headerlink" title="ExecutorCompletionService"></a>ExecutorCompletionService</h2><p>ExecutorCompletionService&#x662F;jdk&#x4E2D;CompletionService&#x63A5;&#x53E3;&#x7684;&#x552F;&#x4E00;&#x5B9E;&#x73B0;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Executor executor;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> AbstractExecutorService aes;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> BlockingQueue&lt;Future&lt;V&gt;&gt; completionQueue;</span><br></pre></td></tr></table></figure>
+
+<p>&#x53EF;&#x4EE5;&#x770B;&#x5230;&#xFF0C;&#x9664;&#x4E86;&#x4E0A;&#x6587;&#x8BF4;&#x5230;&#x7684;executor&#x548C;BlockingQueue&#xFF0C;&#x8FD8;&#x6709;&#x4E00;&#x4E2A;AbstractExecutorService&#x7C7B;&#x578B;&#x7684;&#x53D8;&#x91CF;&#x3002;</p>
+<p>&#x901A;&#x8FC7;&#x6784;&#x9020;&#x51FD;&#x6570;&#x53EF;&#x4EE5;&#x6307;&#x5BFC;&#xFF0C;&#x5982;&#x679C;executor&#x4E3A;AbstractExecutorService&#x7684;&#x5B9E;&#x4F8B;&#xFF0C;&#x5219;aes&#x5C31;&#x8D4B;&#x503C;&#x4E3A;executor&#x3002;&#x5426;&#x5219;&#x4E3A;null&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ExecutorCompletionService</span><span class="params">(Executor executor, BlockingQueue&lt;Future&lt;V&gt;&gt; completionQueue)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (executor == <span class="keyword">null</span> || completionQeueu == <span class="keyword">null</span>) {</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">this</span>.executor = executor;</span><br><span class="line">    <span class="keyword">this</span>.aes = (executor <span class="keyword">instanceof</span> AbstractExecutorService) ? </span><br><span class="line">        (AbstractExecutorService) executor : <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">this</span>.completionQueue = completionQueue;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x5728;&#x7C7B;&#x7684;&#x5185;&#x90E8;&#xFF0C;&#x63D0;&#x4F9B;&#x4E86;&#x4E00;&#x79CD;FutureTask&#x7684;&#x6269;&#x5C55;&#x5B9E;&#x73B0;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Class QueueingFuture extends FutureTask&lt;Void&gt; {</span><br><span class="line">    QueueingFuture(RunnableFuture&lt;V&gt; task) {</span><br><span class="line">        <span class="keyword">super</span>(task, <span class="keyword">null</span>);</span><br><span class="line">        <span class="keyword">this</span>.task = task;</span><br><span class="line">    }</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">done</span><span class="params">()</span> </span>{ completionQueue.add(task); }</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Future&lt;V&gt; task;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>QueueingFuture&#x662F;ExecutorCompletionService&#x5B9E;&#x73B0;&#x7684;&#x5173;&#x952E;&#x3002;QueueingFuture&#x901A;&#x8FC7;&#x91CD;&#x5199;&#x4E86;done&#x51FD;&#x6570;&#x3002;&#x5728;&#x4EFB;&#x52A1;&#x6267;&#x884C;&#x5B8C;&#x6210;&#x540E;&#xFF0C;&#x5C06;&#x5BF9;&#x5E94;&#x7684;task&#x6DFB;&#x52A0;&#x5230;&#x4E86;&#x961F;&#x5217;&#x4E2D;&#xFF0C;&#x4EE5;&#x5907;&#x540E;&#x7EED;&#x7684;&#x83B7;&#x53D6;&#x64CD;&#x4F5C;&#x3002;</p>
+<p>&#x6765;&#x770B;&#x4E00;&#x4E0B;submit&#x64CD;&#x4F5C;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Future&lt;V&gt; <span class="title">submit</span><span class="params">(Callable&lt;V&gt; task)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (task == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">    RunnableFuture&lt;V&gt; f = newTaskFor(task);</span><br><span class="line">    executor.execute(<span class="keyword">new</span> QueueFuture(f));</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x53EF;&#x4EE5;&#x770B;&#x5230;&#xFF0C;&#x64CD;&#x4F5C;&#x65B9;&#x5F0F;&#x548C;AbstractExecutorService&#x4E2D;&#x7684;&#x5904;&#x7406;&#x65B9;&#x5F0F;&#x4E00;&#x81F4;&#x3002;&#x5728;AbstractExecutorService&#x4E2D;&#x66FE;&#x7ECF;&#x8BF4;&#x8FC7;&#xFF0C;newTaskFor&#x65B9;&#x6CD5;&#xFF0C;&#x5728;&#x6CA1;&#x6709;&#x8986;&#x76D6;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;&#x7684;&#x662F;FutureTask&#x7684;&#x5B9E;&#x4F8B;&#x5BF9;&#x8C61;&#x3002;&#x5728;&#x8FD9;&#x91CC;newTaskFor&#x7684;&#x5B9E;&#x73B0;&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> RunnableFuture&lt;V&gt; <span class="title">newTaskFor</span><span class="params">(Runnable task, V result)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (aes == <span class="keyword">null</span>) <span class="keyword">return</span> <span class="keyword">new</span> FutureTask&lt;V&gt;(task, result);</span><br><span class="line">    <span class="keyword">return</span> aes.newTaskFor(task, result);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x7ED3;&#x5408;&#x4E0A;&#x6587;&#x8BF4;&#x5230;&#x7684;aes&#x7684;&#x8D4B;&#x503C;&#x903B;&#x8F91;&#xFF0C;&#x5728;Executor&#x4E0D;&#x662F;AbstractExecutorService&#x5B9E;&#x4F8B;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x5219;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;FutureTask&#x7684;&#x5B9E;&#x4F8B;&#xFF0C;&#x5426;&#x5219;&#x5C06;&#x8C03;&#x7528;AbstractExecutorService&#x62BD;&#x8C61;&#x7C7B;&#x4E2D;&#x7684;newTaskFor&#x7684;&#x9ED8;&#x8BA4;&#x5B9E;&#x73B0;&#xFF0C;&#x6216;&#x662F;&#x5B50;&#x7C7B;&#x7684;&#x6269;&#x5C55;&#x5B9E;&#x73B0;&#x3002;</p>
+<p>ExecutorCompletionService&#x5206;&#x6790;&#x6E05;&#x695A;&#x4E86;&#x4E4B;&#x540E;&#xFF0C;&#x53EF;&#x4EE5;&#x53BB;&#x5206;&#x6790;AbstractExecutorService&#x4E2D;invokeAny&#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x3002;</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/02/CountDownLatch源码分析/" rel="next" title="CountDownLatch源码分析">
+                <i class="fa fa-chevron-left"></i> CountDownLatch源码分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/10/10/Executor和ExecutorService分析/" rel="prev" title="Executor和ExecutorService分析">
+                Executor和ExecutorService分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="feng.dianjun">
+          <p class="site-author-name" itemprop="name">feng.dianjun</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#CompletionService"><span class="nav-number">1.</span> <span class="nav-text">CompletionService</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ExecutorCompletionService"><span class="nav-number">2.</span> <span class="nav-text">ExecutorCompletionService</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng.dianjun</span>
+</div>
+
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="https://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Gemini
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh/cn">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="dubbo,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="&amp;#x5F15;&amp;#x8A00;dubbo&amp;#x5177;&amp;#x6709;&amp;#x826F;&amp;#x597D;&amp;#x6269;&amp;#x5C55;&amp;#x6027;&amp;#x7684;&amp;#x539F;&amp;#x56E0;&amp;#xFF0C;&amp;#x9664;&amp;#x4E86;&amp;#x5F97;&amp;#x76CA;&amp;#x4E8E;&amp;#x5728;&amp;#x6846;&amp;#x67B6;&amp;#x4E2D;&amp;#x5404;&amp;#x79CD;&amp;#x">
+<meta name="keywords" content="dubbo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="dubbo源码分析之ExtensionLoader实现">
+<meta property="og:url" content="http://yoursite.com/2019/10/25/ExtensionLoader/index.html">
+<meta property="og:site_name" content="maslke&#39;s blog">
+<meta property="og:description" content="&amp;#x5F15;&amp;#x8A00;dubbo&amp;#x5177;&amp;#x6709;&amp;#x826F;&amp;#x597D;&amp;#x6269;&amp;#x5C55;&amp;#x6027;&amp;#x7684;&amp;#x539F;&amp;#x56E0;&amp;#xFF0C;&amp;#x9664;&amp;#x4E86;&amp;#x5F97;&amp;#x76CA;&amp;#x4E8E;&amp;#x5728;&amp;#x6846;&amp;#x67B6;&amp;#x4E2D;&amp;#x5404;&amp;#x79CD;&amp;#x">
+<meta property="og:locale" content="zh/cn">
+<meta property="og:updated_time" content="2019-10-26T07:57:17.810Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="dubbo源码分析之ExtensionLoader实现">
+<meta name="twitter:description" content="&amp;#x5F15;&amp;#x8A00;dubbo&amp;#x5177;&amp;#x6709;&amp;#x826F;&amp;#x597D;&amp;#x6269;&amp;#x5C55;&amp;#x6027;&amp;#x7684;&amp;#x539F;&amp;#x56E0;&amp;#xFF0C;&amp;#x9664;&amp;#x4E86;&amp;#x5F97;&amp;#x76CA;&amp;#x4E8E;&amp;#x5728;&amp;#x6846;&amp;#x67B6;&amp;#x4E2D;&amp;#x5404;&amp;#x79CD;&amp;#x">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/10/25/ExtensionLoader/">
+
+
+
+
+
+  <title>dubbo源码分析之ExtensionLoader实现 | maslke's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh/cn">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">maslke's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/25/ExtensionLoader/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="feng.dianjun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="maslke's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">dubbo源码分析之ExtensionLoader实现</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-25T21:44:25+08:00">
+                2019-10-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="&#x5F15;&#x8A00;"><a href="#&#x5F15;&#x8A00;" class="headerlink" title="&#x5F15;&#x8A00;"></a>&#x5F15;&#x8A00;</h2><p>dubbo&#x5177;&#x6709;&#x826F;&#x597D;&#x6269;&#x5C55;&#x6027;&#x7684;&#x539F;&#x56E0;&#xFF0C;&#x9664;&#x4E86;&#x5F97;&#x76CA;&#x4E8E;&#x5728;&#x6846;&#x67B6;&#x4E2D;&#x5404;&#x79CD;&#x8BBE;&#x8BA1;&#x6A21;&#x5F0F;&#x7684;&#x5DE7;&#x5999;&#x5229;&#x7528;&#xFF0C;&#x8FD8;&#x6709;&#x4E00;&#x4E2A;&#x539F;&#x56E0;&#x5C31;&#x662F;dubbo SPI&#x673A;&#x5236;&#x3002;SPI&#xFF0C;&#x5373;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x63A5;&#x53E3;&#x3002;dubbo SPI&#x501F;&#x9274;&#x4E8E;java SPI&#xFF0C;&#x800C;&#x53C8;&#x63D0;&#x4F9B;&#x4E86;&#x4E0D;&#x5C11;&#x6539;&#x8FDB;&#x548C;&#x4F18;&#x5316;&#x3002;&#x5176;&#x4E2D;&#xFF0C;&#x6BD4;&#x8F83;&#x91CD;&#x8981;&#x7684;&#x51E0;&#x70B9;&#x6709;&#xFF1A;</p>
+<ol>
+<li>&#x63D0;&#x4F9B;&#x4E86;&#x60F0;&#x6027;&#x52A0;&#x8F7D;&#x673A;&#x5236;&#xFF0C;&#x6269;&#x5C55;&#x7C7B;&#x5B9E;&#x4F8B;&#x5728;&#x9700;&#x8981;&#x7684;&#x65F6;&#x5019;&#x518D;&#x884C;&#x521B;&#x5EFA;&#x3002;</li>
+<li>&#x63D0;&#x4F9B;&#x4E86;IoC&#x7279;&#x6027;&#xFF0C;&#x53EF;&#x4EE5;&#x5728;&#x521B;&#x5EFA;dubbo SPI&#x5B9E;&#x4F8B;&#x5BF9;&#x8C61;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x81EA;&#x52A8;&#x6CE8;&#x5165;&#x5176;&#x5B83;&#x7C7B;&#x578B;&#x7684;SPI&#x5BF9;&#x8C61;&#x3002;</li>
+<li>&#x63D0;&#x4F9B;&#x4E86;AOP&#x673A;&#x5236;&#xFF0C;&#x65B9;&#x4FBF;&#x5BF9;&#x7C7B;&#x5B9E;&#x73B0;&#x8FDB;&#x884C;&#x5305;&#x88C5;&#xFF0C;&#x751F;&#x6210;&#x5305;&#x88C5;&#x7C7B;&#x3002;</li>
+</ol>
+<p>&#x4E0E;dubbo SPI&#x673A;&#x5236;&#x76F8;&#x5173;&#x7684;&#x6CE8;&#x89E3;&#x6709;@SPI&#x3001;@Adaptive&#x548C;@Activate&#x3002;@SPI&#x6CE8;&#x89E3;&#x4E3A;dubbo SPI&#x673A;&#x5236;&#x7684;&#x901A;&#x7528;&#x6CE8;&#x89E3;&#xFF0C;&#x4E00;&#x822C;&#x5728;&#x63A5;&#x53E3;&#x4E0A;&#x8FDB;&#x884C;&#x6DFB;&#x52A0;&#xFF0C;&#x8868;&#x793A;&#x8FD9;&#x4E2A;&#x63A5;&#x53E3;&#x4E3A;dubbo&#x4E2D;&#x7684;&#x4E00;&#x4E2A;&#x6269;&#x5C55;&#x70B9;&#xFF0C;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;SPI&#x673A;&#x5236;&#x6765;&#x63D0;&#x4F9B;&#x4E0D;&#x540C;&#x7684;&#x5B9E;&#x73B0;&#x7C7B;&#xFF1B;@Adaptive&#x6CE8;&#x89E3;&#xFF0C;&#x987E;&#x540D;&#x601D;&#x4E49;&#xFF0C;&#x63D0;&#x4F9B;&#x4E86;&#x4E00;&#x79CD;&#x81EA;&#x9002;&#x5E94;&#x6027;&#x3002;&#x5728;dubbo&#x4E2D;&#xFF0C;&#x4E00;&#x822C;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#x662F;&#x5C06;@Adaptive&#x6CE8;&#x89E3;&#x6DFB;&#x52A0;&#x5230;&#x65B9;&#x6CD5;&#x4E0A;&#xFF0C;&#x914D;&#x5408;&#x6CE8;&#x89E3;&#x4E2D;&#x7684;&#x53C2;&#x6570;&#xFF0C;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;&#x53C2;&#x6570;&#x52A8;&#x6001;&#x83B7;&#x5F97;&#x5B9E;&#x73B0;&#x7C7B;&#xFF0C;&#x5728;&#x8FD9;&#x79CD;&#x60C5;&#x51B5;&#x4E0B;&#x4F1A;&#x81EA;&#x52A8;&#x751F;&#x6210;&#x4E00;&#x4E2A;&#x540D;&#x79F0;&#x4E3A;&#x201D;&#x6269;&#x5C55;&#x7C7B;&#x578B;&#x540D;&#x79F0;$Adaptive&#x201D;&#x7684;&#x7C7B;&#x3002;&#x5982;&#x679C;&#x5C06;@Adaptive&#x6CE8;&#x89E3;&#x6DFB;&#x52A0;&#x5230;&#x5B9E;&#x73B0;&#x7C7B;&#x4E0A;&#x7684;&#x8BDD;&#xFF0C;&#x5219;&#x4E0D;&#x4F1A;&#x53E6;&#x884C;&#x751F;&#x6210;&#x4E00;&#x4E2A;&#x5B9E;&#x73B0;&#x7C7B;&#x3002;@Activate&#x6CE8;&#x89E3;&#x4E3B;&#x8981;&#x7528;&#x4E8E;&#x6709;&#x591A;&#x4E2A;&#x6269;&#x5C55;&#x70B9;&#x5B9E;&#x73B0;&#xFF0C;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x6761;&#x4EF6;&#x6765;&#x6FC0;&#x6D3B;&#x4E0D;&#x540C;&#x6269;&#x5C55;&#x70B9;&#x5B9E;&#x73B0;&#x7684;&#x573A;&#x666F;&#x4E0B;&#x3002;</p>
+<p>&#x63A5;&#x4E0B;&#x6765;&#x7684;&#x8BF4;&#x660E;&#xFF0C;&#x4E3B;&#x8981;&#x662F;&#x4ECE;&#x4EE3;&#x7801;&#x5B9E;&#x73B0;&#x5C42;&#x9762;&#x6765;&#x8FDB;&#x884C;&#x8BF4;&#x660E;&#x3002;</p>
+<h2 id="ExtensionLoader"><a href="#ExtensionLoader" class="headerlink" title="ExtensionLoader"></a>ExtensionLoader</h2><p>&#x5148;&#x6765;&#x770B;&#x4E00;&#x4E0B;ExtensionLoader&#x4E2D;&#x58F0;&#x660E;&#x7684;&#x53D8;&#x91CF;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String SERVICES_DIRECTORY = <span class="string">&quot;META-INF/services/&quot;</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String DUBBO_DIRECTORY = <span class="string">&quot;META-INF/dubbo/&quot;</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String DUBBO_INTERNAL_DIRECTORY = DUBBO_DIRECTOR + <span class="string">&quot;internal/&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>&#x4E0A;&#x9762;&#x7684;&#x4E09;&#x4E2A;&#x53D8;&#x91CF;&#xFF0C;&#x662F;&#x548C;dubbo SPI&#x7684;&#x914D;&#x7F6E;&#x5173;&#x8054;&#x7684;&#x3002;&#x5728;dubbo&#x4E2D;&#xFF0C;&#x89C4;&#x5B9A;&#x7684;dubbo SPI&#x914D;&#x7F6E;&#x7684;&#x8DEF;&#x5F84;&#x5373;&#x662F;&#x201D;META-INF/services/&#x201C;&#x3001;&#x201D;META-INF\dubbo&#x201D;&#x548C;&#x201D;META-INF/dubbo/internal/&#x201C;&#x3002;dubbo&#x81EA;&#x8EAB;&#x7684;&#x76F8;&#x5173;&#x6269;&#x5C55;&#xFF0C;&#x90FD;&#x662F;&#x653E;&#x7F6E;&#x5728;&#x201D;META-INF/dubbo/internal/&#x201C;&#x8DEF;&#x5F84;&#x4E0B;&#x3002;&#x914D;&#x7F6E;&#x7684;&#x65B9;&#x5F0F;&#x662F;&#xFF0C;&#x5728;&#x4E0A;&#x8FF0;&#x7684;&#x8DEF;&#x5F84;&#x4E0B;&#xFF0C;&#x521B;&#x5EFA;&#x6587;&#x4EF6;&#xFF0C;&#x4EE5;&#x60F3;&#x8981;&#x914D;&#x7F6E;&#x7684;SPI&#x6269;&#x5C55;&#x7684;&#x5B8C;&#x6574;&#x7C7B;&#x540D;&#x4F5C;&#x4E3A;&#x6587;&#x4EF6;&#x540D;&#x79F0;&#xFF0C;&#x6587;&#x4EF6;&#x7684;&#x5185;&#x5BB9;&#x914D;&#x7F6E;&#x65B9;&#x5F0F;&#x662F;key=value&#x65B9;&#x5F0F;&#xFF0C;key&#x4E3A;&#x540D;&#x79F0;&#xFF0C;value&#x4E3A;SPI&#x5B9E;&#x73B0;&#x7C7B;&#x7684;&#x540D;&#x79F0;&#x3002;&#x6BD4;&#x5982;&#xFF0C;dubbo&#x4E2D;zookeeper&#x7C7B;&#x578B;&#x7684;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x7684;&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x540D;&#x79F0;&#x5373;&#x4E3A;&#x201D;org.apache.dubbo.registry.RegistryFactory&#x201D;&#xFF0C;&#x6587;&#x4EF6;&#x4E2D;&#x7684;&#x5185;&#x5BB9;&#x4E3A;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zookeeper=org.apache.dubbo.registry.zookeeper.ZookeeperRegistryFactory</span><br></pre></td></tr></table></figure>
+
+<p>&#x5728;&#x4E00;&#x4E2A;&#x6587;&#x4EF6;&#x4E2D;&#xFF0C;&#x53EF;&#x4EE5;&#x914D;&#x7F6E;&#x591A;&#x4E2A;&#x5B9E;&#x73B0;&#xFF0C;&#x6BCF;&#x4E2A;&#x914D;&#x7F6E;&#x4EE5;&#x6362;&#x884C;&#x7B26;&#x8FDB;&#x884C;&#x5206;&#x9694;&#x3002;</p>
+<a id="more"></a>
+
+<h3 id="&#x7F13;&#x5B58;&#x53D8;&#x91CF;"><a href="#&#x7F13;&#x5B58;&#x53D8;&#x91CF;" class="headerlink" title="&#x7F13;&#x5B58;&#x53D8;&#x91CF;"></a>&#x7F13;&#x5B58;&#x53D8;&#x91CF;</h3><p>&#x524D;&#x9762;&#x8BF4;&#x8FC7;&#xFF0C;dubbo SPI&#x6539;&#x8FDB;&#x7684;&#x4E00;&#x4E2A;&#x660E;&#x663E;&#x7684;&#x7279;&#x70B9;&#x662F;&#xFF0C;&#x63D0;&#x4F9B;&#x4E86;&#x60F0;&#x6027;&#x52A0;&#x8F7D;&#x673A;&#x5236;&#x3002;&#x5728;&#x5B9E;&#x73B0;&#x4E0A;&#xFF0C;&#x542F;&#x52A8;&#x7684;&#x65F6;&#x5019;&#x52A0;&#x8F7D;&#x4E86;&#x7C7B;&#x5BF9;&#x8C61;&#x4E4B;&#x540E;&#xFF0C;&#x5E76;&#x6CA1;&#x6709;&#x7ACB;&#x5373;&#x521B;&#x5EFA;&#x5B9E;&#x4F8B;&#xFF0C;&#x800C;&#x662F;&#x653E;&#x5728;&#x5185;&#x5B58;&#x4E2D;&#x7F13;&#x5B58;&#x4E86;&#x8D77;&#x6765;&#x3002;</p>
+<p>&#x603B;&#x7ED3;&#x4E00;&#x4E0B;&#xFF0C;&#x4EE3;&#x7801;&#x4E2D;&#x548C;&#x7F13;&#x5B58;&#x76F8;&#x5173;&#x7684;&#x4E00;&#x4E9B;&#x53D8;&#x91CF;&#x3002;</p>
+<table>
+<thead>
+<tr>
+<th>&#x53D8;&#x91CF;&#x540D;&#x79F0;</th>
+<th>&#x8BF4;&#x660E;</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ConcurrentHashMap&lt;Class&lt;?&gt;, ExtentsionLoader&gt; EXTENSION_LOADERS</td>
+<td>&#x6269;&#x5C55;&#x7C7B;&#x548C;&#x52A0;&#x8F7D;&#x5668;&#x6620;&#x5C04;&#x5173;&#x7CFB;</td>
+</tr>
+<tr>
+<td>ConcurrentMap&lt;Class&lt;?&gt;, Object&gt; EXTENSION_INSTANCES</td>
+<td>&#x6269;&#x5C55;&#x7C7B;&#x548C;&#x5B9E;&#x4F8B;&#x6620;&#x5C04;&#x5173;&#x7CFB;</td>
+</tr>
+<tr>
+<td>ConcurrentMap&lt;Class&lt;?&gt;, String&gt; cachedNames</td>
+<td>&#x6269;&#x5C55;&#x7C7B;&#x548C;&#x6269;&#x5C55;&#x540D;&#x79F0;&#x6620;&#x5C04;&#x5173;&#x7CFB;</td>
+</tr>
+<tr>
+<td>Holder&lt;Map&lt;String, Class&lt;?&gt;&gt;&gt; cachedClasses</td>
+<td>&#x6269;&#x5C55;&#x540D;&#x79F0;&#x548C;&#x6269;&#x5C55;&#x7C7B;&#x6620;&#x5C04;&#x5173;&#x7CFB;</td>
+</tr>
+<tr>
+<td>Map&lt;String, Object&gt; cachedActivates</td>
+<td>&#x6269;&#x5C55;&#x540D;&#x79F0;&#x548C;&#x81EA;&#x52A8;&#x6FC0;&#x6D3B;&#x6269;&#x5C55;&#x7C7B;&#x6620;&#x5C04;&#x5173;&#x7CFB;</td>
+</tr>
+<tr>
+<td>ConcurrentMap&lt;String, Holder<object>&gt; cachedInstances</object></td>
+<td>&#x6269;&#x5C55;&#x540D;&#x79F0;&#x548C;&#x6269;&#x5C55;&#x7C7B;&#x5B9E;&#x4F8B;&#x6620;&#x5C04;&#x5173;&#x7CFB;</td>
+</tr>
+<tr>
+<td>Holder<object> cachedAdaptiveInstance</object></td>
+<td>&#x81EA;&#x9002;&#x5E94;&#x6269;&#x5C55;&#x7C7B;&#x5B9E;&#x4F8B;&#x7F13;&#x5B58;</td>
+</tr>
+<tr>
+<td>Class&lt;?&gt; cachedAdaptiveClass</td>
+<td>&#x81EA;&#x9002;&#x5E94;&#x6269;&#x5C55;&#x7C7B;</td>
+</tr>
+<tr>
+<td>Set&lt;Class&lt;?&gt;&gt; cachedWrapperClasses</td>
+<td>&#x5305;&#x88C5;&#x6269;&#x5C55;&#x7C7B;&#x96C6;&#x5408;</td>
+</tr>
+</tbody></table>
+<p>&#x5176;&#x4E2D;&#xFF0C;cachedClasses&#x5E76;&#x4E0D;&#x5305;&#x62EC;cachedAdaptiveClass&#x548C;cachedWrapperClasses&#x3002;&#x5B9E;&#x9645;&#x4E0A;&#xFF0C;cachedClasses + cachedAdaptiveClasses + cachedWrapperClasses&#x624D;&#x662F;&#x6240;&#x6709;&#x7684;&#x6269;&#x5C55;&#x7C7B;&#x5B9E;&#x73B0;&#x3002;&#x5728;EXTENSION_INSTANCES&#x4E2D;&#x5B58;&#x653E;&#x7684;&#x662F;&#x6269;&#x5C55;&#x7C7B;&#x76F4;&#x63A5;&#x751F;&#x6210;&#x7684;&#x5BF9;&#x8C61;&#xFF0C;&#x6CA1;&#x6709;&#x7ECF;&#x8FC7;&#x540E;&#x7EED;&#x7684;&#x4F9D;&#x8D56;&#x6CE8;&#x5165;&#x3001;&#x8FDB;&#x884C;&#x7C7B;&#x5305;&#x88C5;&#x7B49;&#x540E;&#x7EED;&#x5904;&#x7406;&#x3002;</p>
+<p>&#x4E0B;&#x9762;&#xFF0C;&#x6765;&#x770B;&#x4E00;&#x4E0B;ExtensionLoader&#x4E2D;&#x91CD;&#x8981;&#x7684;&#x4E09;&#x4E2A;&#x65B9;&#x6CD5;&#xFF0C;&#x5206;&#x522B;&#x662F;getExtension&#x65B9;&#x6CD5;&#x3001;getAdaptiveExtension&#x65B9;&#x6CD5;&#x548C;getActivaeExtension&#x65B9;&#x6CD5;&#xFF0C;&#x5206;&#x522B;&#x7528;&#x4E8E;&#x83B7;&#x53D6;&#x666E;&#x901A;&#x6269;&#x5C55;&#x7C7B;&#xFF0C;&#x83B7;&#x53D6;&#x81EA;&#x9002;&#x5E94;&#x6269;&#x5C55;&#x7C7B;&#x548C;&#x83B7;&#x53D6;&#x6FC0;&#x6D3B;&#x6269;&#x5C55;&#x6027;&#x3002;</p>
+<h3 id="getExtension"><a href="#getExtension" class="headerlink" title="getExtension"></a>getExtension</h3><p>getExtension&#x65B9;&#x6CD5;&#x7684;&#x6838;&#x5FC3;&#x5B9E;&#x73B0;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> T <span class="title">getExtension</span><span class="params">(String name)</span> </span>{</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">final</span> Holder&lt;Object&gt; holder = getOrCreateHolder(name);</span><br><span class="line">    Object instance = holder.get();</span><br><span class="line">    <span class="keyword">if</span> (instance == <span class="keyword">null</span>) {</span><br><span class="line">        <span class="keyword">synchronized</span>(holder) {</span><br><span class="line">            instance = holder.get();</span><br><span class="line">            <span class="keyword">if</span> (instance == <span class="keyword">null</span>) {</span><br><span class="line">                instance = createExtension(name);</span><br><span class="line">                holder.set(instance);</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> (T) instance;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x9996;&#x5148;&#x8C03;&#x7528;getOrCreateHolder&#x65B9;&#x6CD5;&#xFF0C;&#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x4E3A;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> Holder&lt;Object&gt; <span class="title">getOrCreateHolder</span><span class="params">(String name)</span> </span>{</span><br><span class="line">    Holder&lt;Object&gt; holder = cachedInstances.get(name);</span><br><span class="line">    <span class="keyword">if</span> (holder == <span class="keyword">null</span>) {</span><br><span class="line">        cachedInstances.putIfAbsent(name, <span class="keyword">new</span> Holder&lt;&gt;());</span><br><span class="line">        holder = cachedInstances.get(name);</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> holder;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>cachedInstances&#x4E3A;&#x6269;&#x5C55;&#x540D;&#x79F0;&#x548C;&#x6269;&#x5C55;&#x7C7B;&#x5B9E;&#x4F8B;&#x4E4B;&#x95F4;&#x7684;&#x7F13;&#x5B58;&#x3002;&#x5F53;&#x7ED9;&#x5B9A;&#x540D;&#x79F0;&#x7684;&#x6269;&#x5C55;&#x7C7B;&#x5B9E;&#x73B0;&#x7F13;&#x5B58;&#x6CA1;&#x6709;&#x547D;&#x4E2D;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x5C06;&#x8C03;&#x7528;createExtension&#x6765;&#x751F;&#x6210;&#x5B9E;&#x4F8B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> T <span class="title">createExtension</span><span class="params">(String name)</span> </span>{</span><br><span class="line">    Class&lt;?&gt; clazz = getExtensionClasses().get(name);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        T instance= (T) EXTENSION_INSTANCES.get(clazz);</span><br><span class="line">        <span class="keyword">if</span> (intance == <span class="keyword">null</span>) {</span><br><span class="line">            EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.newInstance());</span><br><span class="line">            instance = (T) EXTENSION_INSTANCES.get(clazz);</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>getExtensionClasses&#x5177;&#x4F53;&#x5B9E;&#x73B0;&#x5982;&#x4E0B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Map&lt;String, Class&lt;?&gt;&gt; getExtensionClasses() {</span><br><span class="line">    Map&lt;String, Class&lt;?&gt;&gt; classes = cachedClass.get();</span><br><span class="line">    <span class="keyword">if</span> (classes == <span class="keyword">null</span>) {</span><br><span class="line">		<span class="keyword">synchronized</span> (cachedClasses) {</span><br><span class="line">            classes = cachedClasses.get();</span><br><span class="line">            <span class="keyword">if</span> (classes == <span class="keyword">null</span>) {</span><br><span class="line">                classes = loadExtensionClasses();</span><br><span class="line">                cachedClasses.set(classes);</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> classes;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>cachedClass&#x4E3A;&#x6269;&#x5C55;&#x540D;&#x79F0;&#x548C;&#x6269;&#x5C55;&#x7C7B;&#x7C7B;&#x578B;&#x4E4B;&#x95F4;&#x6620;&#x5C04;&#x5173;&#x7CFB;&#x7684;&#x7F13;&#x5B58;&#x3002;&#x5728;&#x7F13;&#x5B58;&#x6CA1;&#x6709;&#x547D;&#x4E2D;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x9700;&#x8981;&#x6267;&#x884C;loadExtensionClasses&#x903B;&#x8F91;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Map&lt;String, Class&lt;?&gt;&gt; loadExtensionClasses() {</span><br><span class="line">    Map&lt;String, Class&lt;?&gt;&gt; extensionClasses = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">    loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY,type.getName());</span><br><span class="line">    <span class="keyword">return</span> extensionClasses;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x4E0A;&#x9762;&#x6211;&#x4EEC;&#x5DF2;&#x7ECF;&#x8BF4;&#x8FC7;&#x4E86;dubbo SPI&#x7684;&#x5177;&#x4F53;&#x914D;&#x7F6E;&#x65B9;&#x5F0F;&#xFF0C;&#x5728;loadExtensionClasses&#x65B9;&#x6CD5;&#x4E2D;&#xFF0C;&#x5C31;&#x662F;&#x4ECE;&#x5BF9;&#x5E94;&#x7684;&#x76EE;&#x5F55;&#x4E0B;&#x9762;&#xFF0C;&#x52A0;&#x8F7D;&#x6307;&#x5B9A;&#x7684;&#x6587;&#x4EF6;&#x3002;&#x5176;&#x4E2D;&#xFF0C;type.getName()&#x8FD4;&#x56DE;&#x7684;&#x5373;&#x662F;&#x5BF9;&#x5E94;&#x7684;&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x7684;&#x540D;&#x79F0;&#x3002;</p>
+<p>&#x5728;loadDirecory&#x65B9;&#x6CD5;&#x4E2D;&#xFF0C;&#x6838;&#x5FC3;&#x7684;&#x903B;&#x8F91;&#x662F;&#xFF0C;&#x83B7;&#x53D6;&#x5230;&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x7684;&#x5B8C;&#x6574;&#x8DEF;&#x5F84;&#x540E;&#xFF0C;&#x6267;&#x884C;loadResource&#x64CD;&#x4F5C;&#x3002;&#x800C;&#x5728;loadResource&#x4E2D;&#xFF0C;&#x5219;&#x662F;&#x8BFB;&#x53D6;&#x6587;&#x4EF6;&#x7684;&#x5185;&#x5BB9;&#xFF0C;&#x4E00;&#x884C;&#x884C;&#x7684;&#x8FDB;&#x884C;&#x89E3;&#x6790;&#xFF0C;&#x6839;&#x636E;&#x4E0A;&#x9762;&#x8BF4;&#x8FC7;&#x7684;&#x914D;&#x7F6E;&#x89C4;&#x5219;&#xFF0C;&#x83B7;&#x53D6;&#x5230;&#x5BF9;&#x5E94;&#x7684;&#x6269;&#x5C55;&#x540D;&#x79F0;&#x548C;&#x6269;&#x5C55;&#x7C7B;&#x7684;&#x5B8C;&#x6574;&#x8DEF;&#x5F84;&#x3002;&#x7136;&#x540E;&#x6267;&#x884C;loadClass&#x64CD;&#x4F5C;&#x3002;loadClass&#x7684;&#x903B;&#x8F91;&#x6BD4;&#x8F83;&#x91CD;&#x8981;&#xFF0C;&#x4E0B;&#x9762;&#x6765;&#x91CD;&#x70B9;&#x770B;&#x4E00;&#x4E0B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadClass</span><span class="params">(Map&lt;String, Class&lt;?&gt;&gt; extensionClasses, java.net.URL resourceURL, class&lt;?&gt; clazz, String name)</span> <span class="keyword">throws</span> NoSuchMethodException </span>{</span><br><span class="line">    <span class="keyword">if</span> (clazz.isAnnotationPresent(Adaptive.class)) {</span><br><span class="line">        cacheAdaptiveClass(clazz);</span><br><span class="line">    } <span class="keyword">else</span> <span class="keyword">if</span> (isWrapperClass(clazz)) {</span><br><span class="line">        cacheWrapperClass(clazz);</span><br><span class="line">    } <span class="keyword">else</span> {</span><br><span class="line">        clazz.getConstructor();</span><br><span class="line">        </span><br><span class="line">        String[] names = NAME_SPEARATOR.split(name);</span><br><span class="line">        <span class="keyword">if</span> (ArrayUtils.isNotEmpty(names)) {</span><br><span class="line">            cacheActivateClass(clazz, names[<span class="number">0</span>]);</span><br><span class="line">            <span class="keyword">for</span> (String n : names) {</span><br><span class="line">                cachedName(clazz, n);</span><br><span class="line">                saveInExtensionClass(extensionClasses, clazz, n);</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x5728;&#x4E0A;&#x9762;&#x7684;&#x903B;&#x8F91;&#x4E2D;&#xFF0C;&#x5982;&#x679C;clazz&#x4E0A;&#x6709;@Adaptive&#x6CE8;&#x89E3;&#xFF0C;&#x5219;&#x5C06;&#x6B64;&#x7C7B;&#x7F13;&#x5B58;&#x8D77;&#x6765;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">cacheAdaptiveClass</span><span class="params">(Class&lt;?&gt; clazz)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (cachedAdaptiveClass == <span class="keyword">null</span>) {</span><br><span class="line">        cachedAdaptiveClass = clazz;</span><br><span class="line">    } <span class="keyword">else</span> <span class="keyword">if</span> (!cachedAdaptiveClass.equals(clazz)) {</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">&quot;More than 1 adaptive class found:&quot;</span> + cachedAdaptiveClass.getName() + <span class="string">&quot;, &quot;</span> + clazz.getName()); </span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x53EF;&#x4EE5;&#x53D1;&#x73B0;&#xFF0C;&#x5BF9;&#x4E8E;&#x540C;&#x4E00;&#x79CD;&#x7C7B;&#x578B;&#x7684;&#x6269;&#x5C55;&#x6765;&#x8BF4;&#xFF0C;&#x53EA;&#x80FD;&#x6709;&#x4E00;&#x4E2A;&#x6269;&#x5C55;&#x7C7B;&#x4E0A;&#x6DFB;&#x52A0;@Adaptive&#x6CE8;&#x89E3;&#xFF0C;&#x5426;&#x5219;&#x5C06;&#x629B;&#x51FA;&#x5F02;&#x5E38;&#x3002;</p>
+<p>&#x5728;&#x5224;&#x65AD;clazz&#x4E3A;&#x5305;&#x88C5;&#x7C7B;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x5373;clazz&#x5B58;&#x5728;&#x7740;&#x4E00;&#x4E2A;&#x6784;&#x9020;&#x51FD;&#x6570;&#xFF0C;&#x5176;&#x53C2;&#x6570;&#x4E3A;&#x4E0E;clazz&#x540C;&#x7C7B;&#x578B;&#x7684;&#x6269;&#x5C55;&#x7C7B;&#x3002;&#x4F8B;&#x5982;&#x4E0B;&#x9762;&#x7684;&#x7C7B;&#xFF1A;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProtocolFilterWrapper</span> <span class="keyword">implements</span> <span class="title">Protocol</span> </span>{</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ProtocolFilterWrapper</span><span class="params">(Protocol protocol)</span> </span>{</span><br><span class="line">        <span class="keyword">if</span> (protocol == <span class="keyword">null</span>) {</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">&quot;protocol == null&quot;</span>);</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">this</span>.protocol = protocol;</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x5728;&#x8FD9;&#x79CD;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x5C06;&#x7F13;&#x5B58;&#x6B64;&#x5305;&#x88C5;&#x7C7B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">cacheWrapperClass</span><span class="params">(Class&lt;?&gt; clazz)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (cachedWrapperClasses == <span class="keyword">null</span>) {</span><br><span class="line">		cachedWrapperClass = <span class="keyword">new</span> ConcurrentHashSet&lt;&gt;();</span><br><span class="line">    }</span><br><span class="line">    cachedWrapperClasses.add(clazz);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x9664;&#x4E86;&#x4EE5;&#x4E0A;&#x7684;&#x4E24;&#x79CD;&#x60C5;&#x51B5;&#xFF0C;&#x4E0D;&#x662F;&#x81EA;&#x9002;&#x5E94;&#x6269;&#x5C55;&#x7C7B;&#xFF0C;&#x4E5F;&#x4E0D;&#x662F;&#x5305;&#x88C5;&#x6269;&#x5C55;&#x7C7B;&#xFF0C;&#x5269;&#x4F59;&#x7684;&#x5C31;&#x662F;&#x666E;&#x901A;&#x7684;&#x6269;&#x5C55;&#x7C7B;&#x3002;&#x66F4;&#x65B0;cachedNames&#x548C;cachedClasses&#x7F13;&#x5B58;&#x3002;&#x5728;&#x66F4;&#x65B0;cachedClasses&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x5B58;&#x5728;&#x7740;&#x91CD;&#x590D;&#x5224;&#x65AD;&#x673A;&#x5236;&#x3002;&#x5982;&#x679C;&#x53D1;&#x660E;&#x5728;&#x7F13;&#x5B58;&#x4E2D;&#x5DF2;&#x7ECF;&#x5B58;&#x5728;&#x7740;&#x6B64;&#x540D;&#x79F0;&#xFF0C;&#x4F46;&#x662F;&#x7C7B;&#x578B;&#x4E0D;&#x4E00;&#x81F4;&#x7684;&#x5BF9;&#x5E94;&#x5173;&#x7CFB;&#x5B58;&#x5728;&#xFF0C;&#x5219;&#x629B;&#x51FA;&#x5F02;&#x5E38;&#x3002;</p>
+<p>&#x9664;&#x6B64;&#x4E4B;&#x5916;&#xFF0C;&#x4E0A;&#x9762;&#x7684;cacheActivateClass&#x65B9;&#x6CD5;&#x5219;&#x662F;&#x66F4;&#x65B0;&#x4E86;&#x81EA;&#x52A8;&#x6FC0;&#x6D3B;&#x6269;&#x5C55;&#x7C7B;&#x7684;&#x7F13;&#x5B58;cachedActivates&#x3002;</p>
+<p> getExtensionClasses&#x5206;&#x6790;&#x5B8C;&#x6210;&#x4E86;&#x4E4B;&#x540E;&#xFF0C;&#x7EE7;&#x7EED;&#x6765;&#x770B;createExtension&#x7684;&#x540E;&#x534A;&#x90E8;&#x5206;&#x903B;&#x8F91;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">injectExtension(instance);</span><br><span class="line">Set&lt;Class&lt;?&gt;&gt; wrapperClasses = cachedWrapperClasses;</span><br><span class="line"><span class="keyword">if</span> (CollectionUtils.isNotEmpty(wrapperClasses)) {</span><br><span class="line">    <span class="keyword">for</span> (Class&lt;?&gt; wrapperClass : wrapperClasses) {</span><br><span class="line">        instance = injectExtension((T) wrapperClass.getConstruct(type).newInstance(instance));</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line"><span class="keyword">return</span> instance;</span><br></pre></td></tr></table></figure>
+
+<p>&#x5148;&#x6765;&#x770B;injectExtension&#xFF0C;&#x8FD9;&#x4E2A;&#x65B9;&#x6CD5;&#x7684;&#x4F5C;&#x7528;&#x5373;&#x662F;&#x5B8C;&#x6210;IoC&#xFF0C;&#x5C06;&#x6269;&#x5C55;&#x7C7B;&#x4E2D;&#x7684;&#x4F9D;&#x8D56;&#x81EA;&#x52A8;&#x6CE8;&#x5165;&#x8FDB;&#x6765;&#x3002;&#x5F53;&#x7136;&#x9700;&#x8981;&#x6EE1;&#x8DB3;&#x4E00;&#x5B9A;&#x7684;&#x6761;&#x4EF6;&#xFF1A;</p>
+<ol>
+<li>&#x65B9;&#x6CD5;&#x540D;&#x79F0;&#x5FC5;&#x987B;&#x4EE5;set&#x5B57;&#x7B26;&#x5F00;&#x5934;&#x547D;&#x540D;&#x3002;</li>
+<li>&#x65B9;&#x6CD5;&#x5FC5;&#x987B;&#x4E3A;public&#x65B9;&#x6CD5;&#x3002;</li>
+<li>&#x65B9;&#x6CD5;&#x4E0A;&#x4E0D;&#x80FD;&#x6DFB;&#x52A0;@DisableInject&#x6CE8;&#x89E3;&#x3002;</li>
+<li>&#x65B9;&#x6CD5;&#x7684;&#x53C2;&#x6570;&#x53EA;&#x80FD;&#x6709;&#x4E00;&#x4E2A;&#xFF0C;&#x5E76;&#x4E14;&#x4E0D;&#x80FD;&#x4E3A;&#x57FA;&#x7840;&#x6570;&#x636E;&#x7C7B;&#x578B;&#x3002;</li>
+</ol>
+<p>&#x5176;&#x5B9E;&#x73B0;&#x903B;&#x8F91;&#x4E3A;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (Method method : instance.getClass().getMethods()) {</span><br><span class="line">    <span class="keyword">if</span> (!isSetter(method)) {</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">if</span> (method.getAnnotation(DisableInject.class) != <span class="keyword">null</span>) {</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">    }</span><br><span class="line">    Class&lt;?&gt; pt = method.getParameterTypes()[<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">if</span> (ReflectUtils.isPrimitives(pt)) {</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        String property = getSetterProperty(method);</span><br><span class="line">        Object object = objectFactory.getExtension(pt, property);</span><br><span class="line">        <span class="keyword">if</span> (object != <span class="keyword">null</span>) {</span><br><span class="line">            method.invoke(instance, object);</span><br><span class="line">        }</span><br><span class="line">    } <span class="keyword">catch</span> (Exception e) {</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x770B;&#x5B8C;&#x4E86;IoC&#x5B9E;&#x73B0;&#x4E4B;&#x540E;&#xFF0C;&#x518D;&#x770B;&#x4E00;&#x4E0B;AoP&#x7684;&#x5B9E;&#x73B0;&#x3002;&#x6240;&#x6709;&#x7684;&#x5305;&#x88C5;&#x7C7B;&#x90FD;&#x5DF2;&#x7ECF;&#x5B58;&#x50A8;&#x5728;cachedWrapperClasses&#x53D8;&#x91CF;&#x4E2D;&#xFF0C;&#x8FD9;&#x91CC;&#x53EA;&#x9700;&#x8981;&#x4E0D;&#x65AD;&#x7684;&#x751F;&#x6210;&#x65E7;&#x5B9E;&#x4F8B;&#x653E;&#x5165;&#x5305;&#x88C5;&#x7C7B;&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E2D;&#x751F;&#x6210;&#x65B0;&#x5B9E;&#x4F8B;&#x5373;&#x53EF;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (Class&lt;?&gt; wrapper : wrapperClasses) {</span><br><span class="line">    instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x81F3;&#x6B64;&#xFF0C;getExtension&#x7684;&#x5B8C;&#x6574;&#x6D41;&#x7A0B;&#x5206;&#x6790;&#x5B8C;&#x6210;&#x3002;&#x603B;&#x7ED3;&#x8D77;&#x6765;&#x6574;&#x4E2A;&#x7684;&#x6D41;&#x7A0B;&#x6982;&#x62EC;&#x5982;&#x4E0B;&#xFF1A;</p>
+<ol>
+<li>&#x9996;&#x5148;&#x53BB;cachedInstances&#x4E2D;&#x67E5;&#x627E;&#xFF0C;&#x67E5;&#x627E;&#x5230;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;&#x3002;</li>
+<li>&#x5728;&#x6B65;&#x9AA4;1&#x6CA1;&#x6709;&#x627E;&#x5230;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x53BB;&#x6269;&#x5C55;&#x7C7B;&#x7F13;&#x5B58;&#x4E2D;&#x67E5;&#x627E;&#x6269;&#x5C55;&#x7C7B;&#x5BF9;&#x8C61;&#x3002;</li>
+<li>&#x6269;&#x5C55;&#x7C7B;&#x7F13;&#x5B58;&#x6CA1;&#x6709;&#x52A0;&#x8F7D;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x9996;&#x5148;&#x53BB;&#x52A0;&#x8F7D;&#x6269;&#x5C55;&#x7C7B;&#x7F13;&#x5B58;&#x3002;</li>
+<li>&#x5728;&#x6269;&#x5C55;&#x7C7B;&#x7F13;&#x5B58;&#x52A0;&#x8F7D;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x8FD4;&#x56DE;&#x5BF9;&#x5E94;&#x7684;&#x6269;&#x5C55;&#x7C7B;&#x3002;</li>
+<li>&#x5728;&#x53D6;&#x5F97;&#x5BF9;&#x5E94;&#x6269;&#x5C55;&#x7C7B;&#x7684;&#x6761;&#x4EF6;&#x4E0B;&#xFF0C;&#x53BB;&#x6269;&#x5C55;&#x7C7B;&#x548C;&#x6269;&#x5C55;&#x7C7B;&#x5B9E;&#x4F8B;&#x6620;&#x5C04;&#x5173;&#x7CFB;&#x4E2D;&#x67E5;&#x627E;&#x5BF9;&#x5E94;&#x6269;&#x5C55;&#x7C7B;&#x7684;&#x5B9E;&#x4F8B;&#x3002;&#x5B9E;&#x4F8B;&#x4E0D;&#x5B58;&#x5728;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x5219;&#x76F4;&#x63A5;&#x8FDB;&#x884C;&#x521B;&#x5EFA;&#x3002;</li>
+<li>&#x53D6;&#x5F97;&#x5BF9;&#x5E94;&#x7684;&#x5B9E;&#x4F8B;&#x540E;&#xFF0C;&#x8FDB;&#x884C;&#x4F9D;&#x8D56;&#x6CE8;&#x5165;&#x3001;&#x5305;&#x88C5;&#x5904;&#x7406;&#xFF0C;&#x8FD4;&#x56DE;&#x7ED3;&#x679C;&#x3002;</li>
+</ol>
+<h3 id="getAdaptiveExtension"><a href="#getAdaptiveExtension" class="headerlink" title="getAdaptiveExtension"></a>getAdaptiveExtension</h3><p>&#x4E0B;&#x9762;&#x6765;&#x770B;&#x4E00;&#x4E0B;getAdaptiveExtension&#x3002;</p>
+<p>&#x770B;&#x4E00;&#x4E0B;getAdaptiveExtension&#x7684;&#x64CD;&#x4F5C;&#x3002;&#x5176;&#x903B;&#x8F91;&#x5165;&#x53E3;&#x4E3A;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> T <span class="title">getAdaptiveExtension</span><span class="params">()</span> </span>{</span><br><span class="line">    Object instance = cachedAdaptiveInstance.get();</span><br><span class="line">    <span class="keyword">if</span> (instance == <span class="keyword">null</span>) {</span><br><span class="line">        <span class="keyword">synchronized</span> (cachedAdaptiveInstance) {</span><br><span class="line">            instance = cachedAdaptiveInstance.get();</span><br><span class="line">            <span class="keyword">if</span> (instance == <span class="keyword">null</span>) {</span><br><span class="line">                instance = createAdaptiveExtension();</span><br><span class="line">                cachedAdaptiveInstance.set(instance);</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> (T) instance;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x4E0A;&#x9762;&#x8BF4;&#x5230;&#x4E86;&#xFF0C;&#x5BF9;&#x4E8E;&#x540C;&#x4E00;&#x79CD;&#x6269;&#x5C55;&#x6765;&#x8BF4;&#xFF0C;&#x53EA;&#x80FD;&#x6709;&#x4E00;&#x4E2A;&#x6269;&#x5C55;&#x7C7B;&#x6DFB;&#x52A0;@Adaptive&#x6CE8;&#x89E3;&#x3002;&#x56E0;&#x6B64;&#xFF0C;&#x9996;&#x5148;&#x53BB;&#x7F13;&#x5B58;&#x4E2D;&#x67E5;&#x627E;&#xFF0C;&#x7F13;&#x5B58;&#x4E2D;&#x4E0D;&#x5B58;&#x5728;&#x7684;&#x8BDD;&#xFF0C;&#x5219;&#x6267;&#x884C;createAdaptiveExtension&#x65B9;&#x6CD5;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> T <span class="title">createAdaptiveExtension</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="keyword">return</span> injectExtension((T) getAdaptiveExtensionClass().newInstance());</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>injectExtension&#x65B9;&#x6CD5;&#x7684;&#x903B;&#x8F91;&#x4E0A;&#x9762;&#x5DF2;&#x7ECF;&#x5206;&#x6790;&#x8FC7;&#x4E86;&#xFF0C;&#x662F;&#x6267;&#x884C;&#x4F9D;&#x8D56;&#x7684;&#x6CE8;&#x5165;&#x8FC7;&#x7A0B;&#x3002;&#x73B0;&#x5728;&#x91CD;&#x70B9;&#x770B;&#x4E00;&#x4E0B;getAdaptiveExtensionClass&#x7684;&#x903B;&#x8F91;&#x3002;&#x5728;getAdaptiveExtensionClass&#x4E2D;&#x4F1A;&#x8C03;&#x7528;createAdaptiveExtensionClasses&#x65B9;&#x6CD5;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Class&lt;?&gt; createAdaptiveExtensionClass() {</span><br><span class="line">    String code = <span class="keyword">new</span> AdaptiveClassCodeGenerator(type, cachedDefaultName).generate();</span><br><span class="line">        ClassLoader classLoader = findClassLoader();</span><br><span class="line">        org.apache.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();</span><br><span class="line">        <span class="keyword">return</span> compiler.compile(code, classLoader);</span><br><span class="line">        </span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x4E0A;&#x9762;&#x7684;&#x6838;&#x5FC3;&#x903B;&#x8F91;&#xFF0C;&#x5728;&#x4E8E;&#x4EE3;&#x7801;&#x7684;&#x81EA;&#x52A8;&#x751F;&#x6210;&#x5904;&#x7406;&#x3002;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">generate</span><span class="params">()</span> </span>{</span><br><span class="line">        StringBuilder code = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">        code.append(generatePackageInfo());</span><br><span class="line">        code.append(generateImports());</span><br><span class="line">        code.append(generateClassDeclaration());</span><br><span class="line"></span><br><span class="line">        Method[] methods = type.getMethods();</span><br><span class="line">        <span class="keyword">for</span> (Method method : methods) {</span><br><span class="line">            code.append(generateMethod(method));</span><br><span class="line">        }</span><br><span class="line">        code.append(<span class="string">&quot;}&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (logger.isDebugEnabled()) {</span><br><span class="line">            logger.debug(code.toString());</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">return</span> code.toString();</span><br><span class="line">    }</span><br></pre></td></tr></table></figure>
+
+<p>&#x4EE3;&#x7801;&#x7684;&#x81EA;&#x52A8;&#x751F;&#x6210;&#x5904;&#x7406;&#x7684;&#x5177;&#x4F53;&#x903B;&#x8F91;&#x4E0D;&#x518D;&#x8FDB;&#x884C;&#x5206;&#x6790;&#xFF0C;&#x6982;&#x62EC;&#x8D77;&#x6765;&#xFF0C;&#x4E0A;&#x9762;&#x5904;&#x7406;&#x7684;&#x4E8B;&#x60C5;&#x4E3B;&#x8981;&#x6709;&#xFF1A;</p>
+<ol>
+<li><p>&#x751F;&#x6210;&#x4E86;&#x5305;&#x540D;&#x3002;&#x5305;&#x540D;&#x548C;&#x4F20;&#x5165;&#x7684;&#x6269;&#x5C55;&#x7C7B;&#x7C7B;&#x578B;&#x7684;&#x5305;&#x540D;&#x4E00;&#x81F4;&#x3002;</p>
+</li>
+<li><p>import&#x4E86;&#x4E00;&#x6761;&#x5F15;&#x7528;&#xFF0C;&#x4E3A;ExtensionLoader&#x3002;&#x5176;&#x4ED6;&#x7684;&#x7C7B;&#x5728;&#x5F15;&#x7528;&#x7684;&#x65F6;&#x5019;&#x90FD;&#x4F7F;&#x7528;&#x5168;&#x8DEF;&#x5F84;&#x3002;</p>
+</li>
+<li><p>&#x751F;&#x6210;class&#x540D;&#x79F0;&#xFF0C;&#x540D;&#x79F0;&#x7684;&#x89C4;&#x5219;&#x4E3A;&#x6269;&#x5C55;&#x7C7B;&#x7C7B;&#x578B;&#x540D;&#x79F0;+&#x201D;$Adaptive&#x201D;&#x3002;</p>
+</li>
+<li><p>&#x5BF9;&#x4E8E;&#x6269;&#x5C55;&#x7C7B;&#x4E2D;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x751F;&#x6210;&#x5305;&#x88C5;&#x3002;&#x751F;&#x6210;&#x65B9;&#x6CD5;&#x5185;&#x5BB9;&#x7684;&#x903B;&#x8F91;&#x6BD4;&#x8F83;&#x590D;&#x6742;&#x4E00;&#x4E9B;&#xFF0C;&#x540E;&#x9762;&#x4F1A;&#x5728;&#x53E6;&#x4E00;&#x7BC7;&#x6587;&#x4E2D;&#x53E6;&#x884C;&#x5206;&#x6790;&#x3002;&#x5728;&#x6DFB;&#x52A0;@Adaptive&#x6CE8;&#x89E3;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x5982;&#x679C;&#x6CA1;&#x6709;&#x4F20;&#x9012;value&#x53C2;&#x6570;&#x7684;&#x8BDD;&#xFF0C;&#x5219;&#x9ED8;&#x8BA4;&#x5C06;&#x6269;&#x5C55;&#x7C7B;&#x7684;&#x540D;&#x79F0;&#x4F5C;&#x4E3A;&#x53C2;&#x6570;&#x8FDB;&#x884C;&#x5339;&#x914D;&#x3002;&#x53EF;&#x4EE5;&#x8FDB;&#x884C;&#x5339;&#x914D;&#x7684;&#x53C2;&#x6570;&#x6709;&#x591A;&#x4E2A;&#x3002;&#x7B2C;&#x4E00;&#x4E2A;&#x53C2;&#x6570;&#x5339;&#x914D;&#x6210;&#x529F;&#x7684;&#x8BDD;&#xFF0C;&#x5219;&#x4E0D;&#x518D;&#x8FDB;&#x884C;&#x7B2C;&#x4E8C;&#x4E2A;&#x53C2;&#x6570;&#x7684;&#x5339;&#x914D;&#x3002;&#x5982;&#x679C;&#x7B2C;&#x4E00;&#x4E2A;&#x53C2;&#x6570;&#x6CA1;&#x6709;&#x5339;&#x914D;&#x6210;&#x529F;&#xFF0C;&#x5219;&#x8FDB;&#x884C;&#x7B2C;&#x4E8C;&#x4E2A;&#x53C2;&#x6570;&#x7684;&#x5339;&#x914D;&#xFF0C;&#x76F4;&#x5230;&#x5339;&#x914D;@API&#x6CE8;&#x89E3;&#x7684;&#x53C2;&#x6570;&#x3002;&#x5982;&#x4E0B;&#x9762;&#x7684;&#x4EE3;&#x7801;&#x793A;&#x4F8B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SPI</span> </span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ConfiguratorFactory</span> </span>{</span><br><span class="line">    <span class="meta">@Adaptive</span>(<span class="string">&quot;protocol&quot;</span>)</span><br><span class="line"> 	<span class="function">Configurator <span class="title">getConfigurator</span><span class="params">(URL url)</span></span>;   </span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x5728;&#x4E0A;&#x8FF0;&#x7684;&#x4EE3;&#x7801;&#x4E2D;&#xFF0C;&#x5728;&#x8FDB;&#x884C;ConfiguratorFactory&#x751F;&#x6210;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x4F1A;&#x6839;&#x636E;url&#x4E2D;&#x662F;&#x5426;&#x5305;&#x542B;protocol&#x53C2;&#x6570;&#x6765;&#x8FDB;&#x884C;&#x51B3;&#x5B9A;&#x3002;&#x5F53;url&#x4E2D;&#x5305;&#x542B;protocol&#x53C2;&#x6570;&#x5E76;&#x4E14;&#x53C2;&#x6570;&#x4E0D;&#x4E3A;&#x7A7A;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x6B64;&#x7C7B;&#x624D;&#x4F1A;&#x8FDB;&#x884C;&#x751F;&#x6210;&#x3002;</p>
+</li>
+</ol>
+<p>&#x81F3;&#x6B64;&#xFF0C;getAdaptiveExtension&#x65B9;&#x6CD5;&#x7684;&#x903B;&#x8F91;&#x5206;&#x6790;&#x5B8C;&#x6210;&#x3002;</p>
+<h3 id="getActivateExtension"><a href="#getActivateExtension" class="headerlink" title="getActivateExtension"></a>getActivateExtension</h3><p>getActivateExtension&#x65B9;&#x6CD5;&#x7684;&#x4E09;&#x4E2A;&#x53C2;&#x6570;&#x5206;&#x522B;&#x4E3A;URL&#x3001;URL&#x6307;&#x5B9A;&#x7684;key&#x6240;&#x5BF9;&#x5E94;&#x7684;&#x503C;&#x548C;group&#x4FE1;&#x606F;&#x3002;key&#x5BF9;&#x5E94;&#x503C;&#x6709;&#x591A;&#x4E2A;&#x7684;&#x8BDD;&#x5219;&#x4F7F;&#x7528;&#x9017;&#x53F7;&#x8FDB;&#x884C;&#x5206;&#x9694;&#x3002;&#x4F8B;&#x5982;URL&#x4E2D;&#x4E3A;&#x201D;<a href="https://localhost:20880/path?ext=name1,name2&quot;&#xFF0C;&#x5219;&#x5F53;key&#x4E3A;&quot;ext&quot;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x5219;key&#x6240;&#x5BF9;&#x5E94;&#x7684;&#x503C;&#x4E3A;&quot;name1,name2&quot;&#x3002;" target="_blank" rel="noopener">https://localhost:20880/path?ext=name1,name2&quot;&#xFF0C;&#x5219;&#x5F53;key&#x4E3A;&quot;ext&quot;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x5219;key&#x6240;&#x5BF9;&#x5E94;&#x7684;&#x503C;&#x4E3A;&quot;name1,name2&quot;&#x3002;</a></p>
+<p>getActivateExtension&#x5176;&#x5B9E;&#x73B0;&#x903B;&#x8F91;&#x76F8;&#x5BF9;&#x6765;&#x8BF4;&#x8F83;&#x4E3A;&#x7B80;&#x5355;&#x3002;&#x9700;&#x8981;&#x6CE8;&#x610F;&#x7684;&#x662F;&#xFF0C;&#x5982;&#x679C;key&#x5BF9;&#x5E94;&#x7684;&#x503C;&#x4E2D;&#x5305;&#x542B;&#x4E86;&#x201D;-default&#x201D;&#x7684;&#x8BDD;&#xFF0C;&#x8868;&#x793A;&#x6240;&#x6709;&#x9ED8;&#x8BA4;&#x7684;@Activate&#x7C7B;&#x90FD;&#x4E0D;&#x8FDB;&#x884C;&#x6FC0;&#x6D3B;&#xFF0C;&#x53EA;&#x6FC0;&#x6D3B;&#x6307;&#x5B9A;&#x7684;&#x3002;&#x5BF9;&#x4E8E;key&#x5BF9;&#x5E94;&#x7684;&#x503C;&#x5305;&#x542B;&#x4E86;&#x201D;-key&#x201D;&#x5F62;&#x5F0F;&#x7684;&#x8BDD;&#xFF0C;&#x5219;&#x8868;&#x793A;name&#x4E3A;key&#x7684;@Activate&#x7C7B;&#x4E5F;&#x4E0D;&#x8FDB;&#x884C;&#x6FC0;&#x6D3B;&#x3002;</p>
+<p>&#x5728;key&#x5BF9;&#x5E94;&#x7684;&#x503C;&#x4E2D;&#x6CA1;&#x6709;&#x201D;-default&#x201D;&#x4FE1;&#x606F;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x5148;&#x8C03;&#x7528;getExtensionClasses&#x8FDB;&#x884C;&#x7F13;&#x5B58;&#x7684;&#x52A0;&#x8F7D;&#xFF0C;&#x7136;&#x540E;&#x4ECE;&#x7F13;&#x5B58;@Activate&#x7C7B;&#x7684;&#x5BF9;&#x8C61;cachedActivates&#x4E2D;&#x83B7;&#x53D6;&#x6240;&#x6709;&#x7684;@Activate&#x7C7B;&#xFF0C;&#x83B7;&#x53D6;@Activate&#x6CE8;&#x89E3;&#x7684;group&#x548C;value&#x4FE1;&#x606F;&#xFF0C;&#x4F9D;&#x6B21;&#x8FDB;&#x884C;value&#x548C;group&#x7684;&#x5339;&#x914D;&#xFF0C;&#x5F97;&#x5230;&#x6240;&#x6709;&#x7B26;&#x5408;&#x6761;&#x4EF6;&#x7684;&#x6269;&#x5C55;&#x7C7B;&#x5B9E;&#x73B0;&#x3002;&#x6BD4;&#x5982;&#x4E0B;&#x9762;&#x7684;&#x793A;&#x4F8B;&#x4EE3;&#x7801;&#xFF0C;group&#x5219;&#x4E3A;&#x201D;consumer&#x201D;&#x548C;&#x201D;provider&#x201D;&#xFF0C;value&#x4E3A;&#x201D;cache&#x201D;&#x3002;&#x5728;&#x8FDB;&#x884C;getActivateExtension&#x8C03;&#x7528;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x5982;&#x679C;group&#x4FE1;&#x606F;&#x4E0D;&#x4E3A;&#x201D;consumer&#x201D;&#x6216;&#x662F;&#x201D;provider&#x201D;&#xFF0C;&#x6216;&#x662F;URL&#x4E2D;&#x4E0D;&#x5305;&#x542B;cache&#x53C2;&#x6570;&#x7684;&#x8BDD;&#xFF0C;&#x5219;&#x6B64;@Activate&#x7C7B;&#x5219;&#x4E0D;&#x4F1A;&#x8FDB;&#x884C;&#x6FC0;&#x6D3B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Activate</span>(group = {<span class="string">&quot;consumer&quot;</span>, <span class="string">&quot;provider&quot;</span>}, value=<span class="string">&quot;cache&quot;</span>) </span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CacheFilter</span> <span class="keyword">implements</span> <span class="title">Filter</span> </span>{</span><br><span class="line"></span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x7136;&#x540E;&#x901A;&#x8FC7;&#x8C03;&#x7528;ActivateComparator.COMPARATOR&#x4E2D;&#x5B9A;&#x4E49;&#x7684;&#x6392;&#x5E8F;&#x89C4;&#x5219;&#x8FDB;&#x884C;&#x6392;&#x5E8F;&#x3002;</p>
+<p>&#x8FDB;&#x884C;group&#x548C;value&#x5339;&#x914D;&#x7684;&#x6761;&#x4EF6;&#x5206;&#x522B;&#x662F;&#xFF1A;</p>
+<ul>
+<li>&#x5BF9;&#x4E8E;group&#x5339;&#x914D;&#xFF0C;&#x53EA;&#x8981;@Activate&#x6CE8;&#x89E3;&#x7684;group&#x914D;&#x7F6E;&#x4E2D;&#x5305;&#x542B;&#x4F20;&#x5165;&#x7684;group&#x4FE1;&#x606F;&#x5373;&#x53EF;&#x3002;</li>
+<li>&#x5BF9;&#x4E8E;value&#x5339;&#x914D;&#xFF0C;&#x53EA;&#x8981;URL&#x4E2D;&#x5305;&#x542B;&#x6B64;value&#x7684;&#x53C2;&#x6570;&#xFF0C;&#x5E76;&#x4E14;&#x53C2;&#x6570;&#x503C;&#x4E0D;&#x4E3A;&#x7A7A;&#x5373;&#x53EF;&#x3002;</li>
+</ul>
+<p>&#x4E0A;&#x9762;&#x5904;&#x7406;&#x7684;&#x903B;&#x8F91;&#x662F;&#x83B7;&#x53D6;default&#x7684;@Activate&#x7C7B;&#xFF0C;&#x63A5;&#x4E0B;&#x6765;&#x8FD8;&#x9700;&#x8981;&#x5904;&#x7406;&#x6307;&#x5B9A;&#x540D;&#x79F0;&#x7684;&#x6FC0;&#x6D3B;&#x6269;&#x5C55;&#x6027;&#x3002;&#x9700;&#x8981;&#x6CE8;&#x610F;&#x7684;&#x662F;&#xFF0C;&#x9700;&#x8981;&#x6839;&#x636E;&#x4F20;&#x5165;&#x7684;&#x53C2;&#x6570;&#x6765;&#x8FDB;&#x884C;&#x6269;&#x5C55;&#x7C7B;&#x7684;&#x6392;&#x5E8F;&#xFF0C;&#x6BD4;&#x5982;key&#x6240;&#x5BF9;&#x5E94;&#x7684;&#x503C;&#x4E3A;&#x201D;name1, default&#x201D;&#xFF0C;&#x5219;&#x5728;&#x6700;&#x540E;&#x7684;&#x7ED3;&#x679C;&#x5217;&#x8868;&#x4E2D;&#xFF0C;name1&#x5BF9;&#x5E94;&#x7684;&#x6269;&#x5C55;&#x7C7B;&#x5219;&#x5E94;&#x8BE5;&#x5728;&#x4E0A;&#x4E2A;&#x6B65;&#x9AA4;&#x4E2D;&#x83B7;&#x53D6;&#x7ED3;&#x679C;&#x7684;&#x524D;&#x9762;&#xFF1B;&#x5982;&#x679C;&#x4E3A;&#x201D;default, name1&#x201D;&#x5219;&#x9700;&#x8981;&#x5C06;name1&#x5BF9;&#x5E94;&#x7684;&#x6269;&#x5C55;&#x7C7B;&#x6DFB;&#x52A0;&#x5230;&#x7ED3;&#x679C;&#x7684;&#x6700;&#x540E;&#x5373;&#x53EF;&#x3002;</p>
+<p>getActivateExtension&#x7684;&#x903B;&#x8F91;&#x81F3;&#x6B64;&#x5206;&#x6790;&#x5B8C;&#x6210;&#xFF0C;&#x5B83;&#x7684;&#x903B;&#x8F91;&#x5F3A;&#x4F9D;&#x8D56;&#x4E8E;getExtension&#x903B;&#x8F91;&#x3002;</p>
+<h2 id="&#x603B;&#x7ED3;"><a href="#&#x603B;&#x7ED3;" class="headerlink" title="&#x603B;&#x7ED3;"></a>&#x603B;&#x7ED3;</h2><p>&#x7406;&#x89E3;dubbo&#x7684;SPI&#x673A;&#x5236;&#x662F;&#x540E;&#x7EED;&#x7EE7;&#x7EED;&#x7406;&#x89E3;dubbo&#x6E90;&#x7801;&#x7684;&#x57FA;&#x7840;&#xFF0C;dubbo&#x81EA;&#x8EAB;&#x7684;&#x7EC4;&#x4EF6;&#x5982;&#x8FC7;&#x6EE4;&#x5668;&#x3001;&#x8DEF;&#x7531;&#x3001;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x7B49;&#x673A;&#x5236;&#x4E5F;&#x90FD;&#x662F;&#x4F7F;&#x7528;SPI&#x6765;&#x5B9E;&#x73B0;&#x7684;&#x3002;&#x4EE5;&#x4E0A;&#x53EA;&#x662F;&#x5BF9;ExtensionLoader&#x7684;&#x5B9E;&#x73B0;&#x505A;&#x4E86;&#x7C97;&#x7565;&#x7684;&#x8DDF;&#x8E2A;&#x548C;&#x7406;&#x89E3;&#x3002;&#x4E07;&#x4E8B;&#x5F00;&#x5934;&#x96BE;&#xFF0C;&#x5BF9;&#x4E8E;ExtensionLoader&#x76F8;&#x5173;&#x7684;&#x5206;&#x6790;&#xFF0C;&#x540E;&#x9762;&#x8FD8;&#x8981;&#x7EE7;&#x7EED;&#x4E0B;&#x53BB;&#x3002;</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/dubbo/" rel="tag"># dubbo</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/21/registry/" rel="next" title="dubbo源码分析之注册中心二：Registry">
+                <i class="fa fa-chevron-left"></i> dubbo源码分析之注册中心二：Registry
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/10/27/AdaptiveClassCodeGenerator/" rel="prev" title="dubbo源码分析之AdaptiveClass代码自动生成机制">
+                dubbo源码分析之AdaptiveClass代码自动生成机制 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="feng.dianjun">
+          <p class="site-author-name" itemprop="name">feng.dianjun</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ExtensionLoader"><span class="nav-number">2.</span> <span class="nav-text">ExtensionLoader</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存变量"><span class="nav-number">2.1.</span> <span class="nav-text">缓存变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#getExtension"><span class="nav-number">2.2.</span> <span class="nav-text">getExtension</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#getAdaptiveExtension"><span class="nav-number">2.3.</span> <span class="nav-text">getAdaptiveExtension</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#getActivateExtension"><span class="nav-number">2.4.</span> <span class="nav-text">getActivateExtension</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng.dianjun</span>
+</div>
+
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="https://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Gemini
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

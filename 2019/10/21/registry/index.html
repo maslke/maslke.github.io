@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh/cn">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="dubbo,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="&amp;#x5F15;&amp;#x8A00;&amp;#x5173;&amp;#x4E8E;dubbo&amp;#x7684;&amp;#x6CE8;&amp;#x518C;&amp;#x4E2D;&amp;#x5FC3;&amp;#xFF0C;&amp;#x524D;&amp;#x6587;&amp;#x6211;&amp;#x4EEC;&amp;#x5DF2;&amp;#x7ECF;&amp;#x4ECE;&amp;#x5B9E;&amp;#x73B0;&amp;#x7684;&amp;#x89D2;&amp;#x5EA6;&amp;#x5206;&amp;#x6790;&amp;#x">
+<meta name="keywords" content="dubbo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="dubbo源码分析之注册中心二：Registry">
+<meta property="og:url" content="http://yoursite.com/2019/10/21/registry/index.html">
+<meta property="og:site_name" content="maslke&#39;s blog">
+<meta property="og:description" content="&amp;#x5F15;&amp;#x8A00;&amp;#x5173;&amp;#x4E8E;dubbo&amp;#x7684;&amp;#x6CE8;&amp;#x518C;&amp;#x4E2D;&amp;#x5FC3;&amp;#xFF0C;&amp;#x524D;&amp;#x6587;&amp;#x6211;&amp;#x4EEC;&amp;#x5DF2;&amp;#x7ECF;&amp;#x4ECE;&amp;#x5B9E;&amp;#x73B0;&amp;#x7684;&amp;#x89D2;&amp;#x5EA6;&amp;#x5206;&amp;#x6790;&amp;#x">
+<meta property="og:locale" content="zh/cn">
+<meta property="og:image" content="http://yoursite.com/2019/10/21/registry/registry.png">
+<meta property="og:updated_time" content="2019-10-21T14:59:25.355Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="dubbo源码分析之注册中心二：Registry">
+<meta name="twitter:description" content="&amp;#x5F15;&amp;#x8A00;&amp;#x5173;&amp;#x4E8E;dubbo&amp;#x7684;&amp;#x6CE8;&amp;#x518C;&amp;#x4E2D;&amp;#x5FC3;&amp;#xFF0C;&amp;#x524D;&amp;#x6587;&amp;#x6211;&amp;#x4EEC;&amp;#x5DF2;&amp;#x7ECF;&amp;#x4ECE;&amp;#x5B9E;&amp;#x73B0;&amp;#x7684;&amp;#x89D2;&amp;#x5EA6;&amp;#x5206;&amp;#x6790;&amp;#x">
+<meta name="twitter:image" content="http://yoursite.com/2019/10/21/registry/registry.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/10/21/registry/">
+
+
+
+
+
+  <title>dubbo源码分析之注册中心二：Registry | maslke's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh/cn">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">maslke's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/21/registry/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="feng.dianjun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="maslke's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">dubbo源码分析之注册中心二：Registry</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-21T22:26:24+08:00">
+                2019-10-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="&#x5F15;&#x8A00;"><a href="#&#x5F15;&#x8A00;" class="headerlink" title="&#x5F15;&#x8A00;"></a>&#x5F15;&#x8A00;</h2><p>&#x5173;&#x4E8E;dubbo&#x7684;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#xFF0C;&#x524D;&#x6587;&#x6211;&#x4EEC;&#x5DF2;&#x7ECF;&#x4ECE;&#x5B9E;&#x73B0;&#x7684;&#x89D2;&#x5EA6;&#x5206;&#x6790;&#x4E86;RegistryFactory&#xFF0C;&#x4ECA;&#x5929;&#x5C31;&#x6765;&#x5206;&#x6790;&#x4E00;&#x4E0B;RegistryFactory&#x4E2D;&#x6240;&#x521B;&#x5EFA;&#x7684;&#x5BF9;&#x8C61;&#x2014;&#x2014;Registry&#x3002;</p>
+<p>&#x5148;&#x6765;&#x770B;&#x4E00;&#x4E0B;&#x5728;dubbo&#x4E2D;&#xFF0C;Registry&#x5B8C;&#x6574;&#x7684;&#x7C7B;&#x5C42;&#x6B21;&#x5173;&#x7CFB;&#x56FE;&#x3002;</p>
+<p><img src="/2019/10/21/registry/registry.png" alt="registry"></p>
+<p>&#x5728;&#x4E0A;&#x56FE;&#x4E2D;&#xFF0C;&#x5FFD;&#x7565;&#x4E86;Registry&#x7EE7;&#x627F;&#x7684;&#x53E6;&#x4E00;&#x4E2A;&#x63A5;&#x53E3;Node&#x548C;&#x4E0E;ZookeeperRegistry&#x3001;RedisRegistry&#x7B49;&#x540C;&#x4E00;&#x5C42;&#x6B21;&#x7684;&#x5176;&#x4ED6;&#x7684;Registry&#x7684;&#x5B9E;&#x73B0;&#x7C7B;&#xFF0C;&#x5FFD;&#x7565;&#x7684;&#x7C7B;&#x4E0D;&#x5F71;&#x54CD;&#x4E0B;&#x6587;&#x7684;&#x5206;&#x6790;&#x548C;&#x5BF9;dubbo&#x4E2D;Registry&#x7684;&#x7406;&#x89E3;&#x3002;</p>
+<h2 id="Registry"><a href="#Registry" class="headerlink" title="Registry"></a>Registry</h2><p>&#x7531;&#x4E0A;&#x56FE;&#x4E2D;&#x53EF;&#x4EE5;&#x770B;&#x51FA;&#xFF0C;Registry&#x7EE7;&#x627F;&#x4E86;RegistryService&#x63A5;&#x53E3;&#x3002;&#x5728;RegistrySevice&#x63A5;&#x53E3;&#x4E2D;&#xFF0C;&#x58F0;&#x660E;&#x4E86;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x7684;&#x6838;&#x5FC3;&#x65B9;&#x6CD5;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">RegistryService</span> </span>{</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">register</span><span class="params">(URL url)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">unregister</span><span class="params">(URL url)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">subscribe</span><span class="params">(URL url, NotifyListener listener)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">unsubscribe</span><span class="params">(URL url, NotifyListener listener)</span></span>;</span><br><span class="line">    <span class="function">List&lt;URL&gt; <span class="title">lookup</span><span class="params">(URL url)</span></span>;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x524D;&#x6587;&#x4E2D;&#x5DF2;&#x7ECF;&#x5BF9;URL&#x7C7B;&#x505A;&#x4E86;&#x8BF4;&#x660E;&#xFF0C;&#x5B83;&#x662F;dubbo&#x4E2D;&#x5C01;&#x88C5;&#x7684;&#x7EDF;&#x4E00;&#x8D44;&#x6E90;&#x5B9A;&#x4F4D;&#x7B26;&#x3002;</p>
+<p>&#x4E0A;&#x8FF0;&#x7684;&#x51E0;&#x4E2A;&#x65B9;&#x6CD5;&#x4E2D;&#xFF0C;register&#x65B9;&#x6CD5;&#x548C;unregister&#x65B9;&#x6CD5;&#x7528;&#x4E8E;&#x5411;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x4E2D;&#x6CE8;&#x518C;&#x548C;&#x53CD;&#x6CE8;&#x518C;URL&#x3002;</p>
+<p>subscribe&#x548C;unsubscribe&#x5219;&#x63D0;&#x4F9B;&#x4E86;&#x76F8;&#x5173;&#x7684;&#x8BA2;&#x9605;&#x673A;&#x5236;&#x3002;&#x901A;&#x8FC7;&#x8C03;&#x7528;subscribe&#x65B9;&#x6CD5;&#x5728;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x4E2D;&#x8BA2;&#x9605;URL&#x7684;&#x53D8;&#x52A8;&#x60C5;&#x51B5;&#x3002;&#x5F53;&#x53D8;&#x52A8;&#x53D1;&#x751F;&#x7684;&#x65F6;&#x5019;&#xFF0C;listener&#x65B9;&#x6CD5;&#x5C06;&#x4F1A;&#x88AB;&#x6267;&#x884C;&#x3002;unsubscribe&#x65B9;&#x6CD5;&#x5219;&#x53D6;&#x6D88;&#x8FD9;&#x79CD;&#x8BA2;&#x9605;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">NotifyListener</span> </span>{</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">notify</span><span class="params">(List&lt;URL&gt; urls)</span></span>;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x9664;&#x4E86;&#x652F;&#x6301;&#x63A8;&#x9001;&#x6A21;&#x5F0F;&#x4E4B;&#x5916;&#xFF0C;dubbo&#x7684;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x8FD8;&#x652F;&#x6301;&#x4E3B;&#x52A8;&#x7684;&#x62C9;&#x53D6;&#x6A21;&#x5F0F;&#x3002;lookup&#x51FD;&#x6570;&#xFF0C;&#x5373;&#x662F;&#x5B9E;&#x73B0;&#x4E86;&#x62C9;&#x53D6;&#x6A21;&#x5F0F;&#xFF0C;&#x8C03;&#x7528;lookup&#x51FD;&#x6570;&#x6765;&#x83B7;&#x53D6;URL&#x4E0B;&#x7684;&#x670D;&#x52A1;&#x8D44;&#x6E90;&#x5217;&#x8868;&#x3002;</p>
+<a id="more"></a>
+
+<h2 id="AbstractRegistry"><a href="#AbstractRegistry" class="headerlink" title="AbstractRegistry"></a>AbstractRegistry</h2><p>AbstractRegistry&#x5B9E;&#x73B0;&#x4E86;RegistryService&#x63A5;&#x53E3;&#x4E2D;&#x5B9A;&#x4E49;&#x7684;&#x51FD;&#x6570;&#xFF0C;&#x4F46;&#x662F;AbstractRegistry&#x4E2D;&#x6240;&#x6709;&#x7684;register&#x3001;unregister&#x7B49;&#x64CD;&#x4F5C;&#x90FD;&#x662F;&#x7F13;&#x5B58;&#x5728;&#x5185;&#x5B58;&#x4E2D;&#xFF0C;&#x6CA1;&#x6709;&#x548C;&#x8FDC;&#x7A0B;&#x670D;&#x52A1;&#x7AEF;&#x8FDB;&#x884C;&#x4EA4;&#x4E92;&#x3002;&#x540C;&#x65F6;&#xFF0C;&#x63D0;&#x4F9B;&#x4E86;&#x7F13;&#x5B58;&#x673A;&#x5236;&#xFF0C;&#x53EF;&#x4EE5;&#x4ECE;&#x786C;&#x76D8;&#x6587;&#x4EF6;&#x4E2D;&#x8BFB;&#x53D6;&#x914D;&#x7F6E;&#x4FE1;&#x606F;&#xFF1B;&#x6216;&#x662F;&#x5B8C;&#x6210;&#x53CD;&#x5411;&#x64CD;&#x4F5C;&#xFF0C;&#x5C06;&#x5185;&#x5B58;&#x4E2D;&#x7684;&#x4FE1;&#x606F;&#x540C;&#x6B65;&#x5230;&#x78C1;&#x76D8;&#x6587;&#x4EF6;&#x4E2D;&#x3002;</p>
+<p>&#x5728;AbstractRegistry&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E2D;&#xFF0C;&#x6709;loadProperties&#x7684;&#x64CD;&#x4F5C;&#x3002;&#x5176;&#x5B9E;&#x73B0;&#x6838;&#x5FC3;&#x4EE3;&#x7801;&#x5982;&#x4E0B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadProperties</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (file != <span class="keyword">null</span> &amp;&amp; file.exists()) {</span><br><span class="line">        InputStream in = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            in = <span class="keyword">new</span> FileInputStream(file);</span><br><span class="line">            properties.load(in);</span><br><span class="line">        } <span class="keyword">catch</span> (Throwable e) {</span><br><span class="line">            logger.warn(<span class="string">&quot;Failed to load registry cache&quot;</span>);</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x4E0A;&#x8FF0;&#x7684;&#x64CD;&#x4F5C;&#x4E2D;&#xFF0C;&#x5982;&#x679C;&#x7F13;&#x5B58;&#x6587;&#x4EF6;&#x5B58;&#x5728;&#x7684;&#x8BDD;&#xFF0C;&#x5219;&#x5C06;&#x6587;&#x4EF6;&#x7684;&#x5185;&#x5BB9;&#x8BFB;&#x53D6;&#x5230;&#x4E00;&#x4E2A;Properties&#x7C7B;&#x578B;&#x7684;&#x53D8;&#x91CF;&#x4E2D;&#x3002;</p>
+<p>&#x5C06;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x7684;&#x4FE1;&#x606F;&#x4FDD;&#x5B58;&#x5230;&#x7F13;&#x5B58;&#x6587;&#x4EF6;&#x4E2D;&#x7684;&#x903B;&#x8F91;&#xFF0C;&#x662F;&#x5728;doSaveProperties&#x51FD;&#x6570;&#x4E2D;&#x3002;&#x6838;&#x5FC3;&#x5B9E;&#x73B0;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSaveProperties</span><span class="params">(<span class="keyword">long</span> version)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (version &lt; lastCacheChanged.get()) {</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    }</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        File lockfile = <span class="keyword">new</span> File(file.getAbsolutePath() + <span class="string">&quot;.lock&quot;</span>);</span><br><span class="line">        ...</span><br><span class="line">     </span><br><span class="line">    } <span class="keyword">catch</span> (Throwable e) {</span><br><span class="line">        savePropertiesRegistryTimes.incrementAndGet();</span><br><span class="line">        <span class="keyword">if</span> (savePropertiesRegistryTimes.get() &gt;= MAX_RETRY_TIMES_SAVE_PROPERTIES) {</span><br><span class="line">            savePropertiesRetryTimes.set(<span class="number">0</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">if</span> (version &lt; lastCacheChanged.get()) {</span><br><span class="line">            savePropertiesRegistryTimes.set(<span class="number">0</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line">            registryCacheExecutor.execute(<span class="keyword">new</span> SaveProperties(lastCacheChanges.incrementAndGet()));</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x7531;&#x4E8E;doSaveProperties&#x51FD;&#x6570;&#x6CA1;&#x6709;&#x52A0;&#x9501;&#xFF0C;&#x56E0;&#x6B64;&#x4E3A;&#x4E86;&#x5E76;&#x53D1;&#x4E0A;&#x7684;&#x5B89;&#x5168;&#x6027;&#xFF0C;&#x5728;&#x8FDB;&#x884C;&#x8C03;&#x7528;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x9996;&#x5148;&#x5224;&#x65AD;version&#x548C;lastCacheChanged&#x7684;&#x503C;&#xFF0C;&#x5982;&#x679C;&#x4E24;&#x4E2A;&#x503C;&#x4E0D;&#x4E00;&#x81F4;&#x7684;&#x8BDD;&#xFF0C;&#x5219;&#x8BF4;&#x660E;&#x5176;&#x4ED6;&#x7684;&#x7EBF;&#x7A0B;&#x5DF2;&#x7ECF;&#x6267;&#x884C;&#x8FC7;&#x4E86;&#x6B64;&#x903B;&#x8F91;&#xFF0C;&#x8FD9;&#x79CD;&#x60C5;&#x51B5;&#x4E0B;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;&#xFF0C;&#x7EC8;&#x6B62;&#x8C03;&#x7528;&#x3002;lastCacheChanged&#x662F;&#x4E00;&#x4E2A;&#x539F;&#x5B50;&#x7C7B;&#x578B;&#x53D8;&#x91CF;&#xFF0C;&#x591A;&#x7EBF;&#x7A0B;&#x8C03;&#x7528;&#x5B58;&#x5728;&#x7ADE;&#x6001;&#x6761;&#x4EF6;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x4E5F;&#x80FD;&#x4FDD;&#x8BC1;&#x5176;&#x503C;&#x7684;&#x6B63;&#x786E;&#x6027;&#x3002;</p>
+<p>&#x5982;&#x679C;&#x5411;&#x7F13;&#x5B58;&#x6587;&#x4EF6;&#x4E2D;&#x5199;&#x5165;&#x6570;&#x636E;&#x7684;&#x8FC7;&#x7A0B;&#x4E2D;&#x53D1;&#x751F;&#x4E86;&#x5F02;&#x5E38;&#xFF0C;&#x5219;&#x5728;&#x5F02;&#x5E38;&#x5904;&#x7406;&#x4EE3;&#x7801;&#x4E2D;&#x8BB0;&#x5F55;&#x5DF2;&#x7ECF;&#x91CD;&#x8BD5;&#x7684;&#x6B21;&#x6570;&#x3002;&#x5982;&#x679C;&#x91CD;&#x8BD5;&#x6B21;&#x6570;&#x5DF2;&#x7ECF;&#x8FBE;&#x5230;&#x4E86;&#x6700;&#x5927;&#x91CD;&#x8BD5;&#x6B21;&#x6570;&#xFF0C;&#x5219;&#x7EC8;&#x6B62;&#x4FDD;&#x5B58;&#x64CD;&#x4F5C;&#xFF0C;&#x540C;&#x65F6;&#x91CD;&#x7F6E;&#x5DF2;&#x91CD;&#x8BD5;&#x6B21;&#x6570;&#x3002;&#x5982;&#x679C;version&#x7684;&#x503C;&#x548C;lastCacheChanged&#x7684;&#x503C;&#x4E0D;&#x4E00;&#x81F4;&#xFF0C;&#x5219;&#x8868;&#x793A;&#x6709;&#x5176;&#x4ED6;&#x7684;&#x7EBF;&#x7A0B;&#x5728;&#x6267;&#x884C;doSaveProperties&#x64CD;&#x4F5C;&#xFF0C;&#x8FD9;&#x79CD;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x7EC8;&#x6B62;&#x4FDD;&#x5B58;&#x64CD;&#x4F5C;&#xFF0C;&#x540C;&#x65F6;&#x4E5F;&#x91CD;&#x7F6E;&#x5DF2;&#x91CD;&#x8BD5;&#x6B21;&#x6570;&#x3002;&#x5426;&#x5219;&#x7684;&#x8BDD;&#xFF0C;&#x5219;&#x5728;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x6C60;&#x4E2D;&#x6267;&#x884C;&#x4E0B;&#x4E00;&#x6B21;&#x7684;&#x4FDD;&#x5B58;&#x64CD;&#x4F5C;&#x3002;</p>
+<p>SaveProperties&#x7C7B;&#x7684;&#x5B9E;&#x73B0;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">SaveProperties</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>{</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> version;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">SaveProperties</span><span class="params">(<span class="keyword">long</span> version)</span> </span>{</span><br><span class="line">        <span class="keyword">this</span>.version = version;</span><br><span class="line">    }</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{</span><br><span class="line">        doSaveProperties(version);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x9664;&#x4E86;&#x6267;&#x884C;&#x4ECE;&#x7F13;&#x5B58;&#x6587;&#x4EF6;&#x4E2D;&#x8BFB;&#x53D6;&#x4FE1;&#x606F;&#x7684;&#x64CD;&#x4F5C;&#x4E4B;&#x5916;&#xFF0C;&#x5728;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E2D;&#xFF0C;&#x8FD8;&#x8C03;&#x7528;&#x4E86;notify&#x65B9;&#x6CD5;&#xFF0C;&#x7528;&#x4E8E;&#x5B9E;&#x73B0;&#x5411;&#x6D88;&#x8D39;&#x7AEF;&#x7684;&#x901A;&#x77E5;&#x3002;&#x5B9E;&#x73B0;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#xFF1A;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">notify</span><span class="params">(List&lt;URL&gt; urls)</span> </span>{</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">for</span> (Map.Entry&lt;URL, Set&lt;NotifyListener&gt;&gt; entry : getSubscribed().entrySet()) {</span><br><span class="line">        URL url = entry.getKey();</span><br><span class="line">        <span class="keyword">if</span> (!UrlUtils.isMatch(url, urls.get(<span class="number">0</span>))) {</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        }</span><br><span class="line">        </span><br><span class="line">        Set&lt;NotifyListener&gt; listeners = entry.getValue();</span><br><span class="line">        <span class="keyword">if</span> (listeners != <span class="keyword">null</span>) {</span><br><span class="line">            <span class="keyword">for</span> (NotifyListener listener : listeners) {</span><br><span class="line">                <span class="keyword">try</span> {</span><br><span class="line">                    notify(url, listener, filterEmpty(url, urls));</span><br><span class="line">                } <span class="keyword">catch</span> (Throwable t) {</span><br><span class="line">                    logger.error(<span class="string">&quot;Failed to notify registry event, urls: &quot;</span> + urls + <span class="string">&quot;, cause:&quot;</span> + t.getMessage(), t);</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    }    </span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x4E0A;&#x8FF0;&#x4EE3;&#x7801;&#x7684;&#x903B;&#x8F91;&#x662F;&#xFF0C;&#x4ECE;subscribed&#x4E2D;&#x53D6;&#x51FA;&#x6BCF;&#x4E2A;url&#x5173;&#x8054;&#x7684;NotifyListener&#xFF0C;&#x7136;&#x540E;&#x5BF9;&#x6BCF;&#x4E2A;&#x5339;&#x914D;&#x7684;url&#x6240;&#x5173;&#x8054;&#x7684;NotifyListener&#x4F9D;&#x6B21;&#x7684;&#x8C03;&#x7528;notify&#x64CD;&#x4F5C;&#x3002;&#x5176;&#x4E2D;&#xFF0C;&#x5185;&#x90E8;&#x51FD;&#x6570;notify&#x7684;&#x5B9E;&#x73B0;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">notify</span><span class="params">(URL url, NotifyListener listener, List&lt;URL&gt; urls)</span> </span>{</span><br><span class="line">    ...</span><br><span class="line">    Map&lt;String, List&lt;URL&gt;&gt; result = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">    <span class="keyword">for</span> (URL u : urls) {</span><br><span class="line">        <span class="keyword">if</span> (UrlUtils.isMatch(url, u)) {</span><br><span class="line">            String category = u.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);</span><br><span class="line">            List&lt;URL&gt; categoryList = result.computeIfAbsent(category, k -&gt; <span class="keyword">new</span> ArrayList&lt;&gt;());</span><br><span class="line">            categoryList.add(u);</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">if</span> (result.size() == <span class="number">0</span>) {</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    }</span><br><span class="line">    </span><br><span class="line">    Map&lt;String, List&lt;URL&gt;&gt; categoryNotified = notified.computeIfAbsent(url, url -&gt; <span class="keyword">new</span> ConcurrentHashMap&lt;&gt;());</span><br><span class="line">    <span class="keyword">for</span> (Map.Entry&lt;String, List&lt;URL&gt;&gt; entry : result.entrySet()) {</span><br><span class="line">        String category = entry.getKey();</span><br><span class="line">        List&lt;URL&gt; categoryList = entry.getValue();</span><br><span class="line">        categoryNotified.put(category, categoryList);</span><br><span class="line">        listener.notify(categoryList);</span><br><span class="line">        <span class="comment">// We will update our cache file after each notification.</span></span><br><span class="line">        <span class="comment">// When our Registry has a subscribe failure due to network jitter, we can return at least the existing cache URL.</span></span><br><span class="line">        saveProperties(url);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x4E0A;&#x8FF0;&#x7684;&#x64CD;&#x4F5C;&#x4E2D;&#xFF0C;&#x9996;&#x5148;&#x5C06;urls&#x6839;&#x636E;category&#x8FDB;&#x884C;&#x5206;&#x7EC4;&#xFF0C;&#x5206;&#x7EC4;&#x5B8C;&#x6210;&#x540E;&#x6309;&#x7167;category&#x6765;&#x8FDB;&#x884C;&#x6D88;&#x8D39;&#x7AEF;&#x7684;&#x901A;&#x77E5;&#x3002;</p>
+<p>&#x4E0B;&#x9762;&#x6765;&#x770B;&#x4E00;&#x4E0B;&#x5728;AbstractRegistry&#x4E2D;&#xFF0C;&#x662F;&#x5982;&#x4F55;&#x5B9E;&#x73B0;RegistryService&#x4E2D;&#x5B9A;&#x4E49;&#x7684;&#x4E94;&#x4E2A;&#x57FA;&#x672C;&#x65B9;&#x6CD5;&#xFF1A;register&#x3001;unregister&#x3001;subscribe&#x3001;unsubscribe&#x548C;lookup&#x3002;</p>
+<p>&#x9996;&#x5148;&#x6765;&#x770B;&#x4E00;&#x4E0B;&#x4EE3;&#x7801;&#x4E2D;&#xFF0C;&#x5B9A;&#x4E49;&#x7684;&#x51E0;&#x4E2A;&#x76F8;&#x5173;&#x7684;&#x53D8;&#x91CF;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Set&lt;URL&gt; registered = <span class="keyword">new</span> ConcurrenHashSet&lt;&gt;();</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ConcurrentMap&lt;URL, Set&lt;NotifyListener&gt;&gt; subscribed = <span class="keyword">new</span> ConcurrentHashMap&lt;&gt;();</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ConcurrentMap&lt;URL, Map&lt;String, List&lt;URL&gt;&gt; notified = <span class="keyword">new</span> ConcurrentHashMap&lt;&gt;();</span><br></pre></td></tr></table></figure>
+
+<p>&#x5176;&#x4E2D;&#xFF0C;registered&#x7528;&#x4E8E;&#x5B58;&#x50A8;&#x6CE8;&#x518C;&#x5230;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x7684;&#x670D;&#x52A1;&#xFF0C;subscribed&#x7528;&#x4E8E;&#x5B58;&#x50A8;&#x670D;&#x52A1;&#x7684;&#x8BA2;&#x9605;&#x4FE1;&#x606F;&#xFF0C;&#x5176;&#x4E2D;key&#x4E3A;&#x670D;&#x52A1;&#x3002;notified&#x65B9;&#x6CD5;&#x7528;&#x4E8E;&#x7F13;&#x5B58;&#x670D;&#x52A1;&#x7684;NotifyListener&#xFF0C;&#x5176;value&#x7684;&#x6570;&#x636E;&#x7C7B;&#x578B;&#x4E3A;&#x4E00;&#x4E2A;Map&#x7C7B;&#x578B;&#xFF0C;map&#x7684;key&#x4E3A;category&#x4FE1;&#x606F;&#x3002;</p>
+<h3 id="register&#x65B9;&#x6CD5;"><a href="#register&#x65B9;&#x6CD5;" class="headerlink" title="register&#x65B9;&#x6CD5;"></a>register&#x65B9;&#x6CD5;</h3><p>&#x9996;&#x5148;&#x6765;&#x770B;register&#x65B9;&#x6CD5;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">register</span><span class="params">(URL url)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (url == <span class="keyword">null</span>) {</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">&quot;register url == null&quot;</span>);</span><br><span class="line">    }</span><br><span class="line">    registered.add(url);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>register&#x7684;&#x5B9E;&#x73B0;&#x975E;&#x5E38;&#x7B80;&#x5355;&#xFF0C;&#x76F4;&#x63A5;&#x5C06;url&#x52A0;&#x5165;&#x5230;registered&#x53D8;&#x91CF;&#x4E2D;&#x3002;</p>
+<h3 id="unregister&#x65B9;&#x6CD5;"><a href="#unregister&#x65B9;&#x6CD5;" class="headerlink" title="unregister&#x65B9;&#x6CD5;"></a>unregister&#x65B9;&#x6CD5;</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">unregister</span><span class="params">(URL url)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (url == <span class="keyword">null</span>) {</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">&quot;unregister url == null&quot;</span>);</span><br><span class="line">    }</span><br><span class="line">    registered.remove(url);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>unregister&#x7684;&#x5B9E;&#x73B0;&#x4E5F;&#x975E;&#x5E38;&#x7B80;&#x5355;&#xFF0C;&#x4ECE;registered&#x4E2D;&#x5220;&#x9664;&#x5BF9;&#x5E94;&#x7684;url&#x3002;</p>
+<h3 id="subscribe&#x65B9;&#x6CD5;"><a href="#subscribe&#x65B9;&#x6CD5;" class="headerlink" title="subscribe&#x65B9;&#x6CD5;"></a>subscribe&#x65B9;&#x6CD5;</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">subscribe</span><span class="params">(URL url, NotifyListener listener)</span> </span>{</span><br><span class="line">    ...</span><br><span class="line">    Set&lt;NotifyListener&gt; listeners = subscribed.computeIfAbsent(url, n -&gt; <span class="keyword">new</span> ConcurrentHashSet&lt;&gt;());</span><br><span class="line">    listeners.add(listener);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>subscribe&#x7684;&#x65B9;&#x6CD5;&#x5B9E;&#x73B0;&#x4E2D;&#xFF0C;&#x4F7F;&#x7528;&#x5230;&#x4E86;ConcurrentHashSet&#x7684;computeIfAbsent&#x65B9;&#x6CD5;&#xFF0C;&#x4FDD;&#x8BC1;&#x4E86;&#x5E76;&#x53D1;&#x4E0B;&#x7684;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x6027;&#x3002;&#x4ECE;subscribed&#x4E2D;&#x53D6;&#x51FA;&#x5BF9;&#x5E94;key&#x7684;set&#xFF0C;&#x7136;&#x540E;&#x5C06;listener&#x6DFB;&#x52A0;&#x5230;set&#x4E2D;&#x5373;&#x53EF;&#x3002;</p>
+<h3 id="unsubscribe&#x65B9;&#x6CD5;"><a href="#unsubscribe&#x65B9;&#x6CD5;" class="headerlink" title="unsubscribe&#x65B9;&#x6CD5;"></a>unsubscribe&#x65B9;&#x6CD5;</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">unsubscribe</span><span class="params">(URL url, NotifyListener listener)</span> </span>{</span><br><span class="line">    Set&lt;NotifyListener&gt; listeners = subscribed.get(url);</span><br><span class="line">    <span class="keyword">if</span> (url != <span class="keyword">null</span>) {</span><br><span class="line">        listeners.remove(listener);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>unsubscribe&#x65B9;&#x6CD5;&#x540C;&#x6837;&#x4E5F;&#x5F88;&#x7B80;&#x5355;&#xFF0C;&#x4ECE;subscribed&#x5BF9;&#x8C61;&#x4E2D;&#x5220;&#x9664;&#x5BF9;&#x5E94;&#x7684;listener&#x5373;&#x53EF;&#x3002;</p>
+<h3 id="lookup&#x65B9;&#x6CD5;"><a href="#lookup&#x65B9;&#x6CD5;" class="headerlink" title="lookup&#x65B9;&#x6CD5;"></a>lookup&#x65B9;&#x6CD5;</h3><p>lookup&#x65B9;&#x6CD5;&#x7528;&#x4E8E;&#x5B9E;&#x73B0;&#x5BA2;&#x6237;&#x7AEF;&#x7684;&#x4E3B;&#x52A8;&#x62C9;&#x53D6;&#x3002;&#x5176;&#x5B9E;&#x73B0;&#x903B;&#x8F91;&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> List&lt;URL&gt; <span class="title">lookup</span><span class="params">(URL url)</span> </span>{</span><br><span class="line">    List&lt;URL&gt; result = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    Map&lt;String, List&lt;URL&gt;&gt; notifiedUrls = getNotified().get(url);</span><br><span class="line">    <span class="keyword">if</span> (notifiedUrls != <span class="keyword">null</span> &amp;&amp; notifiedUrls.size() &gt; <span class="number">0</span>) {</span><br><span class="line">        <span class="keyword">for</span> (List&lt;URL&gt; urls : notifiedUrls.values()) {</span><br><span class="line">            <span class="keyword">for</span> (URL u : urls) {</span><br><span class="line">                <span class="keyword">if</span> (!EMPTY_PROTOCOL.equals(u.getProtocol())) {</span><br><span class="line">                    result.add(u);</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    } <span class="keyword">else</span> {</span><br><span class="line">        <span class="keyword">final</span> AtomicReference&lt;List&lt;URL&gt;&gt; reference = <span class="keyword">new</span> AtomicReference();</span><br><span class="line">        NotifyListener listener = reference::set;</span><br><span class="line">        subscribe(url, listener); <span class="comment">// Subscribe logic guarantees the first notify to return</span></span><br><span class="line">        List&lt;URL&gt; urls = reference.get();</span><br><span class="line">        <span class="keyword">if</span> (CollectionUtils.isNotEmpty(urls)) {</span><br><span class="line">            <span class="keyword">for</span> (URL u : urls) {</span><br><span class="line">                <span class="keyword">if</span> (!EMPTY_PROTOCOL.equlas(u.getProtocol())) {</span><br><span class="line">                    result.add(u);</span><br><span class="line">                }</span><br><span class="line">            } </span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>lookup&#x51FD;&#x6570;&#x7684;&#x5B9E;&#x73B0;&#xFF0C;&#x770B;&#x8D77;&#x6765;&#x4EE3;&#x7801;&#x884C;&#x6570;&#x5F88;&#x591A;&#xFF0C;&#x5176;&#x5B9E;&#x903B;&#x8F91;&#x4E5F;&#x5F88;&#x7B80;&#x5355;&#x3002;&#x9996;&#x5148;&#x5728;&#x7F13;&#x5B58;notified&#x4E2D;&#x8FDB;&#x884C;&#x67E5;&#x627E;&#xFF0C;&#x5982;&#x679C;&#x7F13;&#x5B58;&#x4E0D;&#x5B58;&#x5728;&#x7684;&#x8BDD;&#xFF0C;&#x5219;&#x4F7F;&#x7528;reference::set&#x4F5C;&#x4E3A;listener&#x6267;&#x884C;subscribe&#x8C03;&#x7528;&#xFF0C;&#x4FDD;&#x8BC1;&#x4E86;&#x540E;&#x7EED;&#x5728;&#x6267;&#x884C;notify&#x8BF7;&#x6C42;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x4FDD;&#x8BC1;reference&#x80FD;&#x591F;&#x88AB;&#x901A;&#x77E5;&#x5230;&#x3002;</p>
+<h2 id="FailbackRegistry"><a href="#FailbackRegistry" class="headerlink" title="FailbackRegistry"></a>FailbackRegistry</h2><p>&#x770B;&#x8FC7;&#x4E86;AbstractRegistry&#x4E4B;&#x540E;&#xFF0C;&#x518D;&#x6765;&#x770B;&#x4E00;&#x4E0B;&#x5B83;&#x7684;&#x5B50;&#x7C7B;FailbackRegistry&#x3002;FailbackRegistry&#x4E3B;&#x8981;&#x662F;&#x5B9E;&#x73B0;&#x4E86;&#x6CE8;&#x518C;&#x3001;&#x53CD;&#x6CE8;&#x518C;&#x7B49;&#x64CD;&#x4F5C;&#x5728;&#x5931;&#x8D25;&#x65F6;&#x5019;&#x7684;&#x4E00;&#x79CD;&#x91CD;&#x8BD5;&#x673A;&#x5236;&#x3002;</p>
+<h3 id="AbstractRetryTask"><a href="#AbstractRetryTask" class="headerlink" title="AbstractRetryTask"></a>AbstractRetryTask</h3><p>&#x9996;&#x5148;&#x6765;&#x770B;&#x4E00;&#x4E0B;&#xFF0C;&#x5728;FailbackRegistry&#x4E2D;&#x5B9E;&#x73B0;&#x91CD;&#x8BD5;&#x673A;&#x5236;&#x7684;&#x57FA;&#x7840;&#x2014;&#x2014;AbstractRetryTask&#x7C7B;&#x3002;AbstractRetry&#x7C7B;&#x662F;&#x4E00;&#x4E2A;&#x62BD;&#x8C61;&#x7C7B;&#xFF0C;&#x5B83;&#x5B9E;&#x73B0;&#x4E86;TimerTask&#x63A5;&#x53E3;&#xFF0C;&#x4E3B;&#x8981;&#x662F;&#x5B9E;&#x73B0;&#x4E86;&#x4E00;&#x4E2A;&#x5EF6;&#x65F6;&#x7684;&#x8FD0;&#x884C;&#x673A;&#x5236;&#x3002;&#x5176;&#x7B7E;&#x540D;&#x4E3A;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractRetryTask</span> <span class="keyword">implements</span> <span class="title">TimerTask</span> </span>{</span><br><span class="line">    </span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">TimerTask</span> </span>{</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">run</span><span class="params">(Timeout timeout)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>AbstractRetryTask&#x7684;&#x4E3B;&#x8981;&#x7279;&#x70B9;&#x662F;&#xFF0C;&#x652F;&#x6301;&#x8BBE;&#x7F6E;&#x81EA;&#x5B9A;&#x4E49;&#x7684;&#x91CD;&#x8BD5;&#x6B21;&#x6570;retryTimes&#x548C;&#x6BCF;&#x6B21;&#x91CD;&#x8BD5;&#x4E4B;&#x95F4;&#x7684;&#x95F4;&#x9694;retryPeriod&#xFF0C;&#x5177;&#x4F53;&#x7684;&#x4EFB;&#x52A1;&#x7684;&#x65F6;&#x95F4;&#x8C03;&#x5EA6;&#x59D4;&#x6258;&#x7ED9;&#x5185;&#x90E8;&#x53D8;&#x91CF;timer&#x6765;&#x5904;&#x7406;&#x3002;</p>
+<p>&#x5B83;&#x7684;run&#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x4EE3;&#x7801;&#x5982;&#x4E0B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">(Timeout timeout)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        doRetry(url, registry, timeout);</span><br><span class="line">    } <span class="keyword">catch</span> (Throwable t) {</span><br><span class="line">        logger.warn(<span class="string">&quot;Failed to execute task &quot;</span> + taskName);</span><br><span class="line">        reput(timeout, retryPeriod);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x4E0A;&#x8FF0;&#x4EE3;&#x7801;&#x4E2D;&#xFF0C;doRetry&#x65B9;&#x6CD5;&#x4E3A;&#x4E00;&#x4E2A;&#x62BD;&#x8C61;&#x65B9;&#x6CD5;&#x3002;&#x91CD;&#x8BD5;&#x7684;&#x5177;&#x4F53;&#x903B;&#x8F91;&#xFF0C;&#x4EA4;&#x7ED9;AbstractRetryTask&#x7684;&#x5B50;&#x7C7B;&#x6765;&#x5B9E;&#x73B0;&#xFF0C;&#x5728;dubbo&#x4E2D;&#xFF0C;&#x5C31;&#x662F;&#x4EA4;&#x7ED9;FailedRegisteredTask&#x3001;FailedUnregisteredTask&#x3001;FailedSubscribedTask&#x3001;FailedUnsubscribedTask&#x3001;FailedNotifiedTask&#x7C7B;&#x6765;&#x5B9E;&#x73B0;&#x3002;&#x6BCF;&#x4E2A;&#x5B50;&#x7C7B;&#x90FD;&#x4F1A;&#x5B9E;&#x73B0;doRetry&#x65B9;&#x6CD5;&#x3002;&#x5982;FailedRegisteredTask&#x7684;&#x5B9E;&#x73B0;&#x5982;&#x4E0B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doRetry</span><span class="params">(URL url, FailbackRegistry registry, Timeout)</span> </span>{</span><br><span class="line">    registry.doRegistry(url);</span><br><span class="line">    registry.removeFailedRegisteredTask(url);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<h2 id="register"><a href="#register" class="headerlink" title="register"></a>register</h2><p>&#x4E0B;&#x9762;&#x4EE5;register&#x51FD;&#x6570;&#x4E3A;&#x4F8B;&#xFF0C;&#x6765;&#x8BF4;&#x660E;&#x4E00;&#x4E0B;&#x5728;FailbackRegistry&#x4E2D;RegistryService&#x4E2D;&#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">register</span><span class="params">(URL url)</span> </span>{</span><br><span class="line">    <span class="keyword">super</span>.register(url);</span><br><span class="line">    removeFailedRegistered(url);</span><br><span class="line">    removeFailedUnregistered(url);</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        doRegister(url);</span><br><span class="line">    } <span class="keyword">catch</span> (Exception ex) {</span><br><span class="line">        Throwable t = ex;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">boolean</span> check = getUrl().getParameter(Constants.CHECK_KEY, <span class="keyword">true</span>) &amp;&amp; url.getParameter(Constants.CHECK_KEY, <span class="keyword">true</span>)</span><br><span class="line">            &amp;&amp; !CONSUMER_PROTOCOL.equals(url.getProtocol());</span><br><span class="line">        <span class="keyword">boolean</span> skipFailback = t <span class="keyword">instanceof</span> SkipFailbackWrapperException;</span><br><span class="line">        <span class="keyword">if</span> (check || skipFailback) {</span><br><span class="line">            <span class="keyword">if</span> (skipFailback) {</span><br><span class="line">                t = t.getCause();</span><br><span class="line">            }</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">&quot;Failed to register &quot;</span> + url + <span class="string">&quot; to registry &quot;</span> + getUrl().getAddress() + <span class="string">&quot; , cause: &quot;</span> + t.getMessage(), t);</span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line">            logger.error(<span class="string">&quot;Failed to register &quot;</span> + url + <span class="string">&quot;,waiting for retry, cause: &quot;</span> + t.getMessage(), t);</span><br><span class="line">        }</span><br><span class="line">        addFailedRegistered(url);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x5728;&#x5982;&#x4E0A;&#x7684;&#x903B;&#x8F91;&#x4E2D;&#xFF0C;&#x8C03;&#x7528;&#x4E86;AbstractRegistry&#x4E2D;&#x7684;register&#x64CD;&#x4F5C;&#xFF0C;&#x4ECE;failedRegistered&#x548C;failedUnregistered&#x4E2D;&#x5C06;&#x6B64;url&#x7684;&#x5931;&#x8D25;&#x7F13;&#x5B58;&#x5220;&#x9664;&#x6389;&#x3002;&#x7136;&#x540E;&#x8C03;&#x7528;doRegister&#x65B9;&#x6CD5;&#xFF0C;&#x5982;&#x679C;&#x53D1;&#x751F;&#x4E86;&#x5F02;&#x5E38;&#xFF0C;&#x5E76;&#x4E14;url&#x4E2D;&#x7684;check&#x53C2;&#x6570;&#x4E3A;true&#xFF0C;&#x6216;&#x8005;doRegister&#x51FD;&#x6570;&#x4E2D;&#x629B;&#x51FA;&#x4E86;SkipFailbackWrapperException&#xFF0C;&#x5219;&#x76F4;&#x63A5;&#x5C06;&#x5F02;&#x5E38;&#x629B;&#x51FA;&#x3002;&#x5426;&#x5219;&#x7684;&#x8BDD;&#xFF0C;&#x5C06;url&#x4E2D;&#x52A0;&#x5165;&#x5230;failedRegistered&#x4E2D;&#x3002;</p>
+<p>&#x5176;&#x4F59;&#x7684;unregister&#x3001;subscribe&#x7B49;&#x64CD;&#x4F5C;&#x903B;&#x8F91;&#x76F8;&#x4F3C;&#x3002;</p>
+<p>&#x5728;FailbackRegistry&#x4E2D;&#xFF0C;doRegister&#x3001;doUnregister&#x3001;doSubscribe&#x3001;doUnsubscribe&#x90FD;&#x4F1A;&#x62BD;&#x8C61;&#x51FD;&#x6570;&#x3002;&#x5728;FailbackRegistry&#x7684;&#x5B57;&#x7C7B;&#xFF0C;&#x5982;ZookeeperRegistry&#x3001;RedisRegistry&#x7B49;&#x4F1A;&#x91CD;&#x70B9;&#x5B9E;&#x73B0;&#x8FD9;&#x51E0;&#x4E2A;&#x51FD;&#x6570;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">doRegister</span><span class="params">(URL url)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">doUnregister</span><span class="params">(URL url)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">doSubscribe</span><span class="params">(URL url, NotifyListener listener)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">doUnsubscribe</span><span class="params">(URL url, NotifyListener listener)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="&#x603B;&#x7ED3;"><a href="#&#x603B;&#x7ED3;" class="headerlink" title="&#x603B;&#x7ED3;"></a>&#x603B;&#x7ED3;</h2><p>&#x7ECF;&#x8FC7;&#x4E00;&#x756A;&#x5B66;&#x4E60;&#xFF0C;dubbo&#x4E2D;&#x7684;Registry&#x7684;&#x62BD;&#x8C61;&#x5C42;&#x6B21;&#x5C31;&#x5F88;&#x6E05;&#x6670;&#x4E86;&#x3002;&#x4ECE;RegistryService&#x4E2D;&#x5B9A;&#x4E49;&#x7684;register&#x3001;unregister&#x7B49;&#x65B9;&#x6CD5;&#xFF0C;&#x7ECF;&#x8FC7;AbstractRegistry&#x3001;FailbackRegistry&#x7684;&#x5C42;&#x5C42;&#x62BD;&#x8C61;&#xFF0C;&#x6700;&#x7EC8;&#x843D;&#x5230;&#x4E86;doRegister&#x3001;doUnregister&#x7B49;&#x62BD;&#x8C61;&#x65B9;&#x6CD5;&#xFF0C;&#x4EA4;&#x7531;&#x5177;&#x4F53;&#x7684;&#x5B50;&#x7C7B;&#x6765;&#x5B9E;&#x73B0;&#x3002;</p>
+<p>&#x540E;&#x9762;&#xFF0C;&#x51C6;&#x5907;&#x62FF;&#x51FA;ZookeeperRegistery&#x6765;&#x4F5C;&#x4E3A;&#x793A;&#x4F8B;&#xFF0C;&#x91CD;&#x70B9;&#x5206;&#x6790;&#x4E00;&#x4E0B;&#xFF0C; &#x5B8C;&#x6210;&#x5BF9;dubbo&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x7684;&#x5206;&#x6790;&#x3002;</p>
+<h2 id="&#x9898;&#x5916;&#x8BDD;"><a href="#&#x9898;&#x5916;&#x8BDD;" class="headerlink" title="&#x9898;&#x5916;&#x8BDD;"></a>&#x9898;&#x5916;&#x8BDD;</h2><p>&#x4F5C;&#x4E3A;&#x4E00;&#x540D;&#x65E5;&#x5E38;&#x7F16;&#x5199;java&#x4EE3;&#x7801;&#x7684;&#x4EBA;&#x8BF4;&#xFF0C;&#x963F;&#x91CC;&#x5DF4;&#x5DF4;java&#x7F16;&#x7A0B;&#x89C4;&#x8303;&#x81EA;&#x7136;&#x662F;&#x58F0;&#x540D;&#x8FDC;&#x64AD;&#xFF0C;&#x540D;&#x58F0;&#x5982;&#x96F7;&#x8D2F;&#x8033;&#x3002;&#x5728;&#x65E5;&#x5E38;&#x7684;&#x5DE5;&#x4F5C;&#x4E2D;&#xFF0C;&#x6211;&#x4E5F;&#x662F;&#x5C3D;&#x529B;&#x7684;&#x5728;&#x5B9E;&#x8DF5;&#x5B83;&#x3002;&#x5176;&#x4E2D;&#x6709;&#x4E00;&#x6761;&#x89C4;&#x8303;&#x5927;&#x6982;&#x662F;&#xFF1A;</p>
+<blockquote>
+<p>&#x5728;&#x5224;&#x65AD;&#x96C6;&#x5408;&#x662F;&#x5426;&#x4E3A;&#x7A7A;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x5E94;&#x8BE5;&#x4F7F;&#x7528;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; list.isEmpty()</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<blockquote>
+<p>&#x800C;&#x4E0D;&#x5E94;&#x8BE5;&#x4F7F;&#x7528;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; list.size() == <span class="number">0</span></span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<blockquote>
+</blockquote>
+<p>&#x8FD9;&#x6761;&#x89C4;&#x8303;&#x5F88;&#x5BB9;&#x6613;&#x7406;&#x89E3;&#xFF0C;&#x5B9E;&#x8DF5;&#x8D77;&#x6765;&#x4E5F;&#x5F88;&#x7B80;&#x5355;&#x3002;&#x4F46;&#x662F;&#x5728;&#x7814;&#x8BFB;&#x4EE3;&#x7801;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x6211;&#x53D1;&#x73B0;&#x5728;dubbo&#x7684;&#x6E90;&#x7801;&#x4E2D;&#x5145;&#x65A5;&#x7740;&#x5927;&#x91CF;&#x7684;&#x7B2C;&#x4E8C;&#x79CD;&#x5199;&#x6CD5;&#xFF0C;&#x60F3;&#x6765;&#x8FD9;&#x5927;&#x6982;&#x662F;dubbo&#x9879;&#x76EE;&#x53C2;&#x4E0E;&#x4EBA;&#x6570;&#x4F17;&#x591A;&#x7684;&#x539F;&#x56E0;&#x5427;&#x3002;</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/dubbo/" rel="tag"># dubbo</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/19/dubbo源码分析之注册中心一：RegistryFactory/" rel="next" title="dubbo源码分析之注册中心一：RegistryFactory">
+                <i class="fa fa-chevron-left"></i> dubbo源码分析之注册中心一：RegistryFactory
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/10/25/ExtensionLoader/" rel="prev" title="dubbo源码分析之ExtensionLoader实现">
+                dubbo源码分析之ExtensionLoader实现 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="feng.dianjun">
+          <p class="site-author-name" itemprop="name">feng.dianjun</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Registry"><span class="nav-number">2.</span> <span class="nav-text">Registry</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AbstractRegistry"><span class="nav-number">3.</span> <span class="nav-text">AbstractRegistry</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#register方法"><span class="nav-number">3.1.</span> <span class="nav-text">register方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#unregister方法"><span class="nav-number">3.2.</span> <span class="nav-text">unregister方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#subscribe方法"><span class="nav-number">3.3.</span> <span class="nav-text">subscribe方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#unsubscribe方法"><span class="nav-number">3.4.</span> <span class="nav-text">unsubscribe方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lookup方法"><span class="nav-number">3.5.</span> <span class="nav-text">lookup方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FailbackRegistry"><span class="nav-number">4.</span> <span class="nav-text">FailbackRegistry</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AbstractRetryTask"><span class="nav-number">4.1.</span> <span class="nav-text">AbstractRetryTask</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#register"><span class="nav-number">5.</span> <span class="nav-text">register</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#题外话"><span class="nav-number">7.</span> <span class="nav-text">题外话</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng.dianjun</span>
+</div>
+
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="https://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Gemini
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

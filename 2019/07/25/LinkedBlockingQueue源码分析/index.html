@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh/cn">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="java,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="&amp;#x4F5C;&amp;#x4E3A;&amp;#x7EBF;&amp;#x7A0B;&amp;#x6C60;&amp;#x4E2D;&amp;#x7ECF;&amp;#x5E38;&amp;#x4F7F;&amp;#x7528;&amp;#x7684;&amp;#x963B;&amp;#x585E;&amp;#x961F;&amp;#x5217;&amp;#xFF0C;&amp;#x5728;&amp;#x5206;&amp;#x6790;&amp;#x4E86;ArrayBlockingQueue&amp;#x4E4B;&amp;#x540E;&amp;#xFF0">
+<meta name="keywords" content="java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LinkedBlockingQueue源码分析">
+<meta property="og:url" content="http://yoursite.com/2019/07/25/LinkedBlockingQueue源码分析/index.html">
+<meta property="og:site_name" content="maslke&#39;s blog">
+<meta property="og:description" content="&amp;#x4F5C;&amp;#x4E3A;&amp;#x7EBF;&amp;#x7A0B;&amp;#x6C60;&amp;#x4E2D;&amp;#x7ECF;&amp;#x5E38;&amp;#x4F7F;&amp;#x7528;&amp;#x7684;&amp;#x963B;&amp;#x585E;&amp;#x961F;&amp;#x5217;&amp;#xFF0C;&amp;#x5728;&amp;#x5206;&amp;#x6790;&amp;#x4E86;ArrayBlockingQueue&amp;#x4E4B;&amp;#x540E;&amp;#xFF0">
+<meta property="og:locale" content="zh/cn">
+<meta property="og:updated_time" content="2019-10-16T15:29:03.777Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LinkedBlockingQueue源码分析">
+<meta name="twitter:description" content="&amp;#x4F5C;&amp;#x4E3A;&amp;#x7EBF;&amp;#x7A0B;&amp;#x6C60;&amp;#x4E2D;&amp;#x7ECF;&amp;#x5E38;&amp;#x4F7F;&amp;#x7528;&amp;#x7684;&amp;#x963B;&amp;#x585E;&amp;#x961F;&amp;#x5217;&amp;#xFF0C;&amp;#x5728;&amp;#x5206;&amp;#x6790;&amp;#x4E86;ArrayBlockingQueue&amp;#x4E4B;&amp;#x540E;&amp;#xFF0">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/07/25/LinkedBlockingQueue源码分析/">
+
+
+
+
+
+  <title>LinkedBlockingQueue源码分析 | maslke's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh/cn">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">maslke's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/25/LinkedBlockingQueue源码分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="feng.dianjun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="maslke's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">LinkedBlockingQueue源码分析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-07-25T22:44:33+08:00">
+                2019-07-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>&#x4F5C;&#x4E3A;&#x7EBF;&#x7A0B;&#x6C60;&#x4E2D;&#x7ECF;&#x5E38;&#x4F7F;&#x7528;&#x7684;&#x963B;&#x585E;&#x961F;&#x5217;&#xFF0C;&#x5728;&#x5206;&#x6790;&#x4E86;ArrayBlockingQueue&#x4E4B;&#x540E;&#xFF0C;&#x518D;&#x6765;&#x770B;&#x4E00;&#x4E0B;LinkedBlockingQueue&#x7684;&#x5B9E;&#x73B0;&#x3002;</p>
+<p>LinkedBlockingQueue&#x7684;&#x7B7E;&#x540D;&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LinkedBlockingQueue</span>&lt;<span class="title">E</span>&gt; <span class="keyword">extends</span> <span class="title">AbstractQueue</span>&lt;<span class="title">E</span>&gt; <span class="keyword">implements</span> <span class="title">BlockingQueue</span>&lt;<span class="title">E</span>&gt;, <span class="title">java</span>.<span class="title">io</span>.<span class="title">Serializable</span></span></span><br></pre></td></tr></table></figure>
+
+<p>&#x5728;LinkedBlockingQueue&#x4E2D;&#x8282;&#x70B9;&#x7684;&#x58F0;&#x660E;&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span>&lt;<span class="title">E</span>&gt; </span>{</span><br><span class="line">    E item;</span><br><span class="line">    Node&lt;E&gt; next;</span><br><span class="line">    Node(E x) { item = x; }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x53EF;&#x4EE5;&#x770B;&#x51FA;Node&#x8282;&#x70B9;&#x53EA;&#x6709;&#x4E00;&#x4E2A;next&#x6307;&#x5411;&#xFF0C;&#x8BF4;&#x660E;&#x94FE;&#x8868;&#x662F;&#x5355;&#x5411;&#x7684;&#xFF0C;&#x53EA;&#x80FD;&#x63D0;&#x4F9B;&#x4ECE;&#x524D;&#x8282;&#x70B9;&#x5230;&#x540E;&#x8282;&#x70B9;&#x7684;&#x67E5;&#x627E;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ReentrantLock takeLock = <span class="keyword">new</span> ReentrantLock();</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Condition notEmpty = takeLock.newCondition();</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ReentrantLock putLock = <span class="keyword">new</span> ReentrantLock();</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Condition notFull = putLock.newCondition();</span><br></pre></td></tr></table></figure>
+
+<p>&#x4E0E;ArrayBlockingQueue&#x76F8;&#x540C;&#x7684;&#x662F;&#xFF0C;LinkedBlockingQueue&#x4E5F;&#x4F7F;&#x7528;&#x4E86;notFull&#x548C;notEmpty&#x8FD9;&#x4E24;&#x4E2A;&#x6761;&#x4EF6;&#x961F;&#x5217;&#x3002;&#x4E0D;&#x540C;&#x7684;&#x662F;&#xFF0C;ArrayBlockingQueue&#x5185;&#x90E8;&#x53EA;&#x4F7F;&#x7528;&#x4E86;&#x4E00;&#x4E2A;&#x9501;&#xFF0C;&#x5728;take&#x64CD;&#x4F5C;&#x548C;put&#x64CD;&#x4F5C;&#x4E0A;&#x90FD;&#x4F7F;&#x7528;&#x540C;&#x4E00;&#x4E2A;&#x9501;&#x3002;&#x800C;&#x5728;LinkedBlockingQueue&#x4E2D;&#xFF0C;&#x4F7F;&#x7528;&#x4E86;&#x4E24;&#x4E2A;&#x9501;&#xFF0C;&#x5206;&#x522B;&#x4F9B;take&#x64CD;&#x4F5C;&#x548C;put&#x64CD;&#x4F5C;&#x6765;&#x4F7F;&#x7528;&#xFF0C;&#x5E76;&#x4E14;notFull&#x548C;notEmpty&#x8FD9;&#x4E24;&#x4E2A;&#x6761;&#x4EF6;&#x961F;&#x5217;&#xFF0C;&#x5206;&#x522B;&#x5728;put&#x64CD;&#x4F5C;&#x548C;take&#x64CD;&#x4F5C;&#x4E0A;&#x8FDB;&#x884C;&#x7B49;&#x5F85;&#x3002;&#x8FD9;&#x79CD;&#x9501;&#x7684;&#x7EC6;&#x5206;&#xFF0C;&#x662F;&#x80FD;&#x4FDD;&#x8BC1;LinkedBlockingQueue&#x6BD4;ArrayBlockingQueue&#x63D0;&#x4F9B;&#x66F4;&#x9AD8;&#x541E;&#x5410;&#x91CF;&#x7684;&#x5173;&#x952E;&#x3002;</p>
+<a id="more"></a>
+
+<p>LinkedBlockingQueue&#x4E2D;&#x63D0;&#x4F9B;&#x4E86;head&#x548C;last&#x53D8;&#x91CF;&#xFF0C;&#x5206;&#x522B;&#x7528;&#x4E8E;&#x8868;&#x793A;&#x961F;&#x5217;&#x7684;&#x5934;&#x8282;&#x70B9;&#x548C;&#x5C3E;&#x8282;&#x70B9;&#x3002;&#x9700;&#x8981;&#x6CE8;&#x610F;&#x7684;&#x662F;&#x5728;&#x8FDB;&#x884C;LinkedBlockingQueue&#x6784;&#x9020;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x4F1A;&#x63D0;&#x524D;&#x6784;&#x9020;head&#x548C;last&#x8282;&#x70B9;&#xFF0C;&#x6765;&#x5F53;&#x4F5C;&#x54E8;&#x5175;&#x8282;&#x70B9;&#xFF0C;&#x5E76;&#x4E14;&#x5176;item&#x4E3A;null&#x3002;&#x5176;&#x4E0D;&#x53D8;&#x6027;&#x6761;&#x4EF6;&#x4E3A;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">head.item == <span class="keyword">null</span>;</span><br><span class="line">tail.next = <span class="keyword">null</span>;</span><br></pre></td></tr></table></figure>
+
+<p>&#x770B;&#x4E00;&#x4E0B;&#x6784;&#x9020;&#x51FD;&#x6570;&#x3002;&#x7B2C;&#x4E00;&#x4E2A;&#x7248;&#x672C;&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x63A5;&#x6536;&#x4E00;&#x4E2A;&#x6574;&#x578B;&#x7684;&#x53D8;&#x91CF;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">LinkedBlockingQueue</span><span class="params">(<span class="keyword">int</span> capacity)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (capacity &lt;= <span class="number">0</span>) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException();</span><br><span class="line">    <span class="keyword">this</span>.capacity = capacity;</span><br><span class="line">    last = head = <span class="keyword">new</span> Node&lt;E&gt;(<span class="keyword">null</span>);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x5728;&#x53E6;&#x4E00;&#x4E2A;&#x7248;&#x672C;&#x4E0D;&#x63A5;&#x53D7;capacity&#x53C2;&#x6570;&#x7684;&#x65E0;&#x53C2;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E2D;&#xFF0C;&#x4F1A;&#x9ED8;&#x8BA4;&#x8BBE;&#x7F6E;capacity&#x4E3A;Integer.MAX_VALUE&#x3002;</p>
+<p>&#x4E0B;&#x9762;&#x770B;&#x4E24;&#x4E2A;&#x5185;&#x90E8;&#x7684;&#x8F85;&#x52A9;&#x51FD;&#x6570;&#xFF0C;signalNotEmpty&#x548C;signalNotFull&#x3002;</p>
+<p>signalNotEmpty&#x51FD;&#x6570;&#xFF0C;&#x7528;&#x4F5C;&#x5524;&#x9192;&#x5728;notEmpty&#x6761;&#x4EF6;&#x961F;&#x5217;&#x4E0A;&#x7B49;&#x5F85;&#x7684;&#x7EBF;&#x7A0B;&#x3002;&#x4E00;&#x822C;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x51FA;&#x961F;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x5982;&#x679C;&#x5F53;&#x524D;&#x961F;&#x5217;&#x5DF2;&#x7A7A;&#xFF0C;&#x5219;&#x7EBF;&#x7A0B;&#x4F1A;&#x5728;notEmpty&#x6761;&#x4EF6;&#x961F;&#x5217;&#x4E0A;&#x7B49;&#x5F85;&#x961F;&#x5217;&#x975E;&#x7A7A;&#x72B6;&#x6001;&#x3002;&#x4E3A;&#x4E86;&#x9632;&#x6B62;&#x51FA;&#x961F;&#x64CD;&#x4F5C;&#x7684;&#x5F71;&#x54CD;&#xFF0C;&#x5728;&#x8FD9;&#x4E2A;&#x51FD;&#x6570;&#x4E2D;&#x4F7F;&#x7528;takeLock&#x6765;&#x8FDB;&#x884C;&#x4FDD;&#x62A4;&#x662F;&#x5FC5;&#x987B;&#x7684;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">signalNotEmpty</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="keyword">final</span> ReentrantLock takeLock = <span class="keyword">this</span>.takeLock;</span><br><span class="line">    takeLock.lock();</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        notEmpty.signal();</span><br><span class="line">    } <span class="keyword">finally</span> {</span><br><span class="line">        takeLock.unlock();</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x540C;&#x6837;&#x7684;&#x9053;&#x7406;&#xFF0C;signalNotFull&#x51FD;&#x6570;&#xFF0C;&#x7528;&#x4F5C;&#x5524;&#x9192;&#x5728;notFull&#x6761;&#x4EF6;&#x961F;&#x5217;&#x4E0A;&#x7B49;&#x5F85;&#x7684;&#x7EBF;&#x7A0B;&#x3002;&#x4E3A;&#x4E86;&#x9632;&#x6B62;&#x5176;&#x4ED6;&#x5165;&#x961F;&#x64CD;&#x4F5C;&#x7684;&#x5F71;&#x54CD;&#xFF0C;&#x5728;&#x8FD9;&#x4E2A;&#x51FD;&#x6570;&#x4E2D;&#x4F7F;&#x7528;putLock&#x6765;&#x8FDB;&#x884C;&#x4FDD;&#x62A4;&#x4E5F;&#x662F;&#x5FC5;&#x987B;&#x7684;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">signalNotFull</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="keyword">final</span> ReentrantLock putLock = <span class="keyword">this</span>.putLock;</span><br><span class="line">    putLock.lock();</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        notFull.signal();</span><br><span class="line">    } <span class="keyword">finally</span> {</span><br><span class="line">        putLock.unlock();</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x7136;&#x540E;&#x63A5;&#x4E0B;&#x6765;&#x770B;&#x4E00;&#x4E0B;&#x5165;&#x961F;&#x8F85;&#x52A9;&#x51FD;&#x6570;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">enqueue</span><span class="params">(Node&lt;E&gt; node)</span> </span>{</span><br><span class="line">    last = last.next = node;</span><br><span class="line">    <span class="comment">// last.next = node;</span></span><br><span class="line">    <span class="comment">// last = last.next;</span></span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x6CE8;&#x610F;&#x4EE5;&#x4E0A;&#x51FD;&#x6570;&#x7684;&#x4F7F;&#x7528;&#x524D;&#x63D0;&#x662F;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x62E5;&#x6709;putLock&#x3002;</p>
+<p>&#x51FA;&#x961F;&#x8F85;&#x52A9;&#x51FD;&#x6570;&#x662F;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> E <span class="title">dequeue</span><span class="params">()</span> </span>{</span><br><span class="line">    Node&lt;E&gt; h = head;</span><br><span class="line">    Node&lt;E&gt; first = h.next;</span><br><span class="line">    h.next = h; <span class="comment">// help GC</span></span><br><span class="line">    head = first;</span><br><span class="line">    E x = first.item;</span><br><span class="line">    first.item = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">return</span> x;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x524D;&#x9762;&#x5DF2;&#x7ECF;&#x8BF4;&#x8FC7;&#xFF0C;&#x5728;LinkedBlockingQueue&#x4E2D;&#xFF0C;head&#x8282;&#x70B9;&#x662F;&#x4E00;&#x4E2A;&#x54E8;&#x5175;&#xFF0C;&#x5176;&#x4E0D;&#x53D8;&#x6027;&#x662F;head.item == null&#xFF0C;&#x54E8;&#x5175;&#x7684;&#x4E0B;&#x4E00;&#x4E2A;&#x8282;&#x70B9;&#x624D;&#x662F;&#x771F;&#x6B63;&#x7684;&#x7B2C;&#x4E00;&#x4E2A;&#x8282;&#x70B9;&#x3002;&#x56E0;&#x6B64;&#xFF0C;&#x5728;&#x83B7;&#x53D6;&#x5230;head.next&#x4E4B;&#x540E;&#xFF0C;&#x4FDD;&#x5B58;&#x5176;item&#x7684;&#x503C;&#xFF0C;&#x7136;&#x540E;&#x5C06;&#x5176;next&#x7F6E;&#x4E3A;null&#xFF0C;&#x5E76;&#x5C06;head&#x6307;&#x5411;head.next&#x5373;&#x5B8C;&#x6210;&#x4E86;&#x5165;&#x961F;&#x64CD;&#x4F5C;&#x3002;</p>
+<p>&#x4E0B;&#x9762;&#x6765;&#x770B;&#x6838;&#x5FC3;&#x7684;put&#x3001;offer&#x3001;add&#x3001;poll&#x3001;take&#x7B49;&#x64CD;&#x4F5C;&#x3002;&#x5728;&#x5206;&#x6790;ArrayBlockingQueue&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x66FE;&#x7ECF;&#x603B;&#x7ED3;&#x8FC7;put&#x3001;add&#x3001;offer&#x51FD;&#x6570;&#x7684;&#x533A;&#x522B;&#x3002;&#x73B0;&#x5728;&#x56DE;&#x60F3;&#x4E00;&#x4E0B;&#xFF0C;&#x5728;ArrayBlockingQueue&#x4E2D;&#xFF0C;add&#x64CD;&#x4F5C;&#x4F7F;&#x7528;&#x65E0;&#x53C2;&#x7684;offer&#x51FD;&#x6570;&#x6765;&#x5B9E;&#x73B0;&#xFF0C;&#x5728;&#x5165;&#x961F;&#x6210;&#x529F;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x8FD4;&#x56DE;true&#xFF1B;&#x5165;&#x961F;&#x5931;&#x8D25;&#xFF0C;&#x629B;&#x51FA;&#x5F02;&#x5E38;&#x3002;&#x65E0;&#x53C2;&#x7684;offer&#x51FD;&#x6570;&#x5728;&#x5165;&#x961F;&#x6210;&#x529F;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x8FD4;&#x56DE;true&#xFF1B;&#x5165;&#x961F;&#x5931;&#x8D25;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x8FD4;&#x56DE;false&#x3002;put&#x51FD;&#x6570;&#x65E0;&#x8FD4;&#x56DE;&#x503C;&#xFF0C;&#x5728;&#x961F;&#x5217;&#x5DF2;&#x6EE1;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x4F1A;&#x8FDB;&#x884C;&#x7B49;&#x5F85;&#x3002;&#x800C;&#x6709;&#x53C2;&#x6570;&#x7684;offer&#x51FD;&#x6570;&#xFF0C;&#x5219;&#x961F;&#x5217;&#x5DF2;&#x6EE1;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x7B49;&#x5F85;&#x6709;&#x6700;&#x5927;&#x65F6;&#x95F4;&#xFF0C;&#x8D85;&#x8FC7;&#x6700;&#x5927;&#x65F6;&#x95F4;&#x800C;&#x65E0;&#x6CD5;&#x5165;&#x961F;&#x7684;&#x8BDD;&#xFF0C;&#x5219;&#x8FD4;&#x56DE;false&#x3002;&#x90A3;&#x4E48;&#x5728;LinkedBlockingQueue&#x4E2D;&#xFF0C;&#x4ECD;&#x662F;&#x5982;&#x6B64;&#x5417;&#xFF1F;</p>
+<p>&#x9996;&#x5148;&#x6765;&#x770B;&#x4E00;&#x4E0B;put&#x51FD;&#x6570;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">put</span><span class="params">(E e)</span> <span class="keyword">throws</span> InterruptedException </span>{</span><br><span class="line">    <span class="keyword">if</span> (e == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">    <span class="keyword">int</span> c = -<span class="number">1</span>;</span><br><span class="line">    Node&lt;E&gt; node = <span class="keyword">new</span> Node(e);</span><br><span class="line">    <span class="keyword">final</span> ReentrantLock putLock = <span class="keyword">this</span>.putLock;</span><br><span class="line">    <span class="keyword">final</span> AtomicInteger count = <span class="keyword">this</span>.count;</span><br><span class="line">    putLock.lockInteruptibly();</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        <span class="keyword">while</span> (count.get() == capacity) {</span><br><span class="line">            notFull.await();</span><br><span class="line">        }</span><br><span class="line">        enqueue(node);</span><br><span class="line">        c = count.getAndIncrement();</span><br><span class="line">        <span class="keyword">if</span> (c + <span class="number">1</span> &lt; capacity) {</span><br><span class="line">            notFull.signal();</span><br><span class="line">        }</span><br><span class="line">    } <span class="keyword">finally</span> {</span><br><span class="line">        putLock.unlock();</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">if</span> (c == <span class="number">0</span>) {</span><br><span class="line">        signalNotEmpty();</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p> &#x53EF;&#x4EE5;&#x770B;&#x51FA;&#xFF0C;&#x6B64;&#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x548C;ArrayBlockingQueue&#x4E2D;&#x7684;put&#x65B9;&#x6CD5;&#x57FA;&#x672C;&#x4E00;&#x81F4;&#x3002;&#x9700;&#x8981;&#x601D;&#x8003;&#x7684;&#x662F;&#xFF0C;&#x5728;signalNotEmpty&#x7684;&#x65F6;&#x5019;&#x4E3A;&#x4EC0;&#x4E48;&#x63D0;&#x524D;&#x5224;&#x65AD;&#x4E86;c&#x7684;&#x503C;&#x5462;&#xFF1F;&#x6211;&#x8BA4;&#x4E3A;&#x8FD8;&#x662F;&#x57FA;&#x4E8E;&#x6027;&#x80FD;&#x7684;&#x8003;&#x8651;&#xFF0C;&#x5728;&#x4E0D;&#x5224;&#x65AD;&#x7684;&#x524D;&#x63D0;&#x4E0B;&#xFF0C;&#x76F4;&#x63A5;&#x8C03;&#x7528;signalNotEmpty&#x7EDD;&#x5BF9;&#x7B97;&#x4E0D;&#x5F97;&#x9519;&#x3002;</p>
+<p>&#x65E0;&#x53C2;&#x7684;offer&#x51FD;&#x6570;&#x3002;&#x4E0A;&#x9762;&#x8BF4;&#x5230;&#xFF0C;&#x65E0;&#x53C2;&#x7684;offer&#x51FD;&#x6570;&#x5E94;&#x8BE5;&#x5728;&#x961F;&#x5217;&#x5DF2;&#x6EE1;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x5E94;&#x8BE5;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;false&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">offer</span><span class="params">(E e)</span> </span>{</span><br><span class="line">    <span class="keyword">final</span> AtomicInteger count = <span class="keyword">this</span>.count;</span><br><span class="line">    <span class="keyword">if</span> (count.get() == capacity) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    ....</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x63A5;&#x6536;&#x65F6;&#x95F4;&#x53C2;&#x6570;&#x7684;offer&#x51FD;&#x6570;&#xFF0C;&#x5219;&#x63D0;&#x4F9B;&#x4E86;&#x5E26;&#x7B49;&#x5F85;&#x65F6;&#x95F4;&#x7684;&#x5165;&#x961F;&#x64CD;&#x4F5C;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">offer</span><span class="params">(E e, <span class="keyword">long</span> timeout, TimeUnit unit)</span> <span class="keyword">throws</span> InterruptedException </span>{</span><br><span class="line">    <span class="keyword">while</span> (count.get() == capacity) {</span><br><span class="line">        <span class="keyword">if</span> (nanos &lt;= <span class="number">0</span>) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        nanos = notFull.awaitNanos(nanos);</span><br><span class="line">    	....</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x53EF;&#x4EE5;&#x770B;&#x51FA;&#xFF0C;&#x5728;&#x8BED;&#x4E49;&#x65B9;&#x6CD5;&#xFF0C;LinkedBlockingQueue&#x548C;ArrayBlockingQueue&#x662F;&#x5B8C;&#x5168;&#x4E00;&#x81F4;&#x7684;&#x3002;</p>
+<p>&#x4E0E;&#x4E4B;&#x5BF9;&#x5E94;&#x7684;&#xFF0C;take&#x51FD;&#x6570;&#x548C;poll&#x51FD;&#x6570;&#x4E0D;&#x518D;&#x4E00;&#x4E00;&#x8BF4;&#x660E;&#x3002;</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/07/24/ArrayBlockingQueue源码分析/" rel="next" title="ArrayBlockingQueue源码分析">
+                <i class="fa fa-chevron-left"></i> ArrayBlockingQueue源码分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/07/29/LinkedCaseInsensitiveMap源码分析/" rel="prev" title="LinkedCaseInsensitiveMap源码分析">
+                LinkedCaseInsensitiveMap源码分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="feng.dianjun">
+          <p class="site-author-name" itemprop="name">feng.dianjun</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng.dianjun</span>
+</div>
+
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="https://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Gemini
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

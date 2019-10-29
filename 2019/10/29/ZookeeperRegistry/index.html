@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh/cn">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="dubbo,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="&amp;#x524D;&amp;#x8A00;&amp;#x5728;&amp;#x524D;&amp;#x9762;&amp;#x7684;&amp;#x5206;&amp;#x6790;&amp;#x4E2D;&amp;#xFF0C;&amp;#x5DF2;&amp;#x7ECF;&amp;#x5BF9;dubbo&amp;#x4E2D;Registry&amp;#x3001;RegistryFactory&amp;#x7684;&amp;#x76F8;&amp;#x5173;&amp;#x62BD;&amp;#x8C61;&amp;#x5C42;&amp;#x6">
+<meta name="keywords" content="dubbo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="dubbo源码分析注册中心之ZookeeperRegistry实现">
+<meta property="og:url" content="http://yoursite.com/2019/10/29/ZookeeperRegistry/index.html">
+<meta property="og:site_name" content="maslke&#39;s blog">
+<meta property="og:description" content="&amp;#x524D;&amp;#x8A00;&amp;#x5728;&amp;#x524D;&amp;#x9762;&amp;#x7684;&amp;#x5206;&amp;#x6790;&amp;#x4E2D;&amp;#xFF0C;&amp;#x5DF2;&amp;#x7ECF;&amp;#x5BF9;dubbo&amp;#x4E2D;Registry&amp;#x3001;RegistryFactory&amp;#x7684;&amp;#x76F8;&amp;#x5173;&amp;#x62BD;&amp;#x8C61;&amp;#x5C42;&amp;#x6">
+<meta property="og:locale" content="zh/cn">
+<meta property="og:updated_time" content="2019-10-29T15:13:20.225Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="dubbo源码分析注册中心之ZookeeperRegistry实现">
+<meta name="twitter:description" content="&amp;#x524D;&amp;#x8A00;&amp;#x5728;&amp;#x524D;&amp;#x9762;&amp;#x7684;&amp;#x5206;&amp;#x6790;&amp;#x4E2D;&amp;#xFF0C;&amp;#x5DF2;&amp;#x7ECF;&amp;#x5BF9;dubbo&amp;#x4E2D;Registry&amp;#x3001;RegistryFactory&amp;#x7684;&amp;#x76F8;&amp;#x5173;&amp;#x62BD;&amp;#x8C61;&amp;#x5C42;&amp;#x6">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/10/29/ZookeeperRegistry/">
+
+
+
+
+
+  <title>dubbo源码分析注册中心之ZookeeperRegistry实现 | maslke's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh/cn">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">maslke's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/29/ZookeeperRegistry/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="feng.dianjun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="maslke's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">dubbo源码分析注册中心之ZookeeperRegistry实现</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-29T20:36:51+08:00">
+                2019-10-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="&#x524D;&#x8A00;"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</h2><p>&#x5728;&#x524D;&#x9762;&#x7684;&#x5206;&#x6790;&#x4E2D;&#xFF0C;&#x5DF2;&#x7ECF;&#x5BF9;dubbo&#x4E2D;Registry&#x3001;RegistryFactory&#x7684;&#x76F8;&#x5173;&#x62BD;&#x8C61;&#x5C42;&#x6B21;&#x505A;&#x4E86;&#x8BF4;&#x660E;&#xFF0C;&#x5E76;&#x5C31;AbstractRegistry&#x548C;FailbackRegistry&#x7684;&#x5B9E;&#x73B0;&#x505A;&#x4E86;&#x8BE6;&#x7EC6;&#x7684;&#x5206;&#x6790;&#x3002;&#x4ECA;&#x5929;&#x5C31;&#x6765;&#x8BE6;&#x7EC6;&#x5206;&#x6790;&#x4E00;&#x4E0B;ZookeeperRegistry&#x7684;&#x5B9E;&#x73B0;&#xFF0C;&#x4EE5;&#x6B64;&#x6765;&#x5B8C;&#x7ED3;&#x5BF9;dubbo&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x7684;&#x5206;&#x6790;&#x3002;&#x81F3;&#x4E8E;&#x5176;&#x5B83;&#x7C7B;&#x578B;&#x7684;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#xFF0C;&#x5982;RedisRegistry&#x3001;ConsulRegistry&#x7B49;&#xFF0C;&#x5C31;&#x4E0D;&#x53E6;&#x884C;&#x8D58;&#x8FF0;&#x3002;</p>
+<h2 id="ZookeeperRegistry"><a href="#ZookeeperRegistry" class="headerlink" title="ZookeeperRegistry"></a>ZookeeperRegistry</h2><h3 id="&#x6784;&#x9020;&#x51FD;&#x6570;"><a href="#&#x6784;&#x9020;&#x51FD;&#x6570;" class="headerlink" title="&#x6784;&#x9020;&#x51FD;&#x6570;"></a>&#x6784;&#x9020;&#x51FD;&#x6570;</h3><p>&#x5148;&#x6765;&#x770B;&#x4E00;&#x4E0B;ZookeeperRegistry&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x3002;&#x5728;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E2D;&#xFF0C;&#x4E3B;&#x8981;&#x662F;&#x8FDB;&#x884C;&#x4E86;&#x6839;&#x8282;&#x70B9;&#x7684;&#x5904;&#x7406;&#x3001;&#x5EFA;&#x7ACB;&#x4E0E;zookeeper&#x670D;&#x52A1;&#x5668;&#x7684;&#x8FDE;&#x63A5;&#x3002;</p>
+<p>Zookeeper&#x4F7F;&#x7528;&#x7684;&#x662F;&#x4E00;&#x79CD;&#x7C7B;&#x4F3C;linux&#x6587;&#x4EF6;&#x7CFB;&#x7EDF;&#x7684;&#x6811;&#x5F62;&#x6570;&#x636E;&#x7ED3;&#x6784;&#x3002;dubbo&#x901A;&#x8FC7;&#x5728;Zookeeper&#x4E0A;&#x6CE8;&#x518C;&#x5404;&#x79CD;&#x8282;&#x70B9;&#x6765;&#x5B9E;&#x73B0;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x7684;&#x529F;&#x80FD;&#x3002;dubbo&#x4F7F;&#x7528;&#x7684;&#x6811;&#x5F62;&#x6570;&#x636E;&#x7ED3;&#x6784;&#xFF0C;&#x5B58;&#x5728;&#x4E00;&#x4E2A;&#x6839;&#x8282;&#x70B9;&#x3002;&#x6839;&#x8282;&#x70B9;&#x7684;&#x540D;&#x79F0;&#x662F;&#x53EF;&#x4EE5;&#x914D;&#x7F6E;&#x7684;&#x3002;&#x5728;dubbo&#x7684;&#x5B98;&#x65B9;&#x6587;&#x6863;&#x4E2D;&#x4E5F;&#x5DF2;&#x7ECF;&#x6CE8;&#x660E;&#xFF0C;&#x5982;&#x679C;&#x4E0D;&#x663E;&#x5F0F;&#x914D;&#x7F6E;group&#x5C5E;&#x6027;&#x7684;&#x8BDD;&#xFF0C;&#x5219;&#x4F7F;&#x7528;&#x9ED8;&#x8BA4;&#x7684;&#x6839;&#x8282;&#x70B9;&#x540D;&#x79F0;&#x201D;dubbo&#x201D;&#x3002;</p>
+<p>&#x5728;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E2D;&#xFF0C;&#x4F7F;&#x7528;zookeeperTransporter&#x53D8;&#x91CF;&#x6765;&#x4E0E;zookeeper&#x670D;&#x52A1;&#x5668;&#x8FDB;&#x884C;&#x8FDE;&#x63A5;&#xFF0C;&#x83B7;&#x53D6;zkClient&#x3002;&#x5728;dubbo&#x4E2D;&#xFF0C;&#x652F;&#x6301;&#x4E24;&#x79CD;&#x7C7B;&#x578B;&#x7684;zookeeper&#x5BA2;&#x6237;&#x7AEF;&#xFF0C;&#x5206;&#x522B;&#x4E3A;Curator&#x548C;ZkClient&#x3002;</p>
+<a id="more"></a>
+
+<h3 id="doRegistry"><a href="#doRegistry" class="headerlink" title="doRegistry"></a>doRegistry</h3><p>&#x5728;&#x5206;&#x6790;FailbackRegistry&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x5728;registry&#x3001;unRegistry&#x7B49;&#x51FD;&#x6570;&#x7684;&#x5B9E;&#x73B0;&#x4E2D;&#xFF0C;&#x5B9A;&#x4E49;&#x4E86;doRegistry&#x3001;doUnregistry&#x7B49;&#x62BD;&#x8C61;&#x65B9;&#x6CD5;&#x3002;FailbackRegistry&#x7C7B;&#x5C06;doRegistry&#x65B9;&#x6CD5;&#x4EA4;&#x7531;&#x5177;&#x4F53;&#x7684;&#x5B50;&#x7C7B;&#x6765;&#x8FDB;&#x884C;&#x5B9E;&#x73B0;&#x3002;&#x800C;&#x5728;FailbackRegistry&#x4E2D;&#xFF0C;registry&#x7B49;&#x65B9;&#x6CD5;&#x4E2D;&#x5E76;&#x4E0D;&#x5305;&#x542B;&#x4E0E;&#x5177;&#x4F53;&#x7684;&#x4E2D;&#x95F4;&#x4EF6;&#x8FDB;&#x884C;&#x4EA4;&#x4E92;&#x7684;&#x903B;&#x8F91;&#x3002;</p>
+<p>&#x90A3;&#x4E48;&#x5728;ZookeeperRegistry&#x4E2D;&#xFF0C;doRegistry&#x5230;&#x5E95;&#x662F;&#x600E;&#x4E48;&#x5B9E;&#x73B0;&#x7684;&#x5462;&#xFF1F;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doRegistry</span><span class="params">(URL url)</span> </span>{</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        zkClient.create(toUrlPath(url), url.getParameter(<span class="string">&quot;dynamic&quot;</span>, <span class="keyword">true</span>));</span><br><span class="line">    } <span class="keyword">catch</span> (Throwable e) {</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RpcException(<span class="string">&quot;Failed to register &quot;</span> + url + <span class="string">&quot; to zookeeper &quot;</span> +</span><br><span class="line">                              getUrl() + <span class="string">&quot;, cause:&quot;</span> + e.getMessage(), e);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x603B;&#x4F53;&#x4E0A;&#x6765;&#x8BF4;&#xFF0C;doRegistry&#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x8FD8;&#x662F;&#x975E;&#x5E38;&#x7B80;&#x5355;&#x7684;&#x3002;</p>
+<p>&#x9996;&#x5148;&#x6765;&#x770B;toUrlPath&#x3002;urlPath&#x7531;&#x4EE5;&#x4E0B;&#x51E0;&#x4E2A;&#x90E8;&#x5206;&#x7EC4;&#x6210;&#xFF1A;&#x4F7F;&#x7528;&#x7684;&#x6839;&#x8282;&#x70B9;&#x4FE1;&#x606F;&#xFF0C;interface&#x63A5;&#x53E3;&#x4FE1;&#x606F;&#xFF0C;&#x6CE8;&#x518C;&#x7684;&#x4FE1;&#x606F;&#x7C7B;&#x578B;&#x4EE5;&#x53CA;url&#x4FE1;&#x606F;&#x3002;&#x6839;&#x636E;url&#x4E2D;&#x53C2;&#x6570;&#x7684;&#x4E0D;&#x540C;&#xFF0C;&#x5C06;&#x4F1A;&#x751F;&#x6210;&#x4E0D;&#x540C;&#x7684;urlPath&#x3002;</p>
+<ul>
+<li><p>&#x6839;&#x8282;&#x70B9;&#x4FE1;&#x606F;&#x5373;&#x662F;&#x914D;&#x7F6E;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x4E2D;&#x6307;&#x5B9A;&#x7684;group&#x4FE1;&#x606F;&#x3002;&#x5982;&#x679C;&#x6CA1;&#x6709;&#x6307;&#x5B9A;&#x7684;&#x8BDD;&#xFF0C;&#x5219;&#x9ED8;&#x8BA4;&#x4F7F;&#x7528;&#x201D;/dubbo&#x201D;&#x3002;</p>
+</li>
+<li><p>&#x5982;&#x679C;url&#x4E2D;interface&#x53C2;&#x6570;&#x7684;&#x503C;&#x4E3A;&#x201D;*&#x201D;&#xFF0C;&#x5219;&#x8FD4;&#x56DE;&#x7A7A;&#x5B57;&#x7B26;&#x4E32;&#xFF0C;&#x5426;&#x5219;&#x8FD4;&#x56DE;&#x63A5;&#x53E3;&#x7684;&#x8DEF;&#x5F84;&#xFF0C;&#x6BD4;&#x5982;&#x201D;org.apache.dubbo.demo.DemoService&#x201D;&#x3002;&#x4EE5;&#x4E0A;&#x4E24;&#x4E2A;&#x90E8;&#x5206;&#xFF0C;&#x662F;&#x7531;&#x6E90;&#x4EE3;&#x7801;&#x4E2D;toServicePath&#x51FD;&#x6570;&#x5B9E;&#x73B0;&#x7684;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> String <span class="title">toServicePath</span><span class="params">(URL url)</span> </span>{</span><br><span class="line">    String name = url.getServiceInterface();</span><br><span class="line">    <span class="keyword">if</span> (<span class="string">&quot;*&quot;</span>.equals(name)) {</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.root;</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.root + <span class="string">&quot;/&quot;</span> + URL.encode(name);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>&#x6CE8;&#x518C;&#x7684;&#x8282;&#x70B9;&#x4FE1;&#x606F;&#x7C7B;&#x578B;&#xFF0C;&#x4E3A;&#x5982;&#x4E0B;&#x7684;&#x51E0;&#x79CD;&#xFF1A;providers&#x3001;consumers&#x3001;routers&#x548C;configurators&#x3002;&#x4EE5;&#x4E0A;&#x4E09;&#x4E2A;&#x90E8;&#x5206;&#xFF0C;&#x662F;&#x7531;&#x6E90;&#x4EE3;&#x7801;&#x4E2D;toCategoryPath&#x51FD;&#x6570;&#x5B9E;&#x73B0;&#x7684;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> String <span class="title">toCategoryPath</span><span class="params">(URL url)</span> </span>{</span><br><span class="line">    <span class="keyword">return</span> toServicePath(url) + <span class="string">&quot;/&quot;</span> + url.getParameter(<span class="string">&quot;category&quot;</span>, <span class="string">&quot;providers&quot;</span>);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>url&#x4FE1;&#x606F;&#xFF0C;&#x5373;&#x662F;&#x7F16;&#x7801;&#x540E;&#x7684;&#x5B8C;&#x6574;&#x8DEF;&#x5F84;&#x3002;</p>
+</li>
+</ul>
+<p>&#x5C06;&#x4EE5;&#x4E0A;&#x51E0;&#x4E2A;&#x90E8;&#x5206;&#x7EC4;&#x5408;&#x8D77;&#x6765;&#xFF0C;&#x5373;&#x5F97;&#x5230;&#x4E86;toUrlPath&#x7684;&#x503C;&#x3002;</p>
+<p>&#x5728;dubbo&#x5173;&#x4E8E;&#x914D;&#x7F6E;&#x4E2D;&#x5FC3;&#x7684;<a href="http://dubbo.apache.org/zh-cn/docs/user/references/xml/dubbo-registry.html" target="_blank" rel="noopener">&#x8BF4;&#x660E;&#x6587;&#x6863;</a>&#x4E2D;&#xFF0C;&#x6709;&#x5173;&#x4E8E;dynamic&#x53C2;&#x6570;&#x7684;&#x8BF4;&#x660E;&#x3002;</p>
+<blockquote>
+<p>&#x670D;&#x52A1;&#x662F;&#x5426;&#x52A8;&#x6001;&#x6CE8;&#x518C;&#xFF0C;&#x5982;&#x679C;&#x8BBE;&#x4E3A;false&#xFF0C;&#x6CE8;&#x518C;&#x540E;&#x5C06;&#x663E;&#x793A;&#x4E3A;disable&#x72B6;&#x6001;&#xFF0C;&#x9700;&#x4EBA;&#x5DE5;&#x542F;&#x7528;&#xFF0C;&#x5E76;&#x4E14;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#x505C;&#x6B62;&#x65F6;&#xFF0C;&#x4E5F;&#x4E0D;&#x4F1A;&#x81EA;&#x52A8;&#x53D6;&#x6D88;&#x6CE8;&#x518C;&#xFF0C;&#x9700;&#x4EBA;&#x5DE5;&#x7981;&#x7528;&#x3002;</p>
+</blockquote>
+<p>&#x8FD9;&#x4E2A;&#x53C2;&#x6570;&#xFF0C;&#x63A7;&#x5236;&#x5728;&#x8FDB;&#x884C;&#x521B;&#x5EFA;zookeeper&#x8282;&#x70B9;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x521B;&#x5EFA;&#x7684;&#x8282;&#x70B9;&#x662F;&#x5426;&#x4E3A;&#x4E34;&#x65F6;&#x8282;&#x70B9;&#x3002;&#x5982;&#x679C;&#x4E3A;true&#xFF0C;&#x5219;&#x521B;&#x5EFA;&#x4E34;&#x65F6;&#x8282;&#x70B9;&#xFF0C;&#x5728;&#x670D;&#x52A1;&#x7AEF;&#x4E0B;&#x7EBF;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x5BF9;&#x5E94;&#x7684;&#x8282;&#x70B9;&#x5C06;&#x4F1A;&#x81EA;&#x52A8;&#x5220;&#x9664;&#x3002;&#x5982;&#x679C;&#x4E3A;false&#x7684;&#x8BDD;&#xFF0C;&#x521B;&#x5EFA;&#x7684;&#x4E3A;&#x6C38;&#x4E45;&#x8282;&#x70B9;&#xFF0C;&#x5FC5;&#x987B;&#x624B;&#x52A8;&#x5220;&#x9664;&#x3002;</p>
+<h3 id="doUnregister"><a href="#doUnregister" class="headerlink" title="doUnregister"></a>doUnregister</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doUnregister</span><span class="params">(URL url)</span> </span>{</span><br><span class="line">	<span class="keyword">try</span> {</span><br><span class="line">        zkClient.delete(toUrlPath(url));</span><br><span class="line">    } <span class="keyword">catch</span> (Throwable e) {</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RpcException(<span class="string">&quot;Failed to unregister &quot;</span> + url + <span class="string">&quot; to zookeeper &quot;</span> + getUrl() + <span class="string">&quot;, cause: &quot;</span> + e.getMessage(), e);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>doUnregister&#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x4E5F;&#x5F88;&#x7B80;&#x5355;&#xFF0C;&#x7B80;&#x5355;&#x7684;&#x4ECE;zookeeper&#x4E0A;&#x5220;&#x9664;&#x5BF9;&#x5E94;&#x7684;&#x8282;&#x70B9;&#x5373;&#x53EF;&#x3002;</p>
+<h3 id="doSubscribe"><a href="#doSubscribe" class="headerlink" title="doSubscribe"></a>doSubscribe</h3><p>doSubscribe&#x7684;&#x903B;&#x8F91;&#xFF0C;&#x5728;url&#x4E2D;&#x7684;interface&#x53C2;&#x6570;&#x4E3A;&#x7A7A;&#x6216;&#x662F;&#x4E0D;&#x4E3A;&#x7A7A;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x5206;&#x4E3A;&#x4E24;&#x4E2A;&#x90E8;&#x5206;&#x3002;</p>
+<p>&#x5148;&#x6765;&#x770B;interface&#x53C2;&#x6570;&#x4E0D;&#x4E3A;&#x7A7A;&#x7684;&#x60C5;&#x51B5;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">List&lt;URL&gt; urls = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line"><span class="keyword">for</span> (String path : toCategoriesPath(url)) {</span><br><span class="line">    ConcurrentMap&lt;NotifyListener, ChildListener&gt; listeners = zkListeners.get(url);</span><br><span class="line">    <span class="keyword">if</span> (listeners == <span class="keyword">null</span>) {</span><br><span class="line">        zkListeners.putIfAbsent(url, <span class="keyword">new</span> ConcurrentHashMap&lt;&gt;());</span><br><span class="line">        listeners = zkListeners.get(url);</span><br><span class="line">    }</span><br><span class="line">    ChildListener zkListener = listeners.get(listener);</span><br><span class="line">    <span class="keyword">if</span> (zkListener == <span class="keyword">null</span>) {</span><br><span class="line">        listeners.putIfAbsent(listener, (parentPath, currentChilds) -&gt; </span><br><span class="line">            ZookeeperRegistry.<span class="keyword">this</span>.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds)));</span><br><span class="line">        zkListener = listener.get(listener);</span><br><span class="line">    }</span><br><span class="line">    zkClient.create(path, <span class="keyword">false</span>);</span><br><span class="line">    List&lt;String&gt; children = zkClient.addChildListener(path, zkListener);</span><br><span class="line">    <span class="keyword">if</span> (children != <span class="keyword">null</span>) {</span><br><span class="line">        urls.addAll(toUrlsWithEmpty(url, path, children));</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line">notify(url, listener, urls);</span><br></pre></td></tr></table></figure>
+
+<p>toCategoriesPath &#x4E2D;&#x7684;&#x903B;&#x8F91;&#xFF0C;&#x662F;&#x6839;&#x636E;url&#x4E2D;&#x7684;category&#x53C2;&#x6570;&#x4E2D;&#x7684;&#x4FE1;&#x606F;&#xFF0C;&#x6765;&#x751F;&#x6210;categoryUrl&#x3002;&#x5982;category&#x4E2D;&#x7684;&#x53C2;&#x6570;&#x5305;&#x542B;&#x591A;&#x4E2A;&#x503C;&#xFF0C;&#x5219;&#x4F1A;&#x751F;&#x6210;&#x591A;&#x4E2A;categoryUrl&#x3002;&#x5982;url &#x4E2D;&#x201D;category=consumers,routers&#x201D;&#xFF0C;&#x5219;&#x4F1A;&#x751F;&#x6210;&#x5982;&#x201D;/dubbo/org.apache.dubbo.demo.DemoService/consumers&#x201D;&#x3001;&#x201D;/dubbo/org.apache.dubbo.demo.DemoService/routers&#x201D;&#x7B49;&#x7684;categoryURL&#x3002;</p>
+<p>&#x53D8;&#x91CF;zkListeners&#x7684;&#x58F0;&#x660E;&#x4E3A;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ConcurrentMap&lt;URL, ConcurrentMap&lt;NotifyListener, ChildListener&gt;&gt; zkListeners = <span class="keyword">new</span> ConcurrentHashMap&lt;&gt;();</span><br></pre></td></tr></table></figure>
+
+<p>&#x53D8;&#x91CF;zkListeners&#x4E2D;&#x5B58;&#x653E;&#x7684;&#x662F;URL&#x548C;&#x4E8B;&#x4EF6;&#x76D1;&#x542C;&#x5668;&#x7684;&#x6620;&#x5C04;&#x5173;&#x7CFB;&#x3002;&#x5176;&#x4E2D;&#xFF0C;NotifyListener&#x7C7B;&#x578B;&#x7684;&#x76D1;&#x542C;&#x5668;&#x662F;&#x7528;&#x4E8E;&#x6D88;&#x8D39;&#x7AEF;&#x8BA2;&#x9605;URL&#x4FE1;&#x606F;&#x540E;&#xFF0C;&#x6267;&#x884C;&#x4E8B;&#x4EF6;&#x63A8;&#x9001;&#xFF0C;&#x800C;ChildListener&#x662F;&#x7528;&#x4E8E;&#x76D1;&#x542C;&#x67D0;&#x4E2A;&#x8282;&#x70B9;&#x4E0B;&#x5B50;&#x8282;&#x70B9;&#x5217;&#x8868;&#x7684;&#x53D8;&#x5316;&#x4FE1;&#x606F;&#x3002;&#x6211;&#x4EEC;&#x5148;&#x6765;&#x770B;&#x4E00;&#x4E0B;ChildListener&#x76D1;&#x542C;&#x5668;&#x7684;&#x5982;&#x4E0B;&#x5B9E;&#x73B0;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">childChanged</span><span class="params">(String path, List&lt;String&gt; children)</span> </span>{</span><br><span class="line">	notify(url, listener, toUrlsWithEmpty(url, path, children));</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x4EE5;&#x4E0A;&#x7684;&#x4EE3;&#x7801;&#xFF0C;&#x5373;&#x662F;&#x76D1;&#x542C;&#x5230;path&#x7684;&#x5B50;&#x8282;&#x70B9;&#x5217;&#x8868;&#x53D8;&#x5316;&#x540E;&#xFF0C;&#x5C06;&#x8981;&#x6267;&#x884C;&#x7684;&#x903B;&#x8F91;&#x3002;&#x5176;&#x4E2D;&#xFF0C;children&#x5217;&#x8868;&#x662F;path&#x7684;&#x5B50;&#x8282;&#x70B9;&#x5217;&#x8868;&#x3002;&#x5728;toUrlWithEmpty&#x7684;&#x903B;&#x8F91;&#x4E2D;&#xFF0C;&#x662F;&#x6839;&#x636E;&#x5F53;&#x524D;&#x7684;url&#x83B7;&#x53D6;&#x5E94;&#x8BE5;&#x5411;url&#x63A8;&#x9001;&#x7684;&#x901A;&#x77E5;&#x4E2D;&#x5E94;&#x8BE5;&#x5305;&#x542B;&#x7684;&#x5217;&#x8868;&#x7C7B;&#x578B;&#x3002;&#x5176;&#x4E2D;&#xFF0C;&#x4E3B;&#x8981;&#x7684;&#x903B;&#x8F91;&#x662F;&#x5728;UrlUtils&#x7684;isMatch&#x65B9;&#x6CD5;&#x3002;&#x5728;&#x8FD9;&#x4E2A;&#x65B9;&#x6CD5;&#x4E2D;&#xFF0C;&#x63D0;&#x4F9B;&#x4E86;&#x5224;&#x65AD;&#x4E24;&#x4E2A;url&#x662F;&#x5426;&#x5339;&#x914D;&#x7684;&#x76F8;&#x5173;&#x903B;&#x8F91;&#xFF0C;&#x7B80;&#x800C;&#x8A00;&#x4E4B;&#x662F;&#x6839;&#x636E;interface&#x3001;group&#x3001;version&#x7B49;&#x53C2;&#x6570;&#x6765;&#x8FDB;&#x884C;&#x5224;&#x65AD;&#x3002;&#x903B;&#x8F91;&#x6BD4;&#x8F83;&#x7B80;&#x5355;&#xFF0C;&#x5927;&#x5BB6;&#x53EF;&#x81EA;&#x884C;&#x67E5;&#x9605;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zkClient.create(path, <span class="keyword">false</span>);</span><br><span class="line">List&lt;String&gt; children = zkClient.addChildListener(path, zkListener);</span><br></pre></td></tr></table></figure>
+
+<p>&#x5982;&#x4E0A;&#x7684;&#x4E24;&#x53E5;&#x4EE3;&#x7801;&#xFF0C;&#x5219;&#x662F;&#x6267;&#x884C;&#x4E86;&#x8282;&#x70B9;&#x7684;&#x521B;&#x5EFA;&#xFF0C;&#x5E76;&#x83B7;&#x53D6;&#x4E86;&#x8282;&#x70B9;&#x4E0B;&#x7684;&#x5B50;&#x8282;&#x70B9;&#x4FE1;&#x606F;&#xFF0C;&#x540C;&#x65F6;&#x5EFA;&#x7ACB;&#x4E86;&#x5BF9;&#x6B64;&#x8DEF;&#x5F84;&#x4E0B;&#x5B50;&#x8282;&#x70B9;&#x53D8;&#x5316;&#x7684;&#x4E8B;&#x4EF6;&#x76D1;&#x542C;&#x3002;&#x83B7;&#x53D6;&#x5230;&#x5B50;&#x8282;&#x70B9;&#x4FE1;&#x606F;&#x4E4B;&#x540E;&#xFF0C;&#x8FDB;&#x4E00;&#x6B65;&#x53EF;&#x4EE5;&#x63D0;&#x53D6;&#x51FA;&#x76F8;&#x5173;&#x7684;URL&#x4FE1;&#x606F;&#x5217;&#x8868;&#xFF0C;&#x5411;&#x6267;&#x884C;&#x8BA2;&#x9605;&#x7684;URL&#x8FDB;&#x884C;&#x63A8;&#x9001;&#x3002;</p>
+<p>&#x4E0B;&#x9762;&#x6765;&#x770B;doSubscribe&#x64CD;&#x4F5C;&#x7684;&#x53E6;&#x5916;&#x4E00;&#x90E8;&#x5206;&#xFF0C;&#x5F53;interface&#x914D;&#x7F6E;&#x4E3A;&#x201D;*&#x201D;&#x65F6;&#x5019;&#x7684;&#x903B;&#x8F91;&#x3002;&#x8FD9;&#x90E8;&#x5206;&#x903B;&#x8F91;&#x7684;&#x91CD;&#x70B9;&#x5982;&#x4E0B;&#x6240;&#x793A;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">zkClient.create(root, <span class="keyword">false</span>);</span><br><span class="line">List&lt;String&gt; services = zkClient.addChildListener(root, zkListener);</span><br><span class="line"><span class="keyword">if</span> (CollectionUtils.isNotEmpty(services)) {</span><br><span class="line">    <span class="keyword">for</span> (String service : services) {</span><br><span class="line">        service = URL.decode(service);</span><br><span class="line">        anyServices.add(service);</span><br><span class="line">        subscribe(url.setPath(service).addParameters(<span class="string">&quot;interface&quot;</span>, service, <span class="string">&quot;check&quot;</span>, <span class="keyword">false</span>), listener);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x5F53;URL&#x4E2D;&#x7684;&#x53C2;&#x6570;&#x4E3A;ANY_VALUE(*)&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x8868;&#x793A;&#x5C06;&#x8981;&#x8BA2;&#x9605;&#x6240;&#x6709;&#x7684;service&#x63D0;&#x4F9B;&#x8005;&#x4FE1;&#x606F;&#x3002;&#x901A;&#x8FC7;&#x8C03;&#x7528;addChildListener&#xFF0C;&#x83B7;&#x53D6;&#x5230;&#x5F53;&#x524D;root&#x4E0B;&#x6240;&#x6709;&#x7684;services&#x63D0;&#x4F9B;&#x8005;&#x4FE1;&#x606F;&#x4E4B;&#x540E;&#xFF0C;&#x5FAA;&#x73AF;&#x7684;&#x6784;&#x9020;&#x65B0;&#x7684;URL&#xFF0C;&#x5E76;&#x6267;&#x884C;subscribe&#x64CD;&#x4F5C;&#x5373;&#x53EF;&#x3002;</p>
+<h3 id="doUnsubscribe"><a href="#doUnsubscribe" class="headerlink" title="doUnsubscribe"></a>doUnsubscribe</h3><p>doUnsubscribe &#x5219;&#x662F;&#x5728;zookeeper&#x4E0B;&#x53D6;&#x6D88;&#x5BF9;&#x67D0;&#x4E2A;&#x8282;&#x70B9;&#x7684;&#x5B50;&#x8282;&#x70B9;&#x53D8;&#x5316;&#x4E8B;&#x4EF6;&#x7684;&#x76D1;&#x542C;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doUnsubscribe</span><span class="params">(URL url, NotifyListener listener)</span> </span>{</span><br><span class="line">   ...</span><br><span class="line">    <span class="keyword">if</span> (<span class="string">&quot;*&quot;</span>.equals(url.getServiceInterface())) {</span><br><span class="line">        String root = toRootPath();</span><br><span class="line">        zkClient.removeChildListener(root, zkListener);</span><br><span class="line">    } <span class="keyword">else</span> {</span><br><span class="line">        <span class="keyword">for</span> (String path : toCategoriesPath(url)) {</span><br><span class="line">            zkClient.removeChildListener(path, zkListener);</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x5728;&#x5982;&#x4E0A;&#x7684;&#x4EE3;&#x7801;&#x4E2D;&#xFF0C;&#x8C03;&#x7528;zkClient.removeChildListener&#x6765;&#x53D6;&#x6D88;&#x4E8B;&#x4EF6;&#x76D1;&#x542C;&#x3002;&#x5728;&#x4E8E;&#x6B64;&#x5904;&#x6709;&#x4E2A;&#x7591;&#x95EE;&#xFF0C;&#x4E3A;&#x4F55;&#x6B64;&#x5904;&#x6CA1;&#x6709;&#x4ECE;ZkListeners&#x4E2D;&#x5220;&#x9664;&#x4E0E;&#x6B64;url&#x76F8;&#x5173;&#x8054;&#x7684;&#x76D1;&#x542C;&#x4E8B;&#x4EF6;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zkListeners.remove(url);</span><br></pre></td></tr></table></figure>
+
+<h3 id="lookup"><a href="#lookup" class="headerlink" title="lookup"></a>lookup</h3><p>lookup&#x64CD;&#x4F5C;&#x662F;&#x83B7;&#x53D6;&#x67D0;&#x4E2A;url&#x4E0B;&#x6240;&#x6709;&#x5B50;&#x8282;&#x70B9;&#x4FE1;&#x606F;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> List&lt;URL&gt; <span class="title">lookup</span><span class="params">(URL url)</span> </span>{</span><br><span class="line">    List&lt;String&gt; providers = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    <span class="keyword">for</span> (String path : toCategoriesPath(url)) {</span><br><span class="line">        List&lt;String&gt; children = zkClient.getChildren(path);</span><br><span class="line">        <span class="keyword">if</span> (children != <span class="keyword">null</span>) {</span><br><span class="line">            providers.addAll(children);</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> toUrlsWithoutEmpty(url, providers);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x5BF9;&#x4E8E;&#x67D0;&#x4E2A;url&#x4FE1;&#x606F;&#xFF0C;&#x6839;&#x636E;url&#x4E2D;category&#x53C2;&#x6570;&#x4E2D;&#x5305;&#x542B;&#x7684;&#x503C;&#xFF0C;&#x5206;&#x522B;&#x5230;&#x4E0D;&#x540C;&#x7684;&#x8DEF;&#x5F84;&#x4E0B;&#xFF0C;&#x83B7;&#x53D6;&#x5B50;&#x8282;&#x70B9;&#x5217;&#x8868;&#x3002;&#x6700;&#x540E;&#x5C06;&#x7ED3;&#x679C;&#x7EC4;&#x7EC7;&#x5230;&#x4E00;&#x8D77;&#xFF0C;&#x7ECF;&#x8FC7;UrlUtils.isMatch&#x7684;&#x8FC7;&#x6EE4;&#x540E;&#x518D;&#x8FD4;&#x56DE;&#x3002;</p>
+<h2 id="&#x603B;&#x7ED3;"><a href="#&#x603B;&#x7ED3;" class="headerlink" title="&#x603B;&#x7ED3;"></a>&#x603B;&#x7ED3;</h2><p>dubbo&#x4E2D;&#x7684;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#xFF0C;&#x7ECF;&#x8FC7;&#x4E86;&#x5C42;&#x5C42;&#x62BD;&#x8C61;&#xFF0C;&#x53EF;&#x4EE5;&#x53D1;&#x73B0;&#x6700;&#x540E;&#x5728;&#x5177;&#x4F53;&#x7684;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x5B9E;&#x73B0;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x529F;&#x80FD;&#x5B9E;&#x73B0;&#x7279;&#x522B;&#x7684;&#x7B80;&#x5355;&#x3002;&#x5728;&#x65B9;&#x4FBF;&#x529F;&#x80FD;&#x5B9E;&#x73B0;&#x7684;&#x540C;&#x65F6;&#xFF0C;&#x8FD8;&#x63D0;&#x4F9B;&#x4E86;&#x826F;&#x597D;&#x7684;&#x53EF;&#x6269;&#x5C55;&#x6027;&#x3002;&#x8FD9;&#x662F;&#x8BBE;&#x8BA1;&#x6A21;&#x5F0F;&#x7684;&#x826F;&#x597D;&#x5E94;&#x7528;&#x6848;&#x4F8B;&#xFF0C;&#x503C;&#x5F97;&#x6211;&#x4EEC;&#x53CD;&#x590D;&#x53BB;&#x5B66;&#x4E60;&#x3002;</p>
+<p>&#x81F3;&#x6B64;&#xFF0C;&#x6211;&#x4EEC;&#x5BF9;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x7684;&#x5206;&#x6790;&#x6682;&#x544A;&#x4E00;&#x6BB5;&#x843D;&#xFF0C;&#x63A5;&#x4E0B;&#x6765;&#x7684;&#x4E00;&#x6BB5;&#x65F6;&#x95F4;&#x6765;&#x770B;&#x4E00;&#x4E0B;dubbo&#x4E2D;&#x8FDC;&#x7A0B;&#x670D;&#x52A1;&#x662F;&#x5982;&#x4F55;&#x8F6C;&#x5316;&#x4E3A;&#x672C;&#x5730;&#x65B9;&#x6CD5;&#x8C03;&#x7528;&#x7684;&#x3002;</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/dubbo/" rel="tag"># dubbo</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/27/AdaptiveClassCodeGenerator/" rel="next" title="dubbo源码分析之AdaptiveClass代码自动生成机制">
+                <i class="fa fa-chevron-left"></i> dubbo源码分析之AdaptiveClass代码自动生成机制
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="feng.dianjun">
+          <p class="site-author-name" itemprop="name">feng.dianjun</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZookeeperRegistry"><span class="nav-number">2.</span> <span class="nav-text">ZookeeperRegistry</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#构造函数"><span class="nav-number">2.1.</span> <span class="nav-text">构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#doRegistry"><span class="nav-number">2.2.</span> <span class="nav-text">doRegistry</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#doUnregister"><span class="nav-number">2.3.</span> <span class="nav-text">doUnregister</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#doSubscribe"><span class="nav-number">2.4.</span> <span class="nav-text">doSubscribe</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#doUnsubscribe"><span class="nav-number">2.5.</span> <span class="nav-text">doUnsubscribe</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lookup"><span class="nav-number">2.6.</span> <span class="nav-text">lookup</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng.dianjun</span>
+</div>
+
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="https://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Gemini
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

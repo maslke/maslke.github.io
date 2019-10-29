@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh/cn">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="springframework,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="&amp;#x5728;&amp;#x4F7F;&amp;#x7528;spring framework&amp;#x6846;&amp;#x67B6;&amp;#x7684;&amp;#x65F6;&amp;#x5019;&amp;#xFF0C;&amp;#x7ECF;&amp;#x5E38;&amp;#x4F1A;&amp;#x4F7F;&amp;#x7528;JdbcTemplate&amp;#x6765;&amp;#x64CD;&amp;#x4F5C;&amp;#x6570;&amp;#x636E;&amp;#x5E93;&amp;#x3002;&amp;#x4">
+<meta name="keywords" content="springframework">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LinkedCaseInsensitiveMap源码分析">
+<meta property="og:url" content="http://yoursite.com/2019/07/29/LinkedCaseInsensitiveMap源码分析/index.html">
+<meta property="og:site_name" content="maslke&#39;s blog">
+<meta property="og:description" content="&amp;#x5728;&amp;#x4F7F;&amp;#x7528;spring framework&amp;#x6846;&amp;#x67B6;&amp;#x7684;&amp;#x65F6;&amp;#x5019;&amp;#xFF0C;&amp;#x7ECF;&amp;#x5E38;&amp;#x4F1A;&amp;#x4F7F;&amp;#x7528;JdbcTemplate&amp;#x6765;&amp;#x64CD;&amp;#x4F5C;&amp;#x6570;&amp;#x636E;&amp;#x5E93;&amp;#x3002;&amp;#x4">
+<meta property="og:locale" content="zh/cn">
+<meta property="og:updated_time" content="2019-10-16T15:29:10.190Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LinkedCaseInsensitiveMap源码分析">
+<meta name="twitter:description" content="&amp;#x5728;&amp;#x4F7F;&amp;#x7528;spring framework&amp;#x6846;&amp;#x67B6;&amp;#x7684;&amp;#x65F6;&amp;#x5019;&amp;#xFF0C;&amp;#x7ECF;&amp;#x5E38;&amp;#x4F1A;&amp;#x4F7F;&amp;#x7528;JdbcTemplate&amp;#x6765;&amp;#x64CD;&amp;#x4F5C;&amp;#x6570;&amp;#x636E;&amp;#x5E93;&amp;#x3002;&amp;#x4">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/07/29/LinkedCaseInsensitiveMap源码分析/">
+
+
+
+
+
+  <title>LinkedCaseInsensitiveMap源码分析 | maslke's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh/cn">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">maslke's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/29/LinkedCaseInsensitiveMap源码分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="feng.dianjun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="maslke's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">LinkedCaseInsensitiveMap源码分析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-07-29T22:44:41+08:00">
+                2019-07-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>&#x5728;&#x4F7F;&#x7528;spring framework&#x6846;&#x67B6;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x7ECF;&#x5E38;&#x4F1A;&#x4F7F;&#x7528;JdbcTemplate&#x6765;&#x64CD;&#x4F5C;&#x6570;&#x636E;&#x5E93;&#x3002;&#x4F7F;&#x7528;JdbcTemplate&#x4ECE;&#x6570;&#x636E;&#x5E93;&#x4E2D;&#x67E5;&#x8BE2;&#x6570;&#x636E;&#x7684;&#x5178;&#x578B;&#x64CD;&#x4F5C;&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Map&lt;String, Object&gt; map = jdbcTemplate.queryForMap(<span class="string">&quot;SELECT name,id FROM user WHERE id=?&quot;</span>, <span class="string">&quot;1&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>&#x6211;&#x4EEC;&#x77E5;&#x9053;&#xFF0C;&#x5728;oracle&#x6570;&#x636E;&#x5E93;&#x4E2D;&#xFF0C;&#x5B57;&#x6BB5;&#x540D;&#x79F0;&#x662F;&#x5927;&#x5C0F;&#x5199;&#x4E0D;&#x654F;&#x611F;&#x7684;&#xFF0C;oracle&#x4F1A;&#x7EDF;&#x4E00;&#x5C06;&#x5B57;&#x6BB5;&#x540D;&#x79F0;&#x8F6C;&#x6362;&#x4E3A;&#x5927;&#x5199;&#x6765;&#x8FDB;&#x884C;&#x5904;&#x7406;&#xFF0C;&#x4E0A;&#x4E2A;&#x793A;&#x4F8B;&#x4E2D;&#x7684;&#x5B57;&#x6BB5;&#x540D;&#x79F0;&#x4F1A;&#x8F6C;&#x6362;&#x4E3A;NAME&#x548C;ID&#xFF1B;&#x800C;&#x5728;postgresql&#x6570;&#x636E;&#x5E93;&#x4E2D;&#xFF0C;&#x5B57;&#x6BB5;&#x540D;&#x79F0;&#x662F;&#x5927;&#x5C0F;&#x5199;&#x654F;&#x611F;&#x7684;&#xFF0C;pg&#x4F1A;&#x7EDF;&#x4E00;&#x5C06;&#x5B57;&#x6BB5;&#x540D;&#x79F0;&#x8F6C;&#x6362;&#x4E3A;&#x5C0F;&#x5199;&#x6765;&#x8FDB;&#x884C;&#x5904;&#x7406;&#xFF0C;&#x4E0A;&#x4E2A;&#x793A;&#x4F8B;&#x4E2D;&#x7684;&#x5B57;&#x6BB5;&#x540D;&#x79F0;&#x4F1A;&#x8F6C;&#x6362;&#x4E3A;name&#x548C;id&#x3002;</p>
+<p>&#x5BF9;JdbcTemplate&#x67E5;&#x8BE2;&#x7684;&#x5177;&#x4F53;&#x5B9E;&#x73B0;&#x4EE3;&#x7801;&#x6211;&#x4EEC;&#x4ECA;&#x5929;&#x5148;&#x4E0D;&#x8FDB;&#x884C;&#x5206;&#x6790;&#xFF0C;&#x53EA;&#x9700;&#x8981;&#x660E;&#x786E;&#x7684;&#x4E00;&#x70B9;&#x662F;&#x5728;&#x4F7F;&#x7528;JdbcTemplate&#x6267;&#x884C;&#x5982;&#x4E0A;&#x67E5;&#x8BE2;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x5728;&#x67E5;&#x8BE2;&#x83B7;&#x53D6;&#x5230;ResultSet&#x4E4B;&#x540E;&#xFF0C;&#x6709;&#x4E2A;&#x5904;&#x7406;&#x8FC7;&#x7A0B;&#x662F;&#x5B8C;&#x6210;ResultSet&#x5230;RowMapper&#x7684;&#x8F6C;&#x6362;&#x3002;&#x8F6C;&#x6362;&#x4E4B;&#x540E;&#xFF0C;&#x5219;&#x5C06;ResultSet&#x4E2D;&#x7684;&#x6570;&#x636E;&#x62BD;&#x53D6;&#x5230;Map&#x4E2D;&#x8FD4;&#x56DE;&#x7ED9;&#x6211;&#x4EEC;&#x3002;</p>
+<p>&#x57FA;&#x4E8E;&#x4EE5;&#x4E0A;&#x6211;&#x4EEC;&#x7684;&#x5206;&#x6790;&#xFF0C;&#x6211;&#x4EEC;&#x53EF;&#x80FD;&#x4F1A;&#x60F3;&#x5F53;&#x7136;&#x7684;&#x8BA4;&#x4E3A;&#xFF0C;&#x5728;oracle&#x6570;&#x636E;&#x5E93;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x6211;&#x4EEC;&#x53EF;&#x4EE5;&#x4F7F;&#x7528;map.get(&#x201C;NAME&#x201D;)&#x548C;map.get(&#x201C;ID&#x201D;)&#x6765;&#x8FDB;&#x884C;&#x6570;&#x636E;&#x7684;&#x83B7;&#x53D6;&#xFF0C;&#x5728;pg&#x6570;&#x636E;&#x5E93;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x6211;&#x4EEC;&#x53EF;&#x4EE5;&#x4F7F;&#x7528;map.get(&#x201C;name&#x201D;)&#x548C;map.get(&#x201C;id&#x201D;)&#x6765;&#x8FDB;&#x884C;&#x6570;&#x636E;&#x7684;&#x83B7;&#x53D6;&#x3002;</p>
+<a id="more"></a>
+
+<p>&#x5F53;&#x7136;&#xFF0C;&#x4E0A;&#x9762;&#x7684;&#x60F3;&#x6CD5;&#x662F;&#x6B63;&#x786E;&#x7684;&#x3002;&#x4F46;&#x662F;&#x5982;&#x679C;&#x6211;&#x4EEC;&#x5728;oracle&#x6570;&#x636E;&#x5E93;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x4F7F;&#x7528;map.get(&#x201C;name&#x201D;)&#x6765;&#x8FDB;&#x884C;&#x6570;&#x636E;&#x83B7;&#x53D6;&#x7684;&#x8BDD;&#xFF0C;&#x4F1A;&#x53D1;&#x751F;&#x4EC0;&#x4E48;&#x60C5;&#x51B5;&#x5462;&#xFF1F;&#x7B54;&#x6848;&#x662F;&#x5B8C;&#x5168;&#x53EF;&#x4EE5;&#x3002;&#x8FD9;&#x5C31;&#x8981;&#x5F15;&#x51FA;&#x6211;&#x4EEC;&#x4ECA;&#x5929;&#x5C06;&#x8981;&#x4ECB;&#x7ECD;&#x7684;&#x4E3B;&#x89D2;&#x2014;&#x2014;LinkedCaseInsensitiveMap&#x4E86;&#x3002;</p>
+<p>LinkedCaseInsensitiveMap&#xFF0C;&#x4ECE;&#x540D;&#x5B57;&#x4E0A;&#x770B;&#xFF0C;&#x53EF;&#x4EE5;&#x7406;&#x89E3;&#x4E3A;&#x5927;&#x5C0F;&#x5199;&#x4E0D;&#x654F;&#x611F;&#x7684;map&#xFF0C;&#x90A3;&#x4E48;&#x5B83;&#x662F;&#x5982;&#x4F55;&#x5B9E;&#x73B0;&#x7684;&#x5462;&#xFF1F;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LinkedCaseInsensitiveMap</span>&lt;<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">Map</span>&lt;<span class="title">String</span>, <span class="title">V</span>&gt;, <span class="title">Serializable</span>, <span class="title">Cloneable</span></span></span><br></pre></td></tr></table></figure>
+
+<p>&#x5728;&#x5B83;&#x7684;&#x6E90;&#x7801;&#x4E2D;&#xFF0C;&#x5B9A;&#x4E49;&#x4E86;&#x5982;&#x4E0B;&#x7684;&#x51E0;&#x4E2A;&#x53D8;&#x91CF;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> LinkedHashMap&lt;String, V&gt; targetMap;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> HashMap&lt;String, String&gt; caseInsensitiveKeys;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Locale locale;</span><br></pre></td></tr></table></figure>
+
+<p>&#x4ECE;&#x4EE5;&#x4E0A;&#x7684;&#x51E0;&#x4E2A;&#x53D8;&#x91CF;&#x53EF;&#x4EE5;&#x731C;&#x6D4B;&#xFF0C;targetMap&#x53EF;&#x80FD;&#x662F;&#x771F;&#x5B9E;&#x5B58;&#x50A8;&#x6570;&#x636E;&#x7684;map&#xFF0C;&#x800C;caseInsensitiveKeys&#x8FD9;&#x4E2A;map&#x5927;&#x6982;&#x662F;&#x7528;&#x6765;&#x5904;&#x7406;key&#x7684;&#x5927;&#x5C0F;&#x5199;&#x6620;&#x5C04;&#xFF0C;locale&#x7528;&#x6765;&#x5904;&#x7406;&#x4E00;&#x4E9B;&#x672C;&#x5730;&#x5316;&#x4FE1;&#x606F;&#xFF0C;&#x6BD4;&#x5982;&#x7528;&#x4E8E;&#x83B7;&#x53D6;&#x67D0;&#x4E2A;key&#x5BF9;&#x5E94;&#x7684;&#x5C0F;&#x5199;&#x5F62;&#x5F0F;&#x3002;&#x8FD9;&#x79CD;&#x731C;&#x6D4B;&#x5230;&#x5E95;&#x6B63;&#x786E;&#x4E0D;&#x6B63;&#x786E;&#x5462;&#xFF1F;</p>
+<p>&#x6765;&#x770B;&#x4E00;&#x4E0B;&#x6784;&#x9020;&#x51FD;&#x6570;&#x5427;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">LinkedCaseInsensitiveMap</span><span class="params">(<span class="keyword">int</span> initialCapacity, @Nullable Locale locale)</span> </span>{</span><br><span class="line">    <span class="keyword">this</span>.targetMap = <span class="keyword">new</span> LinkedHashMap&lt;String, V&gt;(initialCapacity) {</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">containsKey</span><span class="params">(Object key)</span> </span>{</span><br><span class="line">            <span class="keyword">return</span> LinkedCaseInsensitiveMap.<span class="keyword">this</span>.containsKey(key);</span><br><span class="line">        }</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">removeEldestEntry</span><span class="params">(Map.Entry&lt;String, V&gt; eldest)</span> </span>{</span><br><span class="line">            <span class="keyword">boolean</span> doRemove = LinkedCaseInsensitiveMap.<span class="keyword">this</span>.removeEldestEntry(eldest);</span><br><span class="line">            <span class="keyword">if</span> (doRemove) {</span><br><span class="line">                caseInsensitiveKeys.remove(convertKey(eldest.getKey()));</span><br><span class="line">            }</span><br><span class="line">            <span class="keyword">return</span> doRemove;</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">this</span>.caseInsensitiveKeys = <span class="keyword">new</span> HashMap&lt;&gt;(initialCapacity);</span><br><span class="line">    <span class="keyword">this</span>.locale = (locale != <span class="keyword">null</span> ? locale : Locale.getDefault());</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x5728;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E2D;&#xFF0C;&#x91CD;&#x5199;&#x4E86;&#x4E24;&#x4E2A;&#x65B9;&#x6CD5;&#xFF0C;&#x5206;&#x522B;&#x662F;containsKey&#x548C;removeEldestEntry&#x3002;</p>
+<p>&#x5BF9;&#x4E8E;removeEldestEntry&#xFF0C;&#x91CD;&#x5199;&#x4E4B;&#x540E;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;false&#xFF0C;&#x5373;&#x4E0D;&#x8981;&#x6C42;&#x5220;&#x9664;&#x6700;&#x8001;&#x7684;Entry&#x3002;</p>
+<p>&#x91CD;&#x5199;&#x4E4B;&#x540E;&#xFF0C;containsKey&#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">containsKey</span><span class="params">(Object key)</span> </span>{</span><br><span class="line">    <span class="keyword">return</span> (key <span class="keyword">instanceof</span> String &amp;&amp; <span class="keyword">this</span>.caseInsensitiveKeys.containsKey(convert((Strng) key)));</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">protected</span> String <span class="title">convertKey</span><span class="params">(String key)</span> </span>{</span><br><span class="line">    <span class="keyword">return</span> key.toLowerCase(getLocale());</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x4E3A;&#x4E86;&#x66F4;&#x597D;&#x7684;&#x7406;&#x89E3;&#x91CD;&#x5199;&#x8FD9;&#x4E24;&#x4E2A;&#x51FD;&#x6570;&#x7684;&#x610F;&#x56FE;&#xFF0C;&#x9700;&#x8981;&#x9996;&#x5148;&#x6765;&#x5206;&#x6790;&#x4E00;&#x4E0B;&#x5176;put&#x64CD;&#x4F5C;&#x548C;get&#x64CD;&#x4F5C;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> V <span class="title">put</span><span class="params">(String key, @Nullable V value)</span> </span>{</span><br><span class="line">    String oldKey = <span class="keyword">this</span>.caseInsensitiveKeys.put(convert(key), key);</span><br><span class="line">    V oldKeyValue = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">if</span> (oldKey != <span class="keyword">null</span> &amp;&amp; !oldKey.equals(key)) {</span><br><span class="line">        oldKeyValue = <span class="keyword">this</span>.targetMap.remove(oldKey);</span><br><span class="line">    }</span><br><span class="line">    V oldValue = <span class="keyword">this</span>.targetMap.put(key, value);</span><br><span class="line">    <span class="keyword">return</span> (oldKeyValue != <span class="keyword">null</span> ? oldKeyValue : oldValue);</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">(Object key)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (key <span class="keyword">instanceof</span> String) {</span><br><span class="line">        String caseInsensitiveKey = <span class="keyword">this</span>.caseInsensitiveKeys.get(convertkey(key));</span><br><span class="line">        <span class="keyword">if</span> (caseInsensitiveKey != <span class="keyword">null</span>) {</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>.targetMap.get(caseInsensitiveKey);</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x6211;&#x4EEC;&#x6765;&#x5206;&#x6790;&#x4E00;&#x4E0B;put&#x51FD;&#x6570;&#xFF0C;&#x4ECE;&#x4E2D;&#x53EF;&#x4EE5;&#x770B;&#x51FA;caseInsensitiveKeys&#x8FD9;&#x4E2A;map&#x7684;key&#x5373;&#x4F7F;&#x5C0F;&#x5199;&#x7684;&#x5B57;&#x6BB5;&#x540D;&#x79F0;&#x5230;&#x5B57;&#x6BB5;&#x540D;&#x79F0;&#x7684;&#x6620;&#x5C04;&#xFF0C;&#x7B2C;&#x4E00;&#x884C;&#x4E2D;&#x7684;oldKey&#x5BF9;&#x5E94;&#x7684;&#x662F;&#x5B58;&#x50A8;&#x5728;targetMap&#x4E2D;&#x7684;key&#x3002;&#x5982;&#x679C;oldKey&#x4E3A;null&#x5E76;&#x4E14;oldKey&#x548C;key&#x4E0D;&#x76F8;&#x7B49;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x8BF4;&#x660E;&#x5B58;&#x5728;&#x63D2;&#x5165;&#x91CD;&#x590D;&#x7684;&#x60C5;&#x51B5;&#xFF0C;&#x5E94;&#x8BE5;&#x9996;&#x5148;&#x5728;targetMap&#x4E2D;&#x6267;&#x884C;&#x5220;&#x9664;&#x64CD;&#x4F5C;&#x3002;&#x5220;&#x9664;&#x5B8C;&#x6210;&#x540E;&#xFF0C;&#x518D;&#x5728;targetMap&#x4E2D;&#x8FDB;&#x884C;&#x63D2;&#x5165;&#x3002;&#x7406;&#x89E3;&#x4E86;put&#x51FD;&#x6570;&#x4E4B;&#x540E;&#xFF0C;get&#x51FD;&#x6570;&#x7684;&#x5B9E;&#x73B0;&#x5C31;&#x4E00;&#x76EE;&#x4E86;&#x7136;&#x4E86;&#x3002;</p>
+<p>&#x770B;&#x8FC7;&#x4E86;put&#x51FD;&#x6570;&#x548C;get&#x51FD;&#x6570;&#xFF0C;&#x518D;&#x56DE;&#x8FC7;&#x5934;&#x6765;&#x770B;&#x4E00;&#x4E0B;&#x91CD;&#x5199;&#x7684;containsKey&#x51FD;&#x6570;&#x3002;&#x5982;&#x4F55;&#x5224;&#x65AD;targetMap&#x4E2D;&#x662F;&#x5426;&#x5B58;&#x5728;&#x67D0;&#x4E2A;&#x5B57;&#x6BB5;&#x540D;&#x79F0;&#xFF08;&#x5404;&#x79CD;&#x5F62;&#x5F0F;&#x7684;&#x62FC;&#x5199;&#xFF09;&#x5462;&#xFF1F;&#x9996;&#x5148;&#x5C06;&#x5B57;&#x6BB5;&#x540D;&#x79F0;&#x8F6C;&#x6362;&#x4E3A;&#x5C0F;&#x5199;&#x62FC;&#x5199;&#x5F62;&#x5F0F;&#xFF0C;&#x7136;&#x540E;&#x5224;&#x65AD;&#x662F;&#x5426;&#x5728;caseInsensitiveKeys&#x4E2D;&#x662F;&#x5426;&#x5B58;&#x5728;&#x5373;&#x53EF;&#x3002;</p>
+<p>&#x73B0;&#x5728;&#x6765;&#x56DE;&#x60F3;&#x4E00;&#x4E0B;&#x672C;&#x6587;&#x5F00;&#x5934;&#x63D0;&#x51FA;&#x95EE;&#x9898;&#xFF0C;&#x9488;&#x5BF9;&#x672C;&#x6587;&#x7684;&#x573A;&#x666F;&#xFF0C;LinkedCaseInsensitiveMap&#x4E2D;&#x6570;&#x636E;&#x662F;&#x5982;&#x4F55;&#x7EC4;&#x7EC7;&#x7684;&#x5462;&#xFF1F;</p>
+<p>&#x5176;&#x5B9E;&#x975E;&#x5E38;&#x7B80;&#x5355;&#xFF0C;</p>
+<p>&#x5728;oracle&#x6570;&#x636E;&#x5E93;&#x4E0B;&#xFF0C;caseInsensitiveKeys&#x4FDD;&#x5B58;&#x4E86;(name, NAME)&#x548C;(id, ID)&#x4E24;&#x4E2A;key-value&#x5BF9;&#xFF0C;&#x800C;targetMap&#x4FDD;&#x5B58;&#x4E86;(NAME, VALUE1)&#x548C;(ID, VALUE2)&#x4E24;&#x4E2A;key-value&#x5BF9;&#x3002;</p>
+<p>&#x5728;pg&#x6570;&#x636E;&#x5E93;&#x4E0B;&#xFF0C;caseInsensitiveKeys&#x4FDD;&#x5B58;&#x4E86;(name, name)&#x548C;(id,id)&#x4E24;&#x4E2A;key-value&#x5BF9;&#xFF0C;&#x800C;targetMap&#x4FDD;&#x5B58;&#x4E86;(name, VALUE1)&#x548C;(id, value2)&#x4E24;&#x4E2A;key-value&#x5BF9;&#x3002;</p>
+<p>&#x8FD9;&#x6837;&#x4E00;&#x756A;&#x5904;&#x7406;&#xFF0C;&#x95EE;&#x9898;&#x5F97;&#x4EE5;&#x89E3;&#x51B3;&#x3002;</p>
+<h2 id="&#x540E;&#x8BB0;"><a href="#&#x540E;&#x8BB0;" class="headerlink" title="&#x540E;&#x8BB0;"></a>&#x540E;&#x8BB0;</h2><p>&#x610F;&#x8BC6;&#x5230;&#x8FD9;&#x4E2A;&#x95EE;&#x9898;&#xFF0C;&#x7EAF;&#x5C5E;&#x610F;&#x5916;&#x3002;&#x4EE5;&#x524D;&#x4ECE;&#x6765;&#x6CA1;&#x6709;&#x5173;&#x6CE8;&#x8FC7;&#x8FD9;&#x4E2A;Map&#x7684;key&#x7684;&#x95EE;&#x9898;&#x3002;&#x524D;&#x6BB5;&#x65F6;&#x95F4;&#x5728;&#x5904;&#x7406;&#x4E00;&#x4E2A;&#x5E73;&#x53F0;&#xFF0C;&#x9700;&#x8981;&#x628A;&#x4EE5;&#x524D;&#x7684;&#x57FA;&#x4E8E;oracle&#x7684;&#x4E1A;&#x52A1;&#x4EE3;&#x7801;&#x505A;pg&#x517C;&#x5BB9;&#x6027;&#x6539;&#x9020;&#x3002;&#x5728;&#x5904;&#x7406;&#x517C;&#x5BB9;&#x6027;&#x6539;&#x9020;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x540E;&#x53F0;&#x4E1A;&#x52A1;&#x4EE3;&#x7801;&#x6CA1;&#x6709;&#x53D1;&#x73B0;&#x4EC0;&#x4E48;&#x95EE;&#x9898;&#xFF0C;&#x4F46;&#x662F;&#x5F53;&#x628A;&#x6570;&#x636E;&#x4F20;&#x9012;&#x5230;&#x524D;&#x53F0;&#xFF0C;&#x8FDB;&#x884C;web&#x5316;&#x5C55;&#x793A;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x7ACB;&#x523B;&#x66B4;&#x9732;&#x51FA;&#x4E86;&#x95EE;&#x9898;&#xFF0C;&#x524D;&#x53F0;&#x9875;&#x9762;&#x9891;&#x9891;&#x62A5;&#x9519;&#xFF0C;&#x5B57;&#x6BB5;&#x4E0D;&#x5B58;&#x5728;&#xFF0C;&#x8FD9;&#x624D;&#x6709;&#x4E86;&#x672C;&#x6587;&#x7684;&#x601D;&#x8003;&#x3002;</p>
+<p>&#x81F3;&#x4E8E;&#x6700;&#x540E;&#x95EE;&#x9898;&#x662F;&#x5982;&#x4F55;&#x89E3;&#x51B3;&#x7684;&#xFF0C;&#x5176;&#x5B9E;&#x4E5F;&#x5F88;&#x7B80;&#x5355;&#x3002;&#x4E0A;&#x9762;&#x6709;&#x8BF4;&#x5230;&#xFF0C;&#x67E5;&#x8BE2;&#x83B7;&#x53D6;&#x7ED3;&#x679C;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x6709;&#x4E00;&#x6BB5;&#x5904;&#x7406;&#x8FC7;&#x7A0B;&#x662F;&#x4ECE;ResultSet&#x4E2D;&#x62BD;&#x53D6;&#x6570;&#x636E;&#x5230;map&#x3002;&#x5177;&#x4F53;&#x7684;&#x5904;&#x7406;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Map&lt;String, Object&gt; <span class="title">mapRow</span><span class="params">(ResultSet rs, <span class="keyword">int</span> rowNum)</span> <span class="keyword">throws</span> SQLException </span>{</span><br><span class="line">    ResultSetMetaData rsmd = rs.getMetaData();</span><br><span class="line">    <span class="keyword">int</span> columnCount = rsmd.getColumnCount();</span><br><span class="line">    Map&lt;String, Object&gt; mapOfColumnValues = createColumnMap(columnCount);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= columnCount; i++) {</span><br><span class="line">        String column = JdbcUtils.lookupColumnName(rsmd, i);</span><br><span class="line">        mapOfColumnValues.putIfAbsent(getColumnKey(column), getColumnValue(rs, i));</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> mapOfColumnValues;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x4ECE;&#x4EE5;&#x4E0A;&#x903B;&#x8F91;&#x4E2D;&#x53EF;&#x4EE5;&#x770B;&#x5230;&#xFF0C;&#x4F1A;&#x4ECE;rs&#x4E2D;&#x53D6;&#x51FA;&#x6240;&#x6709;&#x7684;columnName&#xFF0C;&#x7136;&#x540E;&#x83B7;&#x53D6;&#x5BF9;&#x5E94;&#x7684;&#x503C;&#xFF0C;&#x63D2;&#x5165;&#x5230;map&#x4E2D;&#xFF0C;&#x90A3;&#x53EA;&#x8981;&#x5728;&#x8FD9;&#x4E2A;&#x903B;&#x8F91;&#x4E2D;&#xFF0C;&#x5411;map&#x4E2D;&#x63D2;&#x5165;&#x5BF9;&#x5E94;&#x7684;&#x5927;&#x5199;&#x5F62;&#x5F0F;&#x7684;&#x5B57;&#x6BB5;&#x5373;&#x53EF;&#x3002;</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/springframework/" rel="tag"># springframework</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/07/25/LinkedBlockingQueue源码分析/" rel="next" title="LinkedBlockingQueue源码分析">
+                <i class="fa fa-chevron-left"></i> LinkedBlockingQueue源码分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/07/30/ThreadLocal源码分析/" rel="prev" title="ThreadLocal源码分析">
+                ThreadLocal源码分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="feng.dianjun">
+          <p class="site-author-name" itemprop="name">feng.dianjun</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#后记"><span class="nav-number">1.</span> <span class="nav-text">后记</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng.dianjun</span>
+</div>
+
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="https://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Gemini
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

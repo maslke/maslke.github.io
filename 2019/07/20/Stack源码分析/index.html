@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh/cn">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="java,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="&amp;#x4ECA;&amp;#x5929;&amp;#x6765;&amp;#x5206;&amp;#x6790;&amp;#x4E00;&amp;#x4E0B;Stack&amp;#x7684;&amp;#x6E90;&amp;#x7801;&amp;#x3002;&amp;#x8FD8;&amp;#x662F;&amp;#x5148;&amp;#x770B;&amp;#x4E00;&amp;#x4E0B;Stack&amp;#x7C7B;&amp;#x7684;&amp;#x58F0;&amp;#x660E;&amp;#x3002; 1public class">
+<meta name="keywords" content="java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Stack源码分析">
+<meta property="og:url" content="http://yoursite.com/2019/07/20/Stack源码分析/index.html">
+<meta property="og:site_name" content="maslke&#39;s blog">
+<meta property="og:description" content="&amp;#x4ECA;&amp;#x5929;&amp;#x6765;&amp;#x5206;&amp;#x6790;&amp;#x4E00;&amp;#x4E0B;Stack&amp;#x7684;&amp;#x6E90;&amp;#x7801;&amp;#x3002;&amp;#x8FD8;&amp;#x662F;&amp;#x5148;&amp;#x770B;&amp;#x4E00;&amp;#x4E0B;Stack&amp;#x7C7B;&amp;#x7684;&amp;#x58F0;&amp;#x660E;&amp;#x3002; 1public class">
+<meta property="og:locale" content="zh/cn">
+<meta property="og:updated_time" content="2019-10-16T15:29:24.175Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Stack源码分析">
+<meta name="twitter:description" content="&amp;#x4ECA;&amp;#x5929;&amp;#x6765;&amp;#x5206;&amp;#x6790;&amp;#x4E00;&amp;#x4E0B;Stack&amp;#x7684;&amp;#x6E90;&amp;#x7801;&amp;#x3002;&amp;#x8FD8;&amp;#x662F;&amp;#x5148;&amp;#x770B;&amp;#x4E00;&amp;#x4E0B;Stack&amp;#x7C7B;&amp;#x7684;&amp;#x58F0;&amp;#x660E;&amp;#x3002; 1public class">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/07/20/Stack源码分析/">
+
+
+
+
+
+  <title>Stack源码分析 | maslke's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh/cn">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">maslke's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/20/Stack源码分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="feng.dianjun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="maslke's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Stack源码分析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-07-20T22:30:21+08:00">
+                2019-07-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>&#x4ECA;&#x5929;&#x6765;&#x5206;&#x6790;&#x4E00;&#x4E0B;Stack&#x7684;&#x6E90;&#x7801;&#x3002;&#x8FD8;&#x662F;&#x5148;&#x770B;&#x4E00;&#x4E0B;Stack&#x7C7B;&#x7684;&#x58F0;&#x660E;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Stack</span>&lt;<span class="title">E</span>&gt; <span class="keyword">extends</span> <span class="title">Vector</span>&lt;<span class="title">E</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>&#x53EF;&#x4EE5;&#x770B;&#x5230;Stack&#x7C7B;&#x6269;&#x5C55;&#x4E86;Vector&#x7C7B;&#xFF0C;&#x8FD9;&#x70B9;&#x6709;&#x4E9B;&#x51FA;&#x4E4E;&#x4EBA;&#x7684;&#x610F;&#x6599;&#x3002;&#x4E0D;&#x8BFB;&#x6E90;&#x7801;&#x7684;&#x8BDD;&#xFF0C;&#x6211;&#x60F3;&#x6211;&#x662F;&#x4E0D;&#x4F1A;&#x731C;&#x5230;Stack&#x7C7B;&#x7ADF;&#x7136;&#x8FD8;&#x4F1A;&#x662F;Vector&#x7684;&#x5B50;&#x7C7B;&#x3002;&#x6211;&#x4EEC;&#x77E5;&#x9053;Vector&#x662F;&#x4E00;&#x79CD;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x6570;&#x636E;&#x7ED3;&#x6784;&#xFF0C;&#x800C;&#x6211;&#x4EEC;&#x524D;&#x9762;&#x5206;&#x6790;&#x7684;LinkedList&#x548C;ArrayList&#x90FD;&#x4E0D;&#x662F;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x3002;&#x9664;&#x4E86;&#x7EBF;&#x7A0B;&#x662F;&#x5426;&#x5B89;&#x5168;&#x4E4B;&#x5916;&#xFF0C;Vector&#x548C;ArrayList&#x529F;&#x80FD;&#x4E0A;&#x5927;&#x6982;&#x53EF;&#x4EE5;&#x7B49;&#x540C;&#x3002;&#x4E0D;&#x8FC7;&#x968F;&#x7740;jdk&#x7684;&#x53D1;&#x5C55;&#xFF0C;jdk&#x4E2D;&#x63D0;&#x4F9B;&#x4E86;&#x66F4;&#x52A0;&#x5F3A;&#x5927;&#x7684;&#x5E76;&#x53D1;&#x7C7B;&#xFF0C;&#x800C;&#x5728;&#x6BCF;&#x4E2A;&#x65B9;&#x6CD5;&#x4E0A;&#x90FD;&#x4F7F;&#x7528;synchronized&#x6765;&#x4FEE;&#x9970;&#x4ECE;&#x800C;&#x5B9E;&#x73B0;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x76EE;&#x7684;&#x7684;Vector&#x6162;&#x6162;&#x7684;&#x5C31;&#x6DE1;&#x51FA;&#x4E86;&#x4EBA;&#x4EEC;&#x7684;&#x4F7F;&#x7528;&#x3002;</p>
+<p>&#x5728;Stack&#x7684;&#x6E90;&#x7801;&#x6CE8;&#x91CA;&#x4E2D;&#xFF0C;&#x5C31;&#x6709;&#x5982;&#x4E0B;&#x7684;&#x58F0;&#x660E;&#x3002;</p>
+<blockquote>
+<p>A more complete and consistent set of LIFO stack oerations is provided by the Deque interface and its implementions, which should be used in preference to this class. For example:</p>
+<p>Deque<integer> stack = new ArrayDeque<integer>();</integer></integer></p>
+</blockquote>
+<p>&#x53EF;&#x4EE5;&#x770B;&#x51FA;&#xFF0C;&#x5B98;&#x65B9;&#x540C;&#x6837;&#x4E5F;&#x5E76;&#x4E0D;&#x63A8;&#x8350;&#x7EE7;&#x7EED;&#x4F7F;&#x7528;Stack&#x3002;&#x6709;&#x7C7B;&#x4F3C;&#x9700;&#x6C42;&#x7684;&#x8BDD;&#xFF0C;&#x5E94;&#x8BE5;&#x4F18;&#x5148;&#x4F7F;&#x7528;&#x5B9E;&#x73B0;&#x4E86;Deque&#x63A5;&#x53E3;&#x7684;&#x7C7B;&#xFF0C;&#x6BD4;&#x5982;ArrayDeque&#x3002;</p>
+<p>Stack&#x76F8;&#x5BF9;&#x6765;&#x8BF4;&#x6BD4;&#x8F83;&#x7B80;&#x5355;&#xFF0C;&#x4E00;&#x5171;&#x5C31;&#x63D0;&#x4F9B;&#x4E86;&#x4E94;&#x4E2A;&#x51FD;&#x6570;&#x7684;&#x5B9E;&#x73B0;peek()&#x3001;pop()&#x3001;push()&#x3001;empty()&#x3001;indexOf()&#xFF0C;&#x5BF9;&#x5E94;&#x4E86;&#x6808;&#x7684;&#x5E38;&#x7528;&#x64CD;&#x4F5C;&#x3002;&#x529F;&#x80FD;&#x5B9E;&#x73B0;&#x4E0A;&#x771F;&#x7684;&#x8D85;&#x7EA7;&#x7B80;&#x5355;&#xFF0C;&#x5E76;&#x6CA1;&#x6709;&#x4EC0;&#x4E48;&#x9700;&#x8981;&#x8BF4;&#x660E;&#x7684;&#xFF0C;&#x6CE8;&#x610F;&#x4E00;&#x4E0B;Stack&#x662F;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x7C7B;&#x5C31;&#x53EF;&#x4EE5;&#x4E86;&#x3002;</p>
+<a id="more"></a>
+
+<p>Stack&#x5206;&#x6790;&#x5B8C;&#xFF0C;&#x5C31;&#x987A;&#x52BF;&#x5206;&#x6790;&#x4E00;&#x4E0B;Vector&#x7684;&#x6E90;&#x7801;&#x5427;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Vector</span>&lt;<span class="title">E</span>&gt; <span class="keyword">extends</span> <span class="title">AbstractList</span>&lt;<span class="title">E</span>&gt; <span class="keyword">implements</span> <span class="title">List</span>&lt;<span class="title">E</span>&gt;, <span class="title">RandomAccess</span>, <span class="title">Cloneable</span>, <span class="title">java</span>.<span class="title">io</span>.<span class="title">Serializable</span></span></span><br></pre></td></tr></table></figure>
+
+<p>&#x4EE5;&#x4E0A;&#x5C31;&#x662F;Vector&#x7684;&#x58F0;&#x660E;&#xFF0C;&#x53D1;&#x73B0;&#x4E86;&#x4EC0;&#x4E48;&#xFF1F;&#x60F3;&#x4E00;&#x4E0B;ArrayList&#x7684;&#x58F0;&#x660E;&#xFF0C;&#x662F;&#x4E0D;&#x662F;&#x5B8C;&#x5168;&#x4E00;&#x6837;&#xFF1F;</p>
+<p>&#x524D;&#x9762;&#x63D0;&#x5230;&#x8FC7;&#xFF0C;Vector&#x662F;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x7C7B;&#xFF0C;&#x5B9E;&#x73B0;&#x7684;&#x65B9;&#x5F0F;&#x662F;&#x901A;&#x8FC7;&#x5728;&#x6240;&#x6709;&#x7684;&#x65B9;&#x6CD5;&#x4E2D;&#x6DFB;&#x52A0;&#x4E86;synchronized&#x4FEE;&#x9970;&#x7B26;&#x3002;synchronized&#x4FEE;&#x9970;&#x7B26;&#x4FDD;&#x8BC1;&#x4E86;&#x540C;&#x4E00;&#x65F6;&#x523B;&#x53EA;&#x6709;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x80FD;&#x591F;&#x8BBF;&#x95EE;&#xFF0C;&#x907F;&#x514D;&#x4E86;&#x5728;&#x591A;&#x4E2A;&#x7EBF;&#x7A0B;&#x5F81;&#x7528;&#x60C5;&#x51B5;&#x4E0B;&#x5E26;&#x6765;&#x7684;&#x6570;&#x636E;&#x7ADE;&#x4E89;&#x95EE;&#x9898;&#x3002;&#x4E0D;&#x8FC7;&#x5E26;&#x6765;&#x7684;&#x8D1F;&#x9762;&#x4F5C;&#x7528;&#x5C31;&#x662F;&#x727A;&#x7272;&#x4E86;&#x6027;&#x80FD;&#x3002;&#x56E0;&#x6B64;&#xFF0C;&#x5B98;&#x65B9;&#x63A8;&#x8350;&#x5728;&#x5355;&#x7EBF;&#x7A0B;&#x4F7F;&#x7528;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x4F7F;&#x7528;ArrayList&#x4EE3;&#x66FF;Vector&#x7C7B;&#x3002;</p>
+<p>&#x5148;&#x6765;&#x770B;&#x4E00;&#x4E0B;&#x5B9A;&#x4E49;&#x7684;&#x53D8;&#x91CF;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> Object[] elementData;</span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">int</span> elementCount;</span><br></pre></td></tr></table></figure>
+
+<p>&#x6709;&#x4E86;ArrayList&#x7684;&#x57FA;&#x7840;&#xFF0C;&#x8FD9;&#x4E24;&#x4E2A;&#x53D8;&#x91CF;&#x4E0D;&#x7528;&#x591A;&#x8BF4;&#x3002;elementData&#x662F;&#x7528;&#x6765;&#x5B58;&#x653E;&#x6570;&#x636E;&#x7684;&#x6570;&#x7EC4;&#xFF0C;elementCount&#x662F;Vector&#x4E2D;&#x771F;&#x6B63;&#x7684;&#x5143;&#x7D20;&#x4E2A;&#x6570;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">int</span> capacityIncrement</span><br></pre></td></tr></table></figure>
+
+<p>&#x8FD9;&#x4E2A;&#x53D8;&#x91CF;&#x7528;&#x4E8E;&#x6807;&#x8BC6;&#x5F53;vector&#x9700;&#x5B58;&#x50A8;&#x7684;&#x6570;&#x636E;&#x4E2A;&#x6570;&#x5927;&#x4E8E;&#x5B83;&#x7684;&#x5BB9;&#x91CF;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x81EA;&#x52A8;&#x589E;&#x957F;&#x7684;&#x5927;&#x5C0F;&#x3002;&#x5F53;&#x8FD9;&#x4E2A;&#x53D8;&#x91CF;&#x5C0F;&#x4E8E;&#x7B49;&#x4E8E;0&#x7684;&#x65F6;&#x5019;&#xFF0C;vector&#x7684;&#x5BB9;&#x91CF;&#x4F1A;&#x5728;&#x5B83;&#x9700;&#x8981;&#x6269;&#x5BB9;&#x7684;&#x65F6;&#x5019;&#x589E;&#x957F;&#x4E3A;&#x539F;&#x6765;&#x7684;&#x4E24;&#x500D;&#x3002;</p>
+<blockquote>
+<p>The amount by which the capacity of the vector is automatically incremented when its size becomes greater than its capacity. if the capacity increment is less than or equal to zero, the capacity of the vector is doubled each time it needs to grow.</p>
+</blockquote>
+<p>&#x73B0;&#x5728;&#x6765;&#x770B;&#x7684;&#x8BDD;&#xFF0C;&#x597D;&#x50CF;&#x5E76;&#x4E0D;&#x5F88;&#x80FD;&#x7406;&#x89E3;&#x8FD9;&#x4E2A;&#x53D8;&#x91CF;&#x7684;&#x4F5C;&#x7528;&#x3002;&#x4E0B;&#x9762;&#x5206;&#x6790;&#x5230;&#x5177;&#x4F53;&#x4EE3;&#x7801;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x518D;&#x884C;&#x5206;&#x6790;&#x3002;</p>
+<p>&#x770B;&#x4E00;&#x4E0B;Vector&#x63D0;&#x4F9B;&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">Vector</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span> </span>{</span><br><span class="line">    <span class="keyword">this</span>(initialCapacity, <span class="number">0</span>);</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">Vector</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="keyword">this</span>(<span class="number">10</span>);</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">Vector</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> capacityIncrement)</span> </span>{</span><br><span class="line">    <span class="keyword">super</span>();</span><br><span class="line">    <span class="keyword">if</span> (initialCapacity &lt; <span class="number">0</span>) {</span><br><span class="line">        <span class="function"><span class="keyword">throws</span> new <span class="title">IllegalArgumentException</span><span class="params">(<span class="string">&quot;illegal Capacity: &quot;</span> + initialCapacity)</span></span>;</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">this</span>.elementData = <span class="keyword">new</span> Object[initialCapacity];</span><br><span class="line">    <span class="keyword">this</span>.capacityIncrement = capacityIncrement;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x4ECE;&#x4EE5;&#x4E0A;&#x4EE3;&#x7801;&#x4E2D;&#xFF0C;&#x6211;&#x4EEC;&#x80FD;&#x591F;&#x660E;&#x767D;&#x4E24;&#x4EF6;&#x4E8B;&#x60C5;&#x3002;</p>
+<ol>
+<li>&#x5728;&#x4E0D;&#x63D0;&#x4F9B;&#x9ED8;&#x8BA4;&#x5BB9;&#x91CF;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;Vector&#x7684;&#x521D;&#x59CB;&#x5BB9;&#x91CF;&#x662F;10&#x3002;</li>
+<li>&#x7531;&#x4EE5;&#x4E0A;&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E2D;&#xFF0C;&#x6E05;&#x695A;&#x4E86;&#x4E0A;&#x9762;&#x6240;&#x8BF4;&#x7684;capacityIncrement&#x53D8;&#x91CF;&#x7684;&#x4F5C;&#x7528;&#x3002;&#x8FD9;&#x4E2A;&#x53D8;&#x91CF;&#x53EF;&#x4EE5;&#x5728;&#x6784;&#x9020;Vector&#x7684;&#x65F6;&#x5019;&#x8FDB;&#x884C;&#x624B;&#x52A8;&#x7684;&#x6307;&#x5B9A;&#x3002;&#x5982;&#x679C;&#x4E0D;&#x6307;&#x5B9A;&#x7684;&#x8BDD;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A;0&#x3002;&#x5373;&#x5728;&#x8FDB;&#x884C;Vector&#x6269;&#x5BB9;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x6269;&#x5BB9;&#x4E4B;&#x540E;&#x5BB9;&#x91CF;&#x53D8;&#x4E3A;&#x539F;&#x6765;&#x7684;2&#x500D;&#x3002;</li>
+<li>&#x65E0;&#x53C2;&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#xFF0C;&#x9ED8;&#x8BA4;&#x6784;&#x9020;&#x4E86;&#x4E00;&#x4E2A;&#x5BB9;&#x91CF;&#x4E3A;10&#x7684;&#x6570;&#x7EC4;&#x3002;&#x8FD9;&#x4E0E;ArrayList&#x4E0D;&#x540C;&#xFF0C;&#x65E0;&#x53C2;&#x6784;&#x9020;&#x4E2D;&#xFF0C;ArrayList&#x4F1A;&#x5148;&#x6784;&#x9020;&#x4E00;&#x4E2A;&#x7A7A;&#x6570;&#x7EC4;&#xFF0C;&#x5728;&#x9996;&#x6B21;&#x8FDB;&#x884C;&#x6570;&#x636E;&#x65B0;&#x589E;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x624D;&#x4F1A;&#x6269;&#x5BB9;&#x6210;&#x4E3A;&#x4E00;&#x4E2A;&#x5BB9;&#x91CF;&#x4E3A;10&#x7684;&#x6570;&#x7EC4;&#xFF08;&#x6216;&#x662F;&#x66F4;&#x5927;&#x5BB9;&#x91CF;&#xFF09;&#x3002;</li>
+</ol>
+<p>&#x6E05;&#x695A;&#x4E86;&#x4E0A;&#x9762;&#x7B2C;&#x4E8C;&#x70B9;&#x4E4B;&#x540E;&#xFF0C;&#x6211;&#x4EEC;&#x4E0B;&#x9762;&#x6765;&#x770B;&#x4E00;&#x4E0B;Vector&#x7684;&#x6269;&#x5BB9;&#x64CD;&#x4F5C;&#x7684;&#x76F8;&#x5173;&#x51FD;&#x6570;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">ensureCapacity</span><span class="params">(<span class="keyword">int</span> minCapacity)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (minCapacity &gt; <span class="number">0</span>) {</span><br><span class="line">        modCount++;</span><br><span class="line">        ensureCapacityHelper(minCapacity);</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">ensureCapacityHelper</span><span class="params">(<span class="keyword">int</span> minCapacity)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (minCapacity - elementData.length &gt; <span class="number">0</span>) {</span><br><span class="line">        grow(minCapacity);</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">grow</span><span class="params">(<span class="keyword">int</span> minCapacity)</span> </span>{</span><br><span class="line">    <span class="keyword">int</span> oldCapacity = elementData.length;</span><br><span class="line">    <span class="keyword">int</span> newCapacity = oldCapacity + ((capacityIncrement &gt; <span class="number">0</span>) ? capacityIncrement : oldCapacity);</span><br><span class="line">    <span class="keyword">if</span> (newCapacity - minCapacity &lt; <span class="number">0</span>) {</span><br><span class="line">        newCapacity = minCapacity;</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">if</span> (newCapacity - MAX_ARRAY_SIZE &gt; <span class="number">0</span>) {</span><br><span class="line">        newCapacity = hugeCapacity(minCapacity);</span><br><span class="line">    }</span><br><span class="line">    elementData = Arrays.copyOf(elementData, newCapacity);</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">hugeCapacity</span><span class="params">(<span class="keyword">int</span> minCapacity)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (minCapacity &lt; <span class="number">0</span>) {</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> OutOfMemoryError();</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> (minCapacity &gt; MAX_ARRAY_SIZE) ? Integer.MAX_VALUE : MAX_ARRAY_SIZE;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x76F8;&#x6BD4;&#x4E4B;&#x4E0B;&#xFF0C;Vector&#x7684;&#x6269;&#x5BB9;&#x64CD;&#x4F5C;&#x6BD4;ArrayList&#x7684;&#x6269;&#x5BB9;&#x64CD;&#x4F5C;&#x4E5F;&#x7B80;&#x5355;&#x4E86;&#x4E00;&#x4E0B;&#x3002;&#x5927;&#x6982;&#x5206;&#x4E3A;&#x5982;&#x4E0B;&#x51E0;&#x6B65;&#x3002;</p>
+<ol>
+<li>&#x6839;&#x636E;capacityIncrement&#x7684;&#x5927;&#x5C0F;&#x6765;&#x786E;&#x5B9A;&#x7B2C;&#x4E00;&#x4E2A;&#x65B0;&#x5BB9;&#x91CF;&#x503C;&#x3002;</li>
+<li>&#x5982;&#x679C;&#x65B0;&#x7684;&#x5BB9;&#x91CF;&#x503C;&#x8FD8;&#x662F;&#x5C0F;&#x4E8E;&#x9700;&#x8981;&#x7684;&#x6700;&#x5C0F;&#x5BB9;&#x91CF;&#x503C;&#x7684;&#x8BDD;&#xFF0C;&#x76F4;&#x63A5;&#x628A;&#x5BB9;&#x91CF;&#x503C;&#x8BBE;&#x7F6E;&#x4E3A;&#x6700;&#x5C0F;&#x5BB9;&#x91CF;&#x503C;&#x3002;</li>
+<li>&#x5982;&#x679C;&#x65B0;&#x7684;&#x5BB9;&#x91CF;&#x503C;&#x5927;&#x4E8E;MAX_ARRAY_SIZE&#x7684;&#x8BDD;&#xFF0C;&#x5219;&#x8FDB;&#x5165;hugeCapacity&#x903B;&#x8F91;&#x3002;hugeCapacity&#x4E3B;&#x8981;&#x7528;&#x4E8E;&#x5224;&#x65AD;&#x662F;&#x5426;&#x53D1;&#x751F;&#x4E86;&#x6EA2;&#x51FA;&#x3002;</li>
+</ol>
+<p>Vector&#x8FD8;&#x6709;&#x53E6;&#x5916;&#x4E00;&#x4E2A;&#x63A5;&#x6536;Collection&#x7684;&#x53C2;&#x6570;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">Vector</span><span class="params">(Collection&lt;? extends E&gt; c)</span> </span>{</span><br><span class="line">    elementData = c.toArray();</span><br><span class="line">    elementCount = elementData.length;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (elementData.getClass() != Object[].class) {</span><br><span class="line">        elementData = Arrays.copyOf(elementData, elementCount, Object[].class);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x5728;&#x4EE5;&#x4E0A;&#x4EE3;&#x7801;&#x4E2D;&#xFF0C;&#x4F7F;&#x7528;&#x4E86;Arrays.copyOf&#x51FD;&#x6570;&#x3002;Arrays.coyOf&#x7684;&#x5185;&#x90E8;&#x5B9E;&#x73B0;&#x4E2D;&#x4F7F;&#x7528;&#x4E86;System.arraycopy&#x51FD;&#x6570;&#xFF0C;&#x65E0;&#x9700;&#x591A;&#x8BF4;&#x3002;</p>
+<p>&#x5173;&#x4E8E;Vector&#x7684;add&#x3001;remove&#x7B49;&#x64CD;&#x4F5C;&#xFF0C;&#x548C;ArrayList&#x7684;&#x64CD;&#x4F5C;&#x5927;&#x540C;&#x5C0F;&#x5F02;&#xFF0C;&#x4E0D;&#x518D;&#x8FDB;&#x884C;&#x5177;&#x4F53;&#x5206;&#x6790;&#x3002;&#x540C;&#x65F6;&#xFF0C;Vector&#x4E5F;&#x540C;&#x6837;&#x63D0;&#x4F9B;&#x4E86;iter()&#x3001;listIterator()&#x3001;listIterator(int index)&#x64CD;&#x4F5C;&#x51FD;&#x6570;&#x3002;</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/07/18/LinkedList源码分析/" rel="next" title="LinkedList源码分析">
+                <i class="fa fa-chevron-left"></i> LinkedList源码分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/07/24/ArrayBlockingQueue源码分析/" rel="prev" title="ArrayBlockingQueue源码分析">
+                ArrayBlockingQueue源码分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="feng.dianjun">
+          <p class="site-author-name" itemprop="name">feng.dianjun</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">17</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng.dianjun</span>
+</div>
+
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="https://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Gemini
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
