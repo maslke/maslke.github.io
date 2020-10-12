@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh/cn">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="java,dubbo,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2">
+
+
+
+
+
+
+<meta name="description" content="&amp;#x524D;&amp;#x8A00;&amp;#x524D;&amp;#x6587;&amp;#x5DF2;&amp;#x7ECF;&amp;#x5206;&amp;#x6790;&amp;#x4E86;dubbo&amp;#x4E2D;&amp;#x7684;SPI&amp;#x673A;&amp;#x5236;&amp;#x3002;&amp;#x5728;dubbo&amp;#x4E2D;&amp;#xFF0C;&amp;#x6574;&amp;#x4E2A;SPI&amp;#x673A;&amp;#x5236;&amp;#x6700;&amp;#x6838;">
+<meta name="keywords" content="java,dubbo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ExtensionLoader创建原理分析">
+<meta property="og:url" content="http://yoursite.com/2020/02/02/create-extension-loader/index.html">
+<meta property="og:site_name" content="maslke&#39;s blog">
+<meta property="og:description" content="&amp;#x524D;&amp;#x8A00;&amp;#x524D;&amp;#x6587;&amp;#x5DF2;&amp;#x7ECF;&amp;#x5206;&amp;#x6790;&amp;#x4E86;dubbo&amp;#x4E2D;&amp;#x7684;SPI&amp;#x673A;&amp;#x5236;&amp;#x3002;&amp;#x5728;dubbo&amp;#x4E2D;&amp;#xFF0C;&amp;#x6574;&amp;#x4E2A;SPI&amp;#x673A;&amp;#x5236;&amp;#x6700;&amp;#x6838;">
+<meta property="og:locale" content="zh/cn">
+<meta property="og:updated_time" content="2020-10-12T05:30:15.550Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ExtensionLoader创建原理分析">
+<meta name="twitter:description" content="&amp;#x524D;&amp;#x8A00;&amp;#x524D;&amp;#x6587;&amp;#x5DF2;&amp;#x7ECF;&amp;#x5206;&amp;#x6790;&amp;#x4E86;dubbo&amp;#x4E2D;&amp;#x7684;SPI&amp;#x673A;&amp;#x5236;&amp;#x3002;&amp;#x5728;dubbo&amp;#x4E2D;&amp;#xFF0C;&amp;#x6574;&amp;#x4E2A;SPI&amp;#x673A;&amp;#x5236;&amp;#x6700;&amp;#x6838;">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/02/02/create-extension-loader/">
+
+
+
+
+
+  <title>ExtensionLoader创建原理分析 | maslke's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh/cn">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">maslke's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/02/create-extension-loader/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="feng.dianjun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="maslke's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ExtensionLoader创建原理分析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-02T00:00:00+08:00">
+                2020-02-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="&#x524D;&#x8A00;"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</h2><p>&#x524D;&#x6587;&#x5DF2;&#x7ECF;&#x5206;&#x6790;&#x4E86;dubbo&#x4E2D;&#x7684;SPI&#x673A;&#x5236;&#x3002;&#x5728;dubbo&#x4E2D;&#xFF0C;&#x6574;&#x4E2A;SPI&#x673A;&#x5236;&#x6700;&#x6838;&#x5FC3;&#x7684;&#x7C7B;&#x4E3A;ExtensionLoader&#xFF0C;&#x6211;&#x4EEC;&#x901A;&#x8FC7;ExtensionLoader&#x6765;&#x521B;&#x5EFA;&#x5176;&#x4ED6;&#x7684;&#x6269;&#x5C55;&#x7C7B;&#x3002;</p>
+<p>&#x8C03;&#x7528;ExtensionLoader&#x7C7B;&#x6765;&#x521B;&#x5EFA;&#x5176;&#x5B83;&#x6269;&#x5C55;&#x7684;&#x8BED;&#x6CD5;&#x4E3A;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ExtensionLoader.getExtensionLoader(XXX.class).getExtension(name);</span><br></pre></td></tr></table></figure>
+
+<p>&#x6709;&#x8DA3;&#x7684;&#x5730;&#x65B9;&#x5728;&#x4E8E;&#xFF0C;&#x901A;&#x8FC7;&#x67E5;&#x770B;ExtensionLoader&#x7684;&#x4EE3;&#x7801;&#x53EF;&#x4EE5;&#x53D1;&#x73B0;getExtensionLoader&#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span>&lt;T&gt; ExtensionLoader&lt;T&gt; <span class="title">getExtensionLoader</span><span class="params">(Class&lt;T&gt; type)</span> </span>{</span><br><span class="line">   ...</span><br><span class="line">   ExtensionLoader&lt;T&gt; loader = (ExtensionLoader&lt;T&gt;) 			     EXTENSION_LOADERS.get(type);</span><br><span class="line">    <span class="keyword">if</span> (loader == <span class="keyword">null</span>) {</span><br><span class="line">		EXTENSION_LOADERS.putIfAbsent(type, <span class="keyword">new</span> ExtensionLoader&lt;T&gt;(type));</span><br><span class="line">        loader = (ExtensionLoader&lt;T&gt;) EXTENSION_LOADERS.get(type);</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> loader;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x7EE7;&#x7EED;&#x67E5;&#x770B;ExtensionLoader&#x7C7B;&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x3002;&#x5B9E;&#x73B0;&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="title">ExtensionLoader</span><span class="params">(Class&lt;T&gt; type)</span> </span>{</span><br><span class="line">    <span class="keyword">this</span>.type = type;</span><br><span class="line">    objectFactory = (type == ExtensionFactory.class ? <span class="keyword">null</span> : ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x4ECE;&#x4EE5;&#x4E0A;&#x4EE3;&#x7801;&#x4E2D;&#x53EF;&#x4EE5;&#x53D1;&#x73B0;&#xFF0C;ExtensionLoader&#x672C;&#x8EAB;&#x7684;&#x521B;&#x5EFA;&#xFF0C;&#x4F1A;&#x8FDB;&#x884C;ExtensionFactory&#x7684;&#x521B;&#x5EFA;&#xFF0C;&#x800C;ExtensionFactory&#x4F5C;&#x4E3A;&#x5DE5;&#x5382;&#x7C7B;&#xFF0C;&#x5B83;&#x81EA;&#x8EAB;&#x7684;&#x521B;&#x5EFA;&#x673A;&#x5236;&#x53CD;&#x8FC7;&#x6765;&#x662F;&#x4F7F;&#x7528;ExtensionLoader&#x6765;&#x8FDB;&#x884C;&#x7684;&#x3002;</p>
+<a id="more"></a>
+
+<h2 id="ExtensionFactory"><a href="#ExtensionFactory" class="headerlink" title="ExtensionFactory"></a>ExtensionFactory</h2><h3 id="&#x5B9A;&#x4E49;"><a href="#&#x5B9A;&#x4E49;" class="headerlink" title="&#x5B9A;&#x4E49;"></a>&#x5B9A;&#x4E49;</h3><p>&#x5148;&#x6765;&#x770B;&#x4E00;&#x4E0B;ExtensionFactory&#x8FD9;&#x4E2A;SPI&#x63A5;&#x53E3;&#x7684;&#x5B9A;&#x4E49;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SPI</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ExtensionFactory</span> </span>{</span><br><span class="line">    &lt;T&gt; <span class="function">T <span class="title">getExtension</span><span class="params">(Class&lt;T&gt; type, String name)</span></span>;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>ExtensionFactory&#x5728;dubbo&#x4E2D;&#x6709;&#x591A;&#x4E2A;&#x5B9E;&#x73B0;&#xFF0C;&#x5305;&#x62EC;SpiExtensionFactory&#x3001;SpringExtensionFactory&#xFF0C;AdaptiveExtensionFactory&#x3002;&#x800C;&#x9ED8;&#x8BA4;&#x4F7F;&#x7528;&#x7684;&#x81EA;&#x7136;&#x662F;AdaptiveExtensionFactory&#x3002;</p>
+<h2 id="AdaptiveExtensionFactory"><a href="#AdaptiveExtensionFactory" class="headerlink" title="AdaptiveExtensionFactory"></a>AdaptiveExtensionFactory</h2><h3 id="&#x5B9A;&#x4E49;-1"><a href="#&#x5B9A;&#x4E49;-1" class="headerlink" title="&#x5B9A;&#x4E49;"></a>&#x5B9A;&#x4E49;</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Adaptive</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AdaptiveExtensionFactory</span> <span class="keyword">implements</span> <span class="title">ExtensionFactory</span> </span>{</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> List&lt;ExtensionFactory&gt; factories;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AdaptiveExtensionFactory</span><span class="params">()</span> </span>{</span><br><span class="line">        ExtensionLoader&lt;ExtensionFactory&gt; loader = ExtensionLoader.getExtensionLoader(ExtensionFactory.class);</span><br><span class="line">        List&lt;ExtensionFactory&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (String name : loader.getSupportedExtensions()) {</span><br><span class="line">            list.add(loader.getExtension(name));</span><br><span class="line">        }</span><br><span class="line">        </span><br><span class="line">        factories = Collections.unmodifiableList(list);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x53EF;&#x4EE5;&#x770B;&#x5230;&#x5728;AdaptiveExtensionFactory&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E2D;&#xFF0C;&#x540C;&#x6837;&#x8C03;&#x7528;&#x4E86;ExtensionLoader&#x7684;getExtensionLoader&#x65B9;&#x6CD5;&#x3002;&#x9700;&#x8981;&#x6CE8;&#x610F;&#x7684;&#x662F;&#xFF0C;&#x5F53;&#x524D;&#x4F20;&#x5165;&#x7684;&#x53C2;&#x6570;&#x4E3A;ExtensionFactory.class&#x3002;&#x5728;getExtensionLoader&#x4E2D;&#x6709;&#x76F8;&#x5E94;&#x7684;&#x5904;&#x7406;&#x903B;&#x8F91;&#xFF0C;&#x907F;&#x514D;&#x4E86;&#x9012;&#x5F52;&#x7684;&#x5FAA;&#x73AF;&#x8C03;&#x7528;&#x95EE;&#x9898;&#x3002;&#x5176;&#x5B83;&#x7C7B;&#x578B;&#x7684;&#x6269;&#x5C55;&#xFF0C;&#x81EA;&#x7136;&#x6709;&#x5BF9;&#x5E94;&#x7684;ExtensionFactory&#x3002;&#x4F46;ExtensionFactory&#x4F5C;&#x4E3A;&#x4E00;&#x79CD;&#x6269;&#x5C55;&#xFF0C;&#x4E0D;&#x5B58;&#x5728;&#x5B83;&#x7684;ExtensionFactory&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">loader.getSupportedExtensions();</span><br></pre></td></tr></table></figure>
+
+<p>&#x5728;&#x83B7;&#x53D6;&#x5230;ExtensionLoader&#x4E4B;&#x540E;&#xFF0C;&#x8FDB;&#x800C;&#x83B7;&#x53D6;&#x6240;&#x6709;&#x7684;ExtensionFactory&#x7684;&#x5B9E;&#x73B0;&#x7C7B;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">loader.getExtension(name);</span><br></pre></td></tr></table></figure>
+
+<p>&#x8FDB;&#x4E00;&#x6B65;&#x7684;&#xFF0C;&#x901A;&#x8FC7;ExtensionLoader&#x6765;&#x521B;&#x5EFA;ExtensionFactory&#x7684;&#x5B9E;&#x4F8B;&#x3002;&#x6B64;&#x5904;&#x7684;getExtension&#xFF0C;&#x6CE8;&#x610F;&#x548C;ExtensionFactory&#x63A5;&#x53E3;&#x4E2D;&#x7684;getExtension&#x65B9;&#x6CD5;&#x8FDB;&#x884C;&#x533A;&#x5206;&#x3002;&#x6B64;&#x5904;&#x7684;getExtension&#x65B9;&#x6CD5;&#xFF0C;&#x662F;&#x7528;&#x4E8E;&#x83B7;&#x53D6;&#x5BF9;&#x5E94;&#x7684;ExtensionFactory&#x7684;&#x5B9E;&#x4F8B;&#xFF0C;&#x800C;ExtensionFactory&#x63A5;&#x53E3;&#x4E2D;&#x7684;getExtension&#x65B9;&#x6CD5;&#x5219;&#x662F;&#x7528;&#x4E8E;&#x521B;&#x5EFA;&#x5176;&#x4ED6;&#x7C7B;&#x578B;&#x7684;&#x6269;&#x5C55;&#x5B9E;&#x4F8B;&#x3002;</p>
+<h3 id="getExtension&#x65B9;&#x6CD5;"><a href="#getExtension&#x65B9;&#x6CD5;" class="headerlink" title="getExtension&#x65B9;&#x6CD5;"></a>getExtension&#x65B9;&#x6CD5;</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">getExtension</span><span class="params">(Class&lt;T&gt; type, String name)</span> </span>{</span><br><span class="line">    <span class="keyword">for</span> (ExtensionFactory factory : factories) {</span><br><span class="line">        T extension = factory.getExtension(type, name);</span><br><span class="line">        <span class="keyword">if</span> (extension != <span class="keyword">null</span>) {</span><br><span class="line">            <span class="keyword">return</span> extension;</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x5728;&#x4E0A;&#x8FF0;&#x7684;&#x4EE3;&#x7801;&#x4E2D;&#xFF0C;factories&#x53D8;&#x91CF;&#x4E2D;&#x5B58;&#x50A8;&#x7684;&#x662F;&#x4E0D;&#x540C;&#x7684;ExtensionFactory&#x7684;&#x5B9E;&#x4F8B;&#x3002;&#x901A;&#x8FC7;&#x8C03;&#x7528;ExtensionFactory&#x5B9E;&#x73B0;&#x4E2D;&#x7684;getExtension&#x65B9;&#x6CD5;&#x6765;&#x8FD4;&#x56DE;&#x5B9E;&#x4F8B;&#x3002;&#x6B64;&#x5904;&#x7684;ExtensionFactory&#x7684;&#x5B9E;&#x73B0;&#xFF0C;&#x662F;&#x6307;SpiExtensionFactory&#x548C;SpringExtensionFactory&#x3002;</p>
+<h2 id="SpiExtensionFactory"><a href="#SpiExtensionFactory" class="headerlink" title="SpiExtensionFactory"></a>SpiExtensionFactory</h2><h3 id="&#x5B9A;&#x4E49;-2"><a href="#&#x5B9A;&#x4E49;-2" class="headerlink" title="&#x5B9A;&#x4E49;"></a>&#x5B9A;&#x4E49;</h3><p>SpiExtensionFactory&#x7528;&#x4E8E;&#x83B7;&#x53D6;&#x4F7F;&#x7528;dubbo&#x65B9;&#x6CD5;&#x914D;&#x7F6E;&#x7684;&#x6269;&#x5C55;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SpiExtensionFactory</span> <span class="keyword">implements</span> <span class="title">ExtensionFactory</span> </span>{</span><br><span class="line">    <span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">getExtension</span><span class="params">(Class&lt;T&gt; type, String name)</span> </span>{</span><br><span class="line">        <span class="keyword">if</span> (type.isInterface() &amp;&amp; type.isAnnotationPresent(SPI.class)) {</span><br><span class="line">            ExtensionLoader&lt;T&gt; loader = ExtensionLoader.getExtensionLoader(type);</span><br><span class="line">            <span class="keyword">if</span> (!loader.getSupportedExtensions().isEmpty()) {</span><br><span class="line">                <span class="keyword">return</span> loader.getAdaptiveExtension();</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<p>&#x5728;SpiExtensionFactory&#x5B9E;&#x73B0;&#x4E2D;&#xFF0C;&#x5373;&#x662F;&#x8C03;&#x7528;ExtensionLoader&#x7684;getAdaptiveExtension&#x65B9;&#x6CD5;&#x6765;&#x83B7;&#x53D6;&#x81EA;&#x9002;&#x5E94;&#x6269;&#x5C55;&#x3002;</p>
+<h3 id="SpringExtensionFactory"><a href="#SpringExtensionFactory" class="headerlink" title="SpringExtensionFactory"></a>SpringExtensionFactory</h3><p>SpringExtensionFactory&#x7684;&#x4F5C;&#x7528;&#x662F;&#x7528;&#x4E8E;&#x4ECE;spring&#x6846;&#x67B6;&#x4E2D;&#x83B7;&#x53D6;&#x6269;&#x5C55;&#x3002;dubbo&#x548C;spring&#x6846;&#x67B6;&#x7684;&#x4EA4;&#x4E92;&#x662F;&#x901A;&#x8FC7;&#x4FDD;&#x5B58;spring&#x7684;&#x4E0A;&#x4E0B;&#x6587;ApplicationContext&#x6765;&#x5B9E;&#x73B0;&#x7684;&#x3002;</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">addApplicationContext</span><span class="params">(ApplicationContext context)</span> </span>{</span><br><span class="line">    CONTEXTS.add(context);</span><br><span class="line">    <span class="keyword">if</span> (context <span class="keyword">instanceof</span> ConfigurableApplicationContext) {</span><br><span class="line">        ((ConfigurableApplicationContext) context).registerShutdownHook();</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+
+<h3 id="getExtension&#x65B9;&#x6CD5;-1"><a href="#getExtension&#x65B9;&#x6CD5;-1" class="headerlink" title="getExtension&#x65B9;&#x6CD5;"></a>getExtension&#x65B9;&#x6CD5;</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">getExtension</span><span class="params">(Class&lt;T&gt; type, String name)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (type.isInterface() &amp;&amp; type.isAnnotationPresent(SPI.class)) {</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    }</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> (ApplicationContext context : CONTEXTS) {</span><br><span class="line">        T bean = BeanFactoryUtils.getOptionalBean(context, name, type);</span><br><span class="line">        <span class="keyword">if</span> (bean != <span class="keyword">null</span>) {</span><br><span class="line">            <span class="keyword">return</span> bean;</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+            <a href="/tags/dubbo/" rel="tag"># dubbo</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/29/ZookeeperRegistry/" rel="next" title="dubbo源码分析注册中心之ZookeeperRegistry实现">
+                <i class="fa fa-chevron-left"></i> dubbo源码分析注册中心之ZookeeperRegistry实现
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/03/28/arcgis-geoemtry-compress/" rel="prev" title="如何解码arcgis compressed geometry">
+                如何解码arcgis compressed geometry <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="feng.dianjun">
+          <p class="site-author-name" itemprop="name">feng.dianjun</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-name">posts</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">tags</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ExtensionFactory"><span class="nav-number">2.</span> <span class="nav-text">ExtensionFactory</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#定义"><span class="nav-number">2.1.</span> <span class="nav-text">定义</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AdaptiveExtensionFactory"><span class="nav-number">3.</span> <span class="nav-text">AdaptiveExtensionFactory</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#定义-1"><span class="nav-number">3.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#getExtension方法"><span class="nav-number">3.2.</span> <span class="nav-text">getExtension方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SpiExtensionFactory"><span class="nav-number">4.</span> <span class="nav-text">SpiExtensionFactory</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#定义-2"><span class="nav-number">4.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SpringExtensionFactory"><span class="nav-number">4.2.</span> <span class="nav-text">SpringExtensionFactory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#getExtension方法-1"><span class="nav-number">4.3.</span> <span class="nav-text">getExtension方法</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng.dianjun</span>
+</div>
+
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="https://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Gemini
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
