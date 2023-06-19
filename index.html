@@ -196,6 +196,16 @@
           </a>
         </li>
       
+        
+        <li class="menu-item menu-item-sudoku">
+          <a href="/page/sudoku.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-puzzle-piece"></i> <br />
+            
+            Sudoku
+          </a>
+        </li>
+      
 
       
     </ul>
@@ -215,6 +225,131 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2023/06/19/baidu-map-tile-info/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="maslke's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2023/06/19/baidu-map-tile-info/" itemprop="url">百度地图切片方案</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2023-06-19T16:48:16+08:00">
+                2023-06-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>在使用arcgis js api 或是 openlayers 来进行百度地图切片加载的时候，由于百度地图采用的是私有、非标准的切片方案，不能像加载谷歌切片或是天地图切片一样，api原生支持、开箱即用，而是需要进行定制化的开发来实现切片的加载</p>
+<p>定制化百度地图切片的加载策略，需要知道百度地图切片方案的切片起点(origin)、切片分辨率(resolutions)、切片范围(full extent)、切片正方向定义(x positive direction 、y positive direction)、切片尺寸等。百度切片方案的以上信息，都与标准web mercator切片方案有着差异。我们知道，标准web mercator切片方案的切片起点为切片范围的左上角（top,left)，切片范围为[-180,-85,180,85]范围，切片x正方向由left到right列号递增，切片y正方向由top到bottom行号递增，切片尺寸为[256,256]大小。那百度地图是怎样的呢？</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2023/06/19/baidu-map-tile-info/#more" rel="contents">
+              Read more &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -731,7 +866,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/28/arcgis-geoemtry-compress/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/28/arcgis-geometry-compress/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
@@ -750,7 +885,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/03/28/arcgis-geoemtry-compress/" itemprop="url">如何解码arcgis compressed geometry</a></h1>
+                <a class="post-title-link" href="/2020/03/28/arcgis-geometry-compress/" itemprop="url">如何解码arcgis compressed geometry</a></h1>
         
 
         <div class="post-meta">
@@ -807,7 +942,7 @@
 <p>组成线图形的点，其坐标格式除支持x和y坐标之外，同时也支持z和m坐标。</p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2020/03/28/arcgis-geoemtry-compress/#more" rel="contents">
+            <a class="btn" href="/2020/03/28/arcgis-geometry-compress/#more" rel="contents">
               Read more &raquo;
             </a>
           </div>
@@ -895,7 +1030,7 @@
               
                 <a href="/archives/%7C%7C%20archive">
               
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">6</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -908,7 +1043,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">13</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
@@ -918,6 +1053,22 @@
 
           
 
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/maslke" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:maslke@outlook.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
           
 
           

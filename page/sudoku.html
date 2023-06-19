@@ -69,15 +69,15 @@
 
 
 
-<meta name="description" content="Sodoku 	 		.fix { 			font-size: 25px; 			border: none; 			background-color: transparent; 			WIDTH: 30px; 			HEIGHT: 30px; 			LINE-HEIGHT: 28px; 			TEXT-ALIGN: center; 			margin: 0px; 			COLOR: #00">
+<meta name="description" content="Sodoku              .fix {             font-size: 25px;             border: none;             background-color: transparent;             WIDTH: 30px;             HEIGHT: 30px;             LINE-">
 <meta property="og:type" content="website">
 <meta property="og:title" content="maslke&#39;s blog">
 <meta property="og:url" content="http://yoursite.com/page/sudoku.html">
 <meta property="og:site_name" content="maslke&#39;s blog">
-<meta property="og:description" content="Sodoku 	 		.fix { 			font-size: 25px; 			border: none; 			background-color: transparent; 			WIDTH: 30px; 			HEIGHT: 30px; 			LINE-HEIGHT: 28px; 			TEXT-ALIGN: center; 			margin: 0px; 			COLOR: #00">
+<meta property="og:description" content="Sodoku              .fix {             font-size: 25px;             border: none;             background-color: transparent;             WIDTH: 30px;             HEIGHT: 30px;             LINE-">
 <meta property="og:locale">
-<meta property="article:published_time" content="2023-06-19T04:54:18.632Z">
-<meta property="article:modified_time" content="2023-06-19T04:54:18.632Z">
+<meta property="article:published_time" content="2023-06-19T06:24:38.202Z">
+<meta property="article:modified_time" content="2023-06-19T06:24:38.202Z">
 <meta property="article:author" content="feng.dianjun">
 <meta name="twitter:card" content="summary">
 
@@ -199,6 +199,16 @@
           </a>
         </li>
       
+        
+        <li class="menu-item menu-item-sudoku">
+          <a href="/page/sudoku.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-puzzle-piece"></i> <br />
+            
+            Sudoku
+          </a>
+        </li>
+      
 
       
     </ul>
@@ -240,489 +250,491 @@
           <html>
 <meta charset="zh">
 <head>
-	<title>Sodoku</title>
-	<style type="text/css">
-		.fix {
-			font-size: 25px;
-			border: none;
-			background-color: transparent;
-			WIDTH: 30px;
-			HEIGHT: 30px;
-			LINE-HEIGHT: 28px;
-			TEXT-ALIGN: center;
-			margin: 0px;
-			COLOR: #000000;
-			FONT-FAMILY: Verdana;
-		}
-		
-		.big {
-			font-size: 25px;
-			border: none;
-			background-color: transparent;
-			WIDTH: 30px;
-			HEIGHT: 30px;
-			LINE-HEIGHT: 28px;
-			TEXT-ALIGN: center;
-			margin: 0px;
-			COLOR: #0000FF;
-			FONT-FAMILY: Verdana;
-		}
-		
-		td.xx {
-			border-right: #999 1px solid;
-			border-top: #999 1px solid;
-			width: 30px;
-			height: 30px;
-			text-align: center;
-			LINE-height: 30px;
-		}
-		
-		td.rr {
-			border-right: #443 2px solid;
-			border-top: #999 1px solid;
-			width: 30px;
-			height: 30px;
-			text-align: center;
-			LINE-height: 30px;
-		}
-		
-		td.bb {
-			border-right: #999 1px solid;
-			border-top: #999 1px solid;
-			border-bottom: #443 2px solid;
-			width: 30px;
-			height: 30px;
-			text-align: center;
-			LINE-height: 30px;
-		}
-		
-		td.br {
-			border-right: #443 2px solid;
-			border-top: #999 1px solid;
-			border-bottom: #443 2px solid;
-			width: 30px;
-			height: 30px;
-			text-align: center;
-			LINE-height: 30px;
-		}
-		
-		.sd {
-			table-layout: fixed;
-			border: #443 3px solid;
-			width: 355px;
-			height: 355px;
-			background-color: #fff;
-			vertical-align: middle;
-			border-collapse: collapse;
-			text-align: center;
-		}
-	</style>
-	<script type="text/javascript">
-		var problems;
-		var results;
-		var solve;
-		
-		/*
-		*初始化sudoku的数组
-		*/
-		function init(){
-			problems = new Array(9);
-			for(var i=0;i<9;i++){
-				problems[i] = new Array(9);
-			}
-			results = new Array(9);
-			for(var i=0;i<9;i++){
-				results[i] = new Array(9);
-			}
-			solve = false;
-			//beginSolve();
-		}
-		
-		
-		function copySolutions(){
-			for(var i =0;i<9;i++){
-				for(var j = 0;j<9;j++){
-					results[i][j] = problems[i][j];
-				}
-			}
-		}
-		
-		function printToPage(){
-			for(var i=0;i<9;i++){
-				for(var j=0;j<9;j++){
-					document.getElementById('s'+i+j).value = results[i][j];
-				}
-			}
-		} 
-		
-		/*
-		*验证当前的输入是否合法
-		*/
-		function valid(x,y){
-			var number = problems[x][y];
-			for(var i = 0;i<9;i++){
-				if(problems[i][y] == number && i!=x){
-					return false;
-				}
-				if(problems[x][i] == number && i!=y){
-					return false;
-				}
-			}
-			
-			var row = parseInt(x/3)*3;
-			var col = parseInt(y/3)*3;
-			for(var i =row;i<row+3;i++){
-				for(var j = col;j<col+3;j++){
-					if(i==x && j == y){
-						continue;
-					}
-					
-					if(problems[i][j] == number){
-						return false;
-					}
-				}
-			}
-			return true;
-		}
-		
-		function sudoku(){
-			for(var i=0;i<9;i++){
-				for(var j=0;j<9;j++){
-					if(problems[i][j] != 0){
-						continue;
-					}
-					for(var k=1;k<=9;k++){
-						problems[i][j] = k;
-						if(valid(i,j) && sudoku()){
-							if(!solve){
-								copySolutions();
-							}
-							solve = true;
-							return true;
-						}
-						problems[i][j] = 0;
- 					}
-					 return false;
-				}
-			}
-			return true;
-		}
-		
-		/*
-		*将输入的数独数字输入到problems数组
-		*/
-		function collect(){
-			var inputs = document.getElementsByTagName('input');
-			var id,input,value;
-			var row,col;
-			for(var i=0;i<inputs.length;i++){
-				input = inputs[i];
-				if(input.type == 'button'){
-					continue;
-				}
-				id = input.id;
-				value = input.value;
-				row=id.substring(1,2);
-				col = id.substring(2);
-				if(value == '' || value == 0){
-					problems[row][col] = 0;
-					input.className='big';
-				} else{
-					problems[row][col] = parseInt(value);
-				}
-				
-			}
-			
-		}
-		/*
-		*开始解答sudoku
-		*/
-		function beginSolve(){
-				collect();
-				var success=sudoku();
-				if(success){
-					printToPage();
-				}
-		}
-	</script>
+    <title>Sodoku</title>
+    <style type="text/css">
+        .fix {
+            font-size: 25px;
+            border: none;
+            background-color: transparent;
+            WIDTH: 30px;
+            HEIGHT: 30px;
+            LINE-HEIGHT: 28px;
+            TEXT-ALIGN: center;
+            margin: 0px;
+            COLOR: #000000;
+            FONT-FAMILY: Verdana;
+        }
+
+        .big {
+            font-size: 25px;
+            border: none;
+            background-color: transparent;
+            WIDTH: 30px;
+            HEIGHT: 30px;
+            LINE-HEIGHT: 28px;
+            TEXT-ALIGN: center;
+            margin: 0px;
+            COLOR: #0000FF;
+            FONT-FAMILY: Verdana;
+        }
+
+        td.xx {
+            border-right: #999 1px solid;
+            border-top: #999 1px solid;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            LINE-height: 30px;
+        }
+
+        td.rr {
+            border-right: #443 2px solid;
+            border-top: #999 1px solid;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            LINE-height: 30px;
+        }
+
+        td.bb {
+            border-right: #999 1px solid;
+            border-top: #999 1px solid;
+            border-bottom: #443 2px solid;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            LINE-height: 30px;
+        }
+
+        td.br {
+            border-right: #443 2px solid;
+            border-top: #999 1px solid;
+            border-bottom: #443 2px solid;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            LINE-height: 30px;
+        }
+
+        .sd {
+            table-layout: fixed;
+            border: #443 3px solid;
+            width: 500px;
+            height: 500px;
+            margin: auto;
+            background-color: #fff;
+            vertical-align: middle;
+            border-collapse: collapse;
+            text-align: center;
+        }
+    </style>
+    <script type="text/javascript">
+        var problems;
+        var results;
+        var solve;
+
+        /*
+        *初始化sudoku的数组
+        */
+        function init() {
+            problems = new Array(9);
+            for (var i = 0; i < 9; i++) {
+                problems[i] = new Array(9);
+            }
+            results = new Array(9);
+            for (var i = 0; i < 9; i++) {
+                results[i] = new Array(9);
+            }
+            solve = false;
+            //beginSolve();
+        }
+
+
+        function copySolutions() {
+            for (var i = 0; i < 9; i++) {
+                for (var j = 0; j < 9; j++) {
+                    results[i][j] = problems[i][j];
+                }
+            }
+        }
+
+        function printToPage() {
+            for (var i = 0; i < 9; i++) {
+                for (var j = 0; j < 9; j++) {
+                    document.getElementById('s' + i + j).value = results[i][j];
+                }
+            }
+        }
+
+        /*
+        *验证当前的输入是否合法
+        */
+        function valid(x, y) {
+            var number = problems[x][y];
+            for (var i = 0; i < 9; i++) {
+                if (problems[i][y] === number && i !== x) {
+                    return false;
+                }
+                if (problems[x][i] === number && i !== y) {
+                    return false;
+                }
+            }
+
+            var row = parseInt(x / 3) * 3;
+            var col = parseInt(y / 3) * 3;
+            for (var i = row; i < row + 3; i++) {
+                for (var j = col; j < col + 3; j++) {
+                    if (i === x && j === y) {
+                        continue;
+                    }
+
+                    if (problems[i][j] === number) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function sudoku() {
+            for (var i = 0; i < 9; i++) {
+                for (var j = 0; j < 9; j++) {
+                    if (problems[i][j] !== 0) {
+                        continue;
+                    }
+                    for (var k = 1; k <= 9; k++) {
+                        problems[i][j] = k;
+                        if (valid(i, j) && sudoku()) {
+                            if (!solve) {
+                                copySolutions();
+                            }
+                            solve = true;
+                            return true;
+                        }
+                        problems[i][j] = 0;
+                    }
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /*
+        *将输入的数独数字输入到problems数组
+        */
+        function collect() {
+            var inputs = document.getElementsByTagName('input');
+            var id, input, value;
+            var row, col;
+            for (var i = 0; i < inputs.length; i++) {
+                input = inputs[i];
+                if (input.type === 'button') {
+                    continue;
+                }
+                id = input.id;
+                value = input.value;
+                row = id.substring(1, 2);
+                col = id.substring(2);
+                if (value === '' || value === 0) {
+                    problems[row][col] = 0;
+                    input.className = 'big';
+                } else {
+                    problems[row][col] = parseInt(value);
+                }
+
+            }
+
+        }
+
+        /*
+        *开始解答sudoku
+        */
+        function beginSolve() {
+            collect();
+            var success = sudoku();
+            if (success) {
+                printToPage();
+            }
+        }
+    </script>
 </head>
 
 <body onload="init()">
-	<table class="sd" style="height:30px;border:none" align="center" cellspacing="1" cellpadding="1">
-		<tbody>
-			<tr>
-				<td width="100%">
-					<input type="button" style="width:100%" value="SOLVE" id="solve" onclick="beginSolve()">
-				</td>
-			</tr>
-		</tbody>
-	</table>
-	<table class="sd" border="0" align="center" cellspacing="1" cellpadding="1">
-		<tbody>
-			<tr>
-				<td class="xx">
-					<input id="s00" type class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s01" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s02" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s03" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s04" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s05" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s06" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s07" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s08" class="fix" maxlength="2">
-				</td>
-			</tr>
-			<tr>
-				<td class="xx">
-					<input id="s10" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s11" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s12" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s13" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s14" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s15" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s16" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s17" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s18" class="fix" maxlength="2">
-				</td>
-			</tr>
-			<tr>
-				<td class="bb">
-					<input id="s20" class="fix" maxlength="2">
-				</td>
-				<td class="bb">
-					<input id="s21" class="fix" maxlength="2">
-				</td>
-				<td class="br">
-					<input id="s22" class="fix" maxlength="2">
-				</td>
-				<td class="bb">
-					<input id="s23" class="fix" maxlength="2">
-				</td>
-				<td class="bb">
-					<input id="s24" class="fix" maxlength="2">
-				</td>
-				<td class="br">
-					<input id="s25" class="fix" maxlength="2">
-				</td>
-				<td class="bb">
-					<input id="s26" class="fix" maxlength="2">
-				</td>
-				<td class="bb">
-					<input id="s27" class="fix" maxlength="2">
-				</td>
-				<td class="br">
-					<input id="s28" class="fix" maxlength="2">
-				</td>
-			</tr>
-			<tr>
-				<td class="xx">
-					<input id="s30" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s31" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s32" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s33" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s34" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s35" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s36" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s37" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s38" class="fix" maxlength="2">
-				</td>
-			</tr>
-			<tr>
-				<td class="xx">
-					<input id="s40" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s41" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s42" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s43" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s44" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s45" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s46" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s47" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s48" class="fix" maxlength="2">
-				</td>
-			</tr>
-			<tr>
-				<td class="bb">
-					<input id="s50" class="fix" maxlength="2">
-				</td>
-				<td class="bb">
-					<input id="s51" class="fix" maxlength="2">
-				</td>
-				<td class="br">
-					<input id="s52" class="fix" maxlength="2">
-				</td>
-				<td class="bb">
-					<input id="s53" class="fix" maxlength="2">
-				</td>
-				<td class="bb">
-					<input id="s54" class="fix" maxlength="2">
-				</td>
-				<td class="br">
-					<input id="s55" class="fix" maxlength="2">
-				</td>
-				<td class="bb">
-					<input id="s56" class="fix" maxlength="2">
-				</td>
-				<td class="bb">
-					<input id="s57" class="fix" maxlength="2">
-				</td>
-				<td class="br">
-					<input id="s58" class="fix" maxlength="2">
-				</td>
-			</tr>
-			<tr>
-				<td class="xx">
-					<input id="s60" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s61" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s62" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s63" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s64" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s65" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s66" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s67" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s68" class="fix" maxlength="2">
-				</td>
-			</tr>
-			<tr>
-				<td class="xx">
-					<input id="s70" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s71" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s72" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s73" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s74" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s75" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s76" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s77" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s78" class="fix" maxlength="2">
-				</td>
-			</tr>
-			<tr>
-				<td class="xx">
-					<input id="s80" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s81" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s82" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s83" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s84" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s85" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s86" class="fix" maxlength="2">
-				</td>
-				<td class="xx">
-					<input id="s87" class="fix" maxlength="2">
-				</td>
-				<td class="rr">
-					<input id="s88" class="fix" maxlength="2">
-				</td>
-			</tr>
+<table class="sd" style="height:30px;border:none" align="center" cellspacing="1" cellpadding="1">
+    <tbody>
+    <tr>
+        <td width="100%">
+            <input type="button" style="width:100%" value="SOLVE" id="solve" onclick="beginSolve()">
+        </td>
+    </tr>
+    </tbody>
+</table>
+<table class="sd" border="0" align="center" cellspacing="1" cellpadding="1">
+    <tbody>
+    <tr>
+        <td class="xx">
+            <input id="s00" type class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s01" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s02" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s03" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s04" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s05" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s06" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s07" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s08" class="fix" maxlength="2">
+        </td>
+    </tr>
+    <tr>
+        <td class="xx">
+            <input id="s10" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s11" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s12" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s13" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s14" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s15" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s16" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s17" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s18" class="fix" maxlength="2">
+        </td>
+    </tr>
+    <tr>
+        <td class="bb">
+            <input id="s20" class="fix" maxlength="2">
+        </td>
+        <td class="bb">
+            <input id="s21" class="fix" maxlength="2">
+        </td>
+        <td class="br">
+            <input id="s22" class="fix" maxlength="2">
+        </td>
+        <td class="bb">
+            <input id="s23" class="fix" maxlength="2">
+        </td>
+        <td class="bb">
+            <input id="s24" class="fix" maxlength="2">
+        </td>
+        <td class="br">
+            <input id="s25" class="fix" maxlength="2">
+        </td>
+        <td class="bb">
+            <input id="s26" class="fix" maxlength="2">
+        </td>
+        <td class="bb">
+            <input id="s27" class="fix" maxlength="2">
+        </td>
+        <td class="br">
+            <input id="s28" class="fix" maxlength="2">
+        </td>
+    </tr>
+    <tr>
+        <td class="xx">
+            <input id="s30" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s31" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s32" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s33" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s34" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s35" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s36" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s37" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s38" class="fix" maxlength="2">
+        </td>
+    </tr>
+    <tr>
+        <td class="xx">
+            <input id="s40" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s41" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s42" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s43" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s44" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s45" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s46" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s47" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s48" class="fix" maxlength="2">
+        </td>
+    </tr>
+    <tr>
+        <td class="bb">
+            <input id="s50" class="fix" maxlength="2">
+        </td>
+        <td class="bb">
+            <input id="s51" class="fix" maxlength="2">
+        </td>
+        <td class="br">
+            <input id="s52" class="fix" maxlength="2">
+        </td>
+        <td class="bb">
+            <input id="s53" class="fix" maxlength="2">
+        </td>
+        <td class="bb">
+            <input id="s54" class="fix" maxlength="2">
+        </td>
+        <td class="br">
+            <input id="s55" class="fix" maxlength="2">
+        </td>
+        <td class="bb">
+            <input id="s56" class="fix" maxlength="2">
+        </td>
+        <td class="bb">
+            <input id="s57" class="fix" maxlength="2">
+        </td>
+        <td class="br">
+            <input id="s58" class="fix" maxlength="2">
+        </td>
+    </tr>
+    <tr>
+        <td class="xx">
+            <input id="s60" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s61" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s62" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s63" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s64" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s65" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s66" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s67" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s68" class="fix" maxlength="2">
+        </td>
+    </tr>
+    <tr>
+        <td class="xx">
+            <input id="s70" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s71" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s72" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s73" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s74" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s75" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s76" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s77" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s78" class="fix" maxlength="2">
+        </td>
+    </tr>
+    <tr>
+        <td class="xx">
+            <input id="s80" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s81" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s82" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s83" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s84" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s85" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s86" class="fix" maxlength="2">
+        </td>
+        <td class="xx">
+            <input id="s87" class="fix" maxlength="2">
+        </td>
+        <td class="rr">
+            <input id="s88" class="fix" maxlength="2">
+        </td>
+    </tr>
 
-		</tbody>
-	</table>
+    </tbody>
+</table>
 </body>
 
 </html>
@@ -790,7 +802,7 @@
               
                 <a href="/archives/%7C%7C%20archive">
               
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">6</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -803,7 +815,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">13</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
@@ -813,6 +825,22 @@
 
           
 
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/maslke" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:maslke@outlook.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
           
 
           
