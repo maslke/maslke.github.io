@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh/cn">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Sodoku 	 		.fix { 			font-size: 25px; 			border: none; 			background-color: transparent; 			WIDTH: 30px; 			HEIGHT: 30px; 			LINE-HEIGHT: 28px; 			TEXT-ALIGN: center; 			margin: 0px; 			COLOR: #00">
+<meta property="og:type" content="website">
+<meta property="og:title" content="maslke&#39;s blog">
+<meta property="og:url" content="http://yoursite.com/page/sudoku.html">
+<meta property="og:site_name" content="maslke&#39;s blog">
+<meta property="og:description" content="Sodoku 	 		.fix { 			font-size: 25px; 			border: none; 			background-color: transparent; 			WIDTH: 30px; 			HEIGHT: 30px; 			LINE-HEIGHT: 28px; 			TEXT-ALIGN: center; 			margin: 0px; 			COLOR: #00">
+<meta property="og:locale">
+<meta property="article:published_time" content="2023-06-19T04:54:18.632Z">
+<meta property="article:modified_time" content="2023-06-19T04:54:18.632Z">
+<meta property="article:author" content="feng.dianjun">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/page/sudoku.html"/>
+
+
+
+
+
+  <title> | maslke's blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh/cn">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">maslke's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+    
+    
+    <div class="post-block page">
+      <header class="post-header">
+
+	<h1 class="post-title" itemprop="name headline"></h1>
+
+
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+        
+        
+          <html>
+<meta charset="zh">
+<head>
+	<title>Sodoku</title>
+	<style type="text/css">
+		.fix {
+			font-size: 25px;
+			border: none;
+			background-color: transparent;
+			WIDTH: 30px;
+			HEIGHT: 30px;
+			LINE-HEIGHT: 28px;
+			TEXT-ALIGN: center;
+			margin: 0px;
+			COLOR: #000000;
+			FONT-FAMILY: Verdana;
+		}
+		
+		.big {
+			font-size: 25px;
+			border: none;
+			background-color: transparent;
+			WIDTH: 30px;
+			HEIGHT: 30px;
+			LINE-HEIGHT: 28px;
+			TEXT-ALIGN: center;
+			margin: 0px;
+			COLOR: #0000FF;
+			FONT-FAMILY: Verdana;
+		}
+		
+		td.xx {
+			border-right: #999 1px solid;
+			border-top: #999 1px solid;
+			width: 30px;
+			height: 30px;
+			text-align: center;
+			LINE-height: 30px;
+		}
+		
+		td.rr {
+			border-right: #443 2px solid;
+			border-top: #999 1px solid;
+			width: 30px;
+			height: 30px;
+			text-align: center;
+			LINE-height: 30px;
+		}
+		
+		td.bb {
+			border-right: #999 1px solid;
+			border-top: #999 1px solid;
+			border-bottom: #443 2px solid;
+			width: 30px;
+			height: 30px;
+			text-align: center;
+			LINE-height: 30px;
+		}
+		
+		td.br {
+			border-right: #443 2px solid;
+			border-top: #999 1px solid;
+			border-bottom: #443 2px solid;
+			width: 30px;
+			height: 30px;
+			text-align: center;
+			LINE-height: 30px;
+		}
+		
+		.sd {
+			table-layout: fixed;
+			border: #443 3px solid;
+			width: 355px;
+			height: 355px;
+			background-color: #fff;
+			vertical-align: middle;
+			border-collapse: collapse;
+			text-align: center;
+		}
+	</style>
+	<script type="text/javascript">
+		var problems;
+		var results;
+		var solve;
+		
+		/*
+		*初始化sudoku的数组
+		*/
+		function init(){
+			problems = new Array(9);
+			for(var i=0;i<9;i++){
+				problems[i] = new Array(9);
+			}
+			results = new Array(9);
+			for(var i=0;i<9;i++){
+				results[i] = new Array(9);
+			}
+			solve = false;
+			//beginSolve();
+		}
+		
+		
+		function copySolutions(){
+			for(var i =0;i<9;i++){
+				for(var j = 0;j<9;j++){
+					results[i][j] = problems[i][j];
+				}
+			}
+		}
+		
+		function printToPage(){
+			for(var i=0;i<9;i++){
+				for(var j=0;j<9;j++){
+					document.getElementById('s'+i+j).value = results[i][j];
+				}
+			}
+		} 
+		
+		/*
+		*验证当前的输入是否合法
+		*/
+		function valid(x,y){
+			var number = problems[x][y];
+			for(var i = 0;i<9;i++){
+				if(problems[i][y] == number && i!=x){
+					return false;
+				}
+				if(problems[x][i] == number && i!=y){
+					return false;
+				}
+			}
+			
+			var row = parseInt(x/3)*3;
+			var col = parseInt(y/3)*3;
+			for(var i =row;i<row+3;i++){
+				for(var j = col;j<col+3;j++){
+					if(i==x && j == y){
+						continue;
+					}
+					
+					if(problems[i][j] == number){
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		
+		function sudoku(){
+			for(var i=0;i<9;i++){
+				for(var j=0;j<9;j++){
+					if(problems[i][j] != 0){
+						continue;
+					}
+					for(var k=1;k<=9;k++){
+						problems[i][j] = k;
+						if(valid(i,j) && sudoku()){
+							if(!solve){
+								copySolutions();
+							}
+							solve = true;
+							return true;
+						}
+						problems[i][j] = 0;
+ 					}
+					 return false;
+				}
+			}
+			return true;
+		}
+		
+		/*
+		*将输入的数独数字输入到problems数组
+		*/
+		function collect(){
+			var inputs = document.getElementsByTagName('input');
+			var id,input,value;
+			var row,col;
+			for(var i=0;i<inputs.length;i++){
+				input = inputs[i];
+				if(input.type == 'button'){
+					continue;
+				}
+				id = input.id;
+				value = input.value;
+				row=id.substring(1,2);
+				col = id.substring(2);
+				if(value == '' || value == 0){
+					problems[row][col] = 0;
+					input.className='big';
+				} else{
+					problems[row][col] = parseInt(value);
+				}
+				
+			}
+			
+		}
+		/*
+		*开始解答sudoku
+		*/
+		function beginSolve(){
+				collect();
+				var success=sudoku();
+				if(success){
+					printToPage();
+				}
+		}
+	</script>
+</head>
+
+<body onload="init()">
+	<table class="sd" style="height:30px;border:none" align="center" cellspacing="1" cellpadding="1">
+		<tbody>
+			<tr>
+				<td width="100%">
+					<input type="button" style="width:100%" value="SOLVE" id="solve" onclick="beginSolve()">
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<table class="sd" border="0" align="center" cellspacing="1" cellpadding="1">
+		<tbody>
+			<tr>
+				<td class="xx">
+					<input id="s00" type class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s01" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s02" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s03" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s04" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s05" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s06" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s07" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s08" class="fix" maxlength="2">
+				</td>
+			</tr>
+			<tr>
+				<td class="xx">
+					<input id="s10" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s11" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s12" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s13" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s14" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s15" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s16" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s17" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s18" class="fix" maxlength="2">
+				</td>
+			</tr>
+			<tr>
+				<td class="bb">
+					<input id="s20" class="fix" maxlength="2">
+				</td>
+				<td class="bb">
+					<input id="s21" class="fix" maxlength="2">
+				</td>
+				<td class="br">
+					<input id="s22" class="fix" maxlength="2">
+				</td>
+				<td class="bb">
+					<input id="s23" class="fix" maxlength="2">
+				</td>
+				<td class="bb">
+					<input id="s24" class="fix" maxlength="2">
+				</td>
+				<td class="br">
+					<input id="s25" class="fix" maxlength="2">
+				</td>
+				<td class="bb">
+					<input id="s26" class="fix" maxlength="2">
+				</td>
+				<td class="bb">
+					<input id="s27" class="fix" maxlength="2">
+				</td>
+				<td class="br">
+					<input id="s28" class="fix" maxlength="2">
+				</td>
+			</tr>
+			<tr>
+				<td class="xx">
+					<input id="s30" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s31" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s32" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s33" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s34" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s35" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s36" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s37" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s38" class="fix" maxlength="2">
+				</td>
+			</tr>
+			<tr>
+				<td class="xx">
+					<input id="s40" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s41" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s42" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s43" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s44" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s45" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s46" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s47" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s48" class="fix" maxlength="2">
+				</td>
+			</tr>
+			<tr>
+				<td class="bb">
+					<input id="s50" class="fix" maxlength="2">
+				</td>
+				<td class="bb">
+					<input id="s51" class="fix" maxlength="2">
+				</td>
+				<td class="br">
+					<input id="s52" class="fix" maxlength="2">
+				</td>
+				<td class="bb">
+					<input id="s53" class="fix" maxlength="2">
+				</td>
+				<td class="bb">
+					<input id="s54" class="fix" maxlength="2">
+				</td>
+				<td class="br">
+					<input id="s55" class="fix" maxlength="2">
+				</td>
+				<td class="bb">
+					<input id="s56" class="fix" maxlength="2">
+				</td>
+				<td class="bb">
+					<input id="s57" class="fix" maxlength="2">
+				</td>
+				<td class="br">
+					<input id="s58" class="fix" maxlength="2">
+				</td>
+			</tr>
+			<tr>
+				<td class="xx">
+					<input id="s60" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s61" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s62" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s63" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s64" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s65" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s66" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s67" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s68" class="fix" maxlength="2">
+				</td>
+			</tr>
+			<tr>
+				<td class="xx">
+					<input id="s70" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s71" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s72" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s73" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s74" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s75" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s76" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s77" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s78" class="fix" maxlength="2">
+				</td>
+			</tr>
+			<tr>
+				<td class="xx">
+					<input id="s80" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s81" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s82" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s83" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s84" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s85" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s86" class="fix" maxlength="2">
+				</td>
+				<td class="xx">
+					<input id="s87" class="fix" maxlength="2">
+				</td>
+				<td class="rr">
+					<input id="s88" class="fix" maxlength="2">
+				</td>
+			</tr>
+
+		</tbody>
+	</table>
+</body>
+
+</html>
+
+
+
+        
+      </div>
+      
+      
+      
+    </div>
+    
+    
+    
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng.dianjun</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh/cn">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+
+
+  <meta name="keywords" content="多线程,设计模式," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Single Threaded Execution模式所谓Single Threaded Execution模式，意思是“单一线程执行”。该模式用于设置限制，以确保同一时间只能让一个线程执行处理。 Single Threaded Execution模式中，存在着一种SharedResource角色。SharedResource角色是会被多个线程同时访问的类，类会包含多个方法。但这些方法主要分为如下">
+<meta property="og:type" content="article">
+<meta property="og:title" content="多线程设计模式简介">
+<meta property="og:url" content="http://yoursite.com/2022/04/02/multi-thread-design-pattern/index.html">
+<meta property="og:site_name" content="maslke&#39;s blog">
+<meta property="og:description" content="Single Threaded Execution模式所谓Single Threaded Execution模式，意思是“单一线程执行”。该模式用于设置限制，以确保同一时间只能让一个线程执行处理。 Single Threaded Execution模式中，存在着一种SharedResource角色。SharedResource角色是会被多个线程同时访问的类，类会包含多个方法。但这些方法主要分为如下">
+<meta property="og:locale">
+<meta property="article:published_time" content="2022-04-01T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-06-19T04:54:18.630Z">
+<meta property="article:author" content="feng.dianjun">
+<meta property="article:tag" content="多线程">
+<meta property="article:tag" content="设计模式">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2022/04/02/multi-thread-design-pattern/"/>
+
+
+
+
+
+  <title>多线程设计模式简介 | maslke's blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh/cn">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">maslke's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2022/04/02/multi-thread-design-pattern/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="maslke's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">多线程设计模式简介</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-04-02T00:00:00+08:00">
+                2022-04-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Single-Threaded-Execution模式"><a href="#Single-Threaded-Execution模式" class="headerlink" title="Single Threaded Execution模式"></a>Single Threaded Execution模式</h2><p>所谓Single Threaded Execution模式，意思是“单一线程执行”。该模式用于设置限制，以确保同一时间只能让一个线程执行处理。</p>
+<p>Single Threaded Execution模式中，存在着一种SharedResource角色。SharedResource角色是会被多个线程同时访问的类，类会包含多个方法。但这些方法主要分为如下的两类：</p>
+<ol>
+<li>safeMethod：多个线程同时调用也不会发生问题的方法。</li>
+<li>unsafeMethod：多个线程同时调用会发生问题，因此必须加以保护的方法。</li>
+</ol>
+<span id="more"></span>
+
+<p>safeMethod方法，无需特别关注，因为多个线程同时调用也不会发生问题。</p>
+<p>unsafeMethod，在Single Threaded Execution模式中，保证了同一时刻只能被一个线程执行。常用的控制方法为使用synchronized关键字对方法加以修饰。</p>
+<p>当SharedResource角色的内部状态会发生变化，并且需要确保安全性的时候，我们就可以使用Single Threaded Execution模式来加以确保。</p>
+<p>如下述的Counter类，getValue方法即为safeMethod，而increase方法为unsafeMethod，因为value++操作为非原子操作，在多个线程的并发执行下会发生数据争用问题，导致获取到错误的值。我们可以使用synchronized关键字修饰increase方法，使其变为临界区，同一时刻只允许一个线程进入临界区。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Counter</span> &#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="type">int</span> value;</span><br><span class="line">	<span class="keyword">public</span> <span class="title function_">Counter</span><span class="params">(<span class="type">int</span> initial)</span> &#123;</span><br><span class="line">		<span class="built_in">this</span>.value = initial;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">synchronized</span>  <span class="title function_">increase</span><span class="params">()</span> &#123;</span><br><span class="line">		<span class="built_in">this</span>.value++;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getValue</span><span class="params">()</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="built_in">this</span>.value;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>除使用synchronized关键字之外，还可以使用jdk中提供的ReentrantLock，在此不再赘述。</p>
+<p>使用Singled Threaded Execution模式的时候，需要注意防范可能的死锁问题。当存在如下的条件时，就会发生死锁。</p>
+<ol>
+<li>存在多个SharedResource。</li>
+<li>线程在持有某个SharedResource的锁的同时，还等待获取其它的SharedResource的锁。</li>
+<li>获取SharedResource角色的锁的顺序并不固定。</li>
+</ol>
+<p>破坏以上的三个条件的任意一个，就可以避免死锁的发生。</p>
+<ol>
+<li>将多个sharedResource整合成一个进行获取。将操作需要获取的锁的个数由多个优化为一个，破坏了上述条件的1和2。</li>
+<li>等待获取SharedResource锁的时候加上超时机制。线程在持有某个SharedResource锁的同时，在等待获取其它的SharedResource的锁的时候加上一个超时条件。如在规定的时间内没有获取到需要的锁，则释放自己已经持有的锁。</li>
+<li>固定多个SharedResource的获取顺序。在需要获取多个锁的时候，每次都按照相同的顺序来申请SharedResource的锁。</li>
+</ol>
+<h2 id="Immutable模式"><a href="#Immutable模式" class="headerlink" title="Immutable模式"></a>Immutable模式</h2><p>Immutable模式中存在着状态不会发生改变的类，即Immutable类。在访问这些类的实例时，由于其状态不会变化，无需进行线程同步处理，程序为无锁操作，将具有较好的性能。</p>
+<p>如下述的Person类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">final</span> Person &#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> String name;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> Integer age;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="title function_">Person</span><span class="params">(String name, Integer age)</span> &#123;</span><br><span class="line">		<span class="built_in">this</span>.name = name;</span><br><span class="line">    	<span class="built_in">this</span>.age = age;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> String <span class="title function_">getName</span><span class="params">()</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="built_in">this</span>.name;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> Integer <span class="title function_">getAge</span><span class="params">()</span>&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="built_in">this</span>.age;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如有多个线程，同时访问Person类的实例，可以看作存在着SharedResource。由于Person类的实例的状态无法发生改变，因此并不需要使用Single Threaded Pattern来进行确保。</p>
+<p>jdk中的Stirng类、即使用了Immutable模式。</p>
+<h2 id="Guarded-Suspension模式"><a href="#Guarded-Suspension模式" class="headerlink" title="Guarded Suspension模式"></a>Guarded Suspension模式</h2><p>Guarded Suspension模式，意思是“保护性暂停”模式。如果当前线程继续执行会发生问题的话，就先暂停当前线程的执行。</p>
+<p>暂停了线程之后，什么时候再重新开始执行呢？当”某个条件”得到了满足之后就可以了。因此，Guarded Suspension模式也被称为多线程的if模式。</p>
+<p>例如如下的类Requests类，其中包含了一个局部变量linkedlist和两个方法put和take，linkedlistput方法用于存储请求，put方法向linkedlist中提交请求，take方法从linkedlist中获取请求。不同的线程分别访问take方法和put方法，线程在调用take方法的时候，如果当前linkedlist为空，此时则应该暂停线程的执行，等待linkedlist非空再继续。此时，即可使用Guarded Suspension模式。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Requests</span> &#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> LinkedList&lt;String&gt; linkedList = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">synchronized</span>  <span class="title function_">take</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">		<span class="keyword">while</span> (linkedList.isEmpty()) &#123;</span><br><span class="line">			wait();</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> linkedList.pollFirst();</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">synchronized</span>  <span class="title function_">put</span><span class="params">(String request)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">		linkedList.offerLast(request);</span><br><span class="line">		notifyAll();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当线程A在调用get方法的时候，如当前linkedList为空，则线程A调用wait()，进入等待队列等待。当其它线程调用了notifyAll方法之后，线程A将会被从等待队列中唤醒，重新判断条件是否满足。</p>
+<p>以上的Requests中，如果对内部存储的请求的容量有上限要求，那么在put方法中也应该像是在take方法中判断是否为空一样，加入对是否已满的判断。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Requests</span> &#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> LinkedList&lt;String&gt; linkedList = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="type">Integer</span> <span class="variable">CAPACITY</span> <span class="operator">=</span> <span class="number">100</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">synchronized</span> String <span class="title function_">take</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="keyword">while</span> (linkedList.isEmpty()) &#123;</span><br><span class="line">            wait();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">String</span> <span class="variable">request</span> <span class="operator">=</span> linkedList.pollFirst();</span><br><span class="line">        notifyAll();</span><br><span class="line">        <span class="keyword">return</span> request;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">put</span><span class="params">(String request)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="keyword">while</span> (linkedList.size() == CAPACITY) &#123;</span><br><span class="line">            wait();</span><br><span class="line">        &#125;</span><br><span class="line">        linkedList.offerLast(request);</span><br><span class="line">        notifyAll();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因在Guarded Suspension模式的模板代码中，经常会出现wait方法，因此此模式也经常性的被称为Guarded wait模式。</p>
+<h2 id="Balking模式"><a href="#Balking模式" class="headerlink" title="Balking模式"></a>Balking模式</h2><p>在上面的Guarded Suspension模式中，当守护条件没有满足的时候，线程将会陷入阻塞，等待守护条件得到满足。在某些情况下，当发现条件没有满足的时候，我们希望立即返回，而不需要等待。这种模式称为Balking模式。Balking，即为停步返回的意思。</p>
+<p>Balking模式的特点即是不进行循环等待。若守护条件不成立，则立刻返回并进入下一个操作。</p>
+<p>懒加载模式下的单例模式的实现，可以看作是Balking模式。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton instance;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> Singleton <span class="title function_">getInstance</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (instance != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> instance;</span><br><span class="line">        &#125;</span><br><span class="line">        instance = <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在Guarded Suspension模式中，当守护条件不满足的情况下，线程会一直等待直到条件满足。在Balking模式下，当守护条件不满足的情况下，线程直接满足。在一直等待和直接返回之间，则存在着中间地带：等待守护条件满足或等待时间超时。可以称这种模式为带有超时时间的Guarded Suspension模式。那么这种模式如何来实现呢？</p>
+<p>还是以上文例子中的Requests例子来描述。在下述的take方法中， 我们假定最长等待时间为60s，超过这个时间，直接返回null。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Requests</span> &#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> LinkedList&lt;String&gt; linkedList = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">TIME_OUT</span> <span class="operator">=</span> <span class="number">60</span> * <span class="number">1000</span>;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">synchronized</span> String <span class="title function_">take</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">		<span class="keyword">while</span> (linkedList.isEmpty()) &#123;</span><br><span class="line">            <span class="type">long</span> <span class="variable">now</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">            <span class="type">long</span> <span class="variable">left</span> <span class="operator">=</span> TIME_OUT - (now - start);</span><br><span class="line">            <span class="keyword">if</span> (left &lt;= <span class="number">0</span>) <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">			wait();</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> linkedList.pollFirst();</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">put</span><span class="params">(String request)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">		linkedList.offerLast(request);</span><br><span class="line">		notifyAll();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Producer-Consumer模式"><a href="#Producer-Consumer模式" class="headerlink" title="Producer-Consumer模式"></a>Producer-Consumer模式</h2><p>Producer-Consumer模式，即生产者-消费者模式。生产者-消费者模式在日常的开发中使用非常的广泛，java世界中使用非常广泛的线程池，其实质就是生产者-消费者模式的实现。还有我们经常使用的消费队列，如Kafka等，也是典型的生产者-消费者模式的应用。</p>
+<p>使用Producer-Consumer模式的好处是：</p>
+<ol>
+<li>生产者、消费者没有直接耦合，而是经过中间人，实现了解耦。单方面的崩溃不会带来连锁反应。</li>
+<li>中间人的存在，消除了生产者生产消息和消费者消费消息之间速度的差异带来的问题。</li>
+</ol>
+<p>在Producer-Consumer模式的实现中，经常会使用到Guarded Suspension模式。</p>
+<p>一个典型的Producer-Consumer模式的实现如下。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MessageStore</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">CAPACITY_LIMIT</span> <span class="operator">=</span> <span class="number">1000</span>;</span><br><span class="line">    <span class="keyword">private</span> LinkedList&lt;Request&gt; linkedList = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="title function_">put</span><span class="params">(Request request)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="keyword">while</span> (linkedList.size() &gt;= CAPACITY_LIMIT) &#123;</span><br><span class="line">            wait();</span><br><span class="line">        &#125;</span><br><span class="line">        linkedList.offerLast(request);</span><br><span class="line">        notifyAll();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="title function_">take</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="keyword">while</span> (linkedList.isEmpty()) &#123;</span><br><span class="line">            wait();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">Request</span> <span class="variable">request</span> <span class="operator">=</span> linkedList.pollFirst();</span><br><span class="line">        notifyAll();</span><br><span class="line">        <span class="keyword">return</span> request;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">pubic <span class="keyword">class</span> <span class="title class_">Consumer</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> MessageStore messageStore;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Consumer</span><span class="params">(MessageStore store)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.messageStore = store;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">consume</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">            <span class="type">Request</span> <span class="variable">request</span> <span class="operator">=</span> <span class="built_in">this</span>.messageStore.take();</span><br><span class="line">            <span class="comment">// process request</span></span><br><span class="line">        	&#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException ex) &#123;</span><br><span class="line">            logger.error(ex.getMessage(), ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Producer</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> MessageStore messageStore;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Producer</span><span class="params">(MessageStore store)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.messageStore = store;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">produce</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">                <span class="type">Request</span> <span class="variable">request</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Request</span>();</span><br><span class="line">                <span class="built_in">this</span>.messageStore.put(request);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException ex) &#123;</span><br><span class="line">            logger.error(ex.getMessage(), ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Request</span> &#123;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于Producer生产的消息，通过中间人，以什么样的顺序传递给Consumer，存在着不同的策略：</p>
+<ol>
+<li>先生产先消费。实践上经常使用队列来进行实现。上述示例代码，使用就是此策略。</li>
+<li>后生产先消费。实践上经常使用栈来进行实现。</li>
+<li>优先级高的先消费。实践上经常使用优先级队列来实现。</li>
+</ol>
+<p>在生产中，MessageStore的实现自然不会如此。在jdk中的juc包下，有着众多的支持多线程的集合实现。如ArrayBlockingQueue、LinkedBlockingQueue。多加使用juc下的多线程队列，可以让代码实现上更加简单、高效。如使用LinkedBlockingQueue改写上述的MessageStore。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MessageStore</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">CAPACITY_LIMIT</span> <span class="operator">=</span> <span class="number">1000</span>;</span><br><span class="line">    <span class="keyword">private</span> LinkedBlockingQueue&lt;Request&gt; linkedList = <span class="keyword">new</span> <span class="title class_">LinkedBlockingQueue</span>&lt;&gt;(CAPACITY_1000);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">put</span><span class="params">(Request request)</span> &#123;</span><br><span class="line">        linkedList.put(request);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">take</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">Request</span> <span class="variable">request</span> <span class="operator">=</span> linkedList.take();</span><br><span class="line">        <span class="keyword">return</span> request;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Read-Write-Lock模式"><a href="#Read-Write-Lock模式" class="headerlink" title="Read-Write-Lock模式"></a>Read-Write-Lock模式</h2><p>Read-Write-Lock模式，即读写锁模式。多线程并发读写的情况下，区分读操作和写操作，降低锁的粒度，使用不同的锁来进行控制。在执行读操作的时候，可以申请共享性的读锁，允许多个线程并发的读；在执行写操作的时候，需要申请独占性的写锁。在申请共享读锁的时候，应优先排他写锁的申请。</p>
+<p>一个简单的ReadWriteLock的实现示例代码如下。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReadWriteLock</span> &#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="type">int</span> <span class="variable">readings</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">private</span> <span class="type">int</span> <span class="variable">writings</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">private</span> <span class="type">int</span> <span class="variable">waitings</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">readLock</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">		<span class="keyword">while</span> (writings &gt; <span class="number">0</span> || waitings &gt; <span class="number">0</span>) &#123;</span><br><span class="line">			wait();</span><br><span class="line">		&#125;</span><br><span class="line">		readings++;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">readUnlock</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">		readings++;</span><br><span class="line">		nofifyAll();</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">writeLock</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        waitings++;</span><br><span class="line">		<span class="keyword">while</span> (readings &gt; <span class="number">0</span> || writings &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            wait();</span><br><span class="line">        &#125;</span><br><span class="line">        waitings--;</span><br><span class="line">        writings++;</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">writeUnlock</span><span class="params">()</span> &#123;</span><br><span class="line">    	writings--;</span><br><span class="line">        nofityAll();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以上的代码仅为示例，更加准确、高效的ReadWriteLock实现，请学习参阅jdk中的juc包下的ReentrantReadWriteLock实现。</p>
+<p>还有一种类似的模式称为Copy-on-Write模式，即写时复制模式。此种模式下，在多线程并发读写的情况下，读操作由于数据的状态不会发生变化，因此无需执行加锁操作，写操作需要申请锁。在临界区内，执行数据的复制，复制完成后，执行数据的替换。因此，此种模式适用于读多写少的场景。同时，由于在写操作的时候会复制整个数据，因此数据不能太大，否则数据的复制将会花费较多的时间和内存的占用。</p>
+<p>jdk中的juc包下，存在着CopyOnWriteArrayList和CopyOnWriteArraySet两个写时复制容器。这两个容器的读取操作时无锁实现，因此读的性能很高。</p>
+<h2 id="Thread-Per-Message模式"><a href="#Thread-Per-Message模式" class="headerlink" title="Thread-Per-Message模式"></a>Thread-Per-Message模式</h2><p>Thread-Per-Message模式，直译是指“每个消息一个线程”，即在消息到来时，为每个消息都单独创建一个线程来进行处理。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handle</span><span class="params">(<span class="keyword">final</span> Message message)</span> &#123;</span><br><span class="line">	<span class="keyword">new</span> <span class="title class_">Thread</span>() &#123;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="comment">// process message</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如上述代码，在handle函数中，每个消息都会被一个单独的Thread来进行处理。</p>
+<p>此模式的好处是，消息调用线程和消息处理线程是相互独立的。调用线程无需等待消息处理完成，将消息处理委托给新创建的线程之后，就可以返回。这能显著提高响应性，降低延迟时间。很常用的应用场景包括GUI程序、web服务器程序。</p>
+<p>此模式同时也存在着如下的特点：</p>
+<ol>
+<li>一般情况下，无需线程处理的结果。如果需要等待线程处理的结果，可考虑使用Future模式。</li>
+<li>消息处理的顺序，并不严格遵守消息到来的顺序。线程的执行顺序，和线程的创建顺序无关，由操作系统来进行调度。</li>
+<li>消息到来说，都会创建新的线程。线程的创建需要一定的耗时。为了减少创建线程的时间，可以提前创建好线程，就是后面将要说到的Worker Thread模式。</li>
+<li>消息过多时，创建的线程数存在过多，导致耗尽系统资源的风险。请衡量使用场景，必要时使用Worker Thread模式。</li>
+</ol>
+<h2 id="Worker-Thread模式"><a href="#Worker-Thread模式" class="headerlink" title="Worker Thread模式"></a>Worker Thread模式</h2><p>Worker Thread模式，即工作者线程模式。与上面的Thread-Per-Message相比，它们的不同点如下：</p>
+<ol>
+<li>Worker Thread模式中线程是提前创建好的，Thread-Per-Message模式中线程在消息到来时创建。</li>
+<li>Worker Thread模式中线程和消息不是一一对应的，线程处理完消息之后，会等待下一个消息带来，线程会重复利用。Thread-Per-Message模式中，线程和消息一一对应，无法复用。</li>
+</ol>
+<p>如下述的代码中，Handler类实例在接收到消息的时候，会将消息缓存起来。同时，在Handler类中开启了一定数量的线程，线程会循环的从缓存中读取消息，进行处理。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Handler</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">THREAD_COUNT</span> <span class="operator">=</span> <span class="number">100</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> LinkedList&lt;Message&gt; list;</span><br><span class="line">    </span><br><span class="line">    WorkerThread[] threads = <span class="keyword">new</span> <span class="title class_">WorkerThread</span>[THREAD_COUNT];</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Handler</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; THREAD_COUNT; i++) &#123;</span><br><span class="line">            threads = <span class="keyword">new</span> <span class="title class_">WorkerThread</span>(handler);</span><br><span class="line">        &#125;</span><br><span class="line">        list = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">	</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handle</span><span class="params">(Message message)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    	<span class="built_in">this</span>.list.offerLast(message);	</span><br><span class="line">        notifyAll();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">synchronized</span> Message <span class="title function_">getMessage</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="keyword">while</span> (list.isEmpty()) &#123;</span><br><span class="line">            wait();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> list.pollFirst();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WorkerThread</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Handler handler;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">WorkerThread</span><span class="params">(Handler handler)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.handler = handler;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">for</span>(;;) &#123;</span><br><span class="line">            <span class="type">Message</span> <span class="variable">message</span> <span class="operator">=</span> <span class="built_in">this</span>.handler.getMessage();</span><br><span class="line">            <span class="comment">// process the message</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，WorkerThread的数量越多，消息的并发处理能力越强。但是我们知道，操作系统中创建线程是存在开销的，增加线程的个数，就会带来更多的系统占用。同时，WorkerThread线程的数量超过了同时需要处理消息的数量，多余的WorkerThread也没有什么意义。</p>
+<p>关于对Worker Thread模式中的WorkerThread，试着去思考如下的问题：</p>
+<ol>
+<li>WorkerThread线程的个数，需要创建多少个？</li>
+<li>WorkerThread是在系统启动的时候就进行创建，还是在消息到来的时候再进行创建？</li>
+<li>WorkerThread线程创建之后，就一直存活吗？能否在适当的时候，关闭某些空闲的线程？</li>
+<li>WorkerThread线程可否随着消息的增多，而保持增多？随着消息的减少，而保持减少？</li>
+</ol>
+<p>对于Handler类中的消息缓存队列，也请去思考如下问题：</p>
+<ol>
+<li>缓存队列的长度是无限的吗？持续向队列中提交消息，会发生什么？</li>
+<li>假如缓存队列长度是固定且有限的，那超过了队列缓存长度的消息，应该怎么处理？</li>
+</ol>
+<p>以上的思考，在jdk中的ThreadPoolExecutor中都有答案，请参阅学习。</p>
+<h2 id="Future模式"><a href="#Future模式" class="headerlink" title="Future模式"></a>Future模式</h2><p>前面在Thread-Per-Message模式中说到了，在此模式中无法获取到线程的执行结果。如想要获取到执行结果，则可以考虑使用Future模式。</p>
+<p>Future模式，即在线程执行之后，不进行等待，而是先返回给调用者Future对象，调用者后续可以在合适的时候使用此Future对象来获取线程执行的结果。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Future <span class="title function_">handle</span><span class="params">(<span class="keyword">final</span> Message message)</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">Future</span> <span class="variable">future</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Future</span>();</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Thread</span>() &#123;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="comment">// process message</span></span><br><span class="line">            future.setData(<span class="string">&quot;Result&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.start();</span><br><span class="line">    <span class="keyword">return</span> future;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Future</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String data;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Future</span><span class="params">()</span> &#123;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setData</span><span class="params">(String data)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.data = data;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.data;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如上述代码所示，在讲消息提交到handle函数之后，handle函数返回了一个future对象并且返回。在线程执行完成消息处理之后，会将线程执行的结果，通过调用future的setData方法，附加到future中。如想要获取到线程的执行结果，则可通过如下方式调用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (future.get() == <span class="literal">null</span>) &#123;</span><br><span class="line">	wait();</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">String</span> <span class="variable">data</span> <span class="operator">=</span> future.get();</span><br></pre></td></tr></table></figure>
+
+<p>在上述的示例代码中，只做了简单示范，future的get函数没有进行阻塞处理，即当线程没有执行完成之后，get操作也直接返回。因此，在客户端获取线程结果的调用中，需要使用Guarded Suspension模式去循环执行结果。也可以选择在get函数中进行阻塞，同步线程的处理结果，客户端调用则无需使用while循环处理。</p>
+<p>在jdk的juc包中，提供了Future模式的一系列相关的类和接口，如Callable、Future、FutureTask等，请参阅相关资料学习。</p>
+<h2 id="ThreadLocal模式"><a href="#ThreadLocal模式" class="headerlink" title="ThreadLocal模式"></a>ThreadLocal模式</h2><p>ThreadLocal模式，可以直译为线程本地存储模式。每一个线程都持有一份数据，数据在各个线程之间不进行共享，自然做到了数据的互不影响。</p>
+<p>jdk中的ThreadLocal类即是此模式的有效利用。在ThreadLocal类中，定义了set方法和get方法。set用于向线程中添加关联数据。调用get方法，可以获取到与当前线程关联的数据。</p>
+<p>ThreadLocal的实现，保证了在多个线程都持有ThreadLocal的实例的时候，在各个线程中调用实例的get方法，获取到的数据都是线程独有的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">set</span><span class="params">(T value)</span>;</span><br><span class="line"><span class="keyword">public</span> T <span class="title function_">get</span><span class="params">()</span>;</span><br></pre></td></tr></table></figure>
+
+<p>如下述示例代码。ThreadLocal中存储了线程的名称，在执行append方法的时候，通过调用thread.get()将会获取到当前执行append操作的线程的名称。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LogAppender</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> ThreadLocal&lt;String&gt; threadLocal = <span class="keyword">new</span> <span class="title class_">ThreadLocal</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">append</span><span class="params">(PrintStream stream)</span> &#123;</span><br><span class="line">        stream.println(threadLocal.get() + <span class="string">&quot; print out&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setThreadName</span><span class="params">(String name)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.threadLocal.set(name);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LogThread</span> <span class="keyword">extends</span> <span class="title class_">Thread</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> LogAppender appender;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> index;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="variable">initialized</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    LogThread(LogAppender appender, <span class="type">int</span> index) &#123;</span><br><span class="line">        <span class="built_in">this</span>.appender = appender;</span><br><span class="line">        <span class="built_in">this</span>.index = index;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span>(!<span class="built_in">this</span>.initialized) &#123;</span><br><span class="line">            <span class="built_in">this</span>.initialized = <span class="literal">true</span>;</span><br><span class="line">            <span class="built_in">this</span>.setName(<span class="string">&quot;Thread-&quot;</span> + <span class="built_in">this</span>.index);</span><br><span class="line">            <span class="built_in">this</span>.appender.setThreadName(<span class="built_in">this</span>.getName());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">this</span>.appender.append(System.out);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Two-Phase-Termination模式"><a href="#Two-Phase-Termination模式" class="headerlink" title="Two-Phase Termination模式"></a>Two-Phase Termination模式</h2><p>Two-Phase Termination模式，即两阶段终止模式。不同于上面的那些模式，是关于如何创建线程来运行，Two-Phase Termination模式是关于如何优雅的终止线程的运行。确切一些的说，是关于如何在A线程中优雅的关闭B线程，不会让B线程突然暴毙，而是可以让B线程在关闭之前可以执行某些操作。</p>
+<p>Thread类中的stop方法，可以用于关闭线程，但现在已经废弃，原因即是调用stop来关闭线程，只能让线程突然暴毙，但无法做到优雅。同时，处于sleep状态的线程，无法即时响应stop方法，会降低系统响应性。</p>
+<p>Two-Phase Termination模式，顾名思义，分为两个阶段来进行。第一阶段是向想要关闭的线程发布关闭通知，第二阶段是线程响应通知执行关闭操作。</p>
+<p>第一阶段，发布通知，可以概括为设置标志位和调用interrupt方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WorkerThread</span> <span class="keyword">extends</span> <span class="title class_">Thread</span> &#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">boolean</span> <span class="variable">shouldTerminate</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setTerminate</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.shouldTerminate = <span class="literal">true</span>;</span><br><span class="line">        interrupt();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">getShouldTerminate</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.shouldTerminate;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">while</span> (!getShouldTerminate()) &#123;</span><br><span class="line">                doWork();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException ex) &#123;</span><br><span class="line">            Thread.currentThread.interrupt();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            doShutdown();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">doShutDown</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// process shut down</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">doWork</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// do work</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是上面interrupt方法的调用，处于sleep状态的线程将会转向runnable状态，从而可以响应操作。处于wait状态的线程，如果只进行了shouldTerminate标志位的设置，而不调用interrupt方法的话，线程也不会中等待队列中出来，所以也必须调用interrupt方法对线程下来“中断wait”的指示。</p>
+<p>在“极客时间-java并发编程实战”中讲到：两阶段终止模式是一种应用很广泛的并发设计模式，在java预研中使用两阶段终止模式来优雅地终止线程，需要注意两个关键点：一个是仅检查终止标志是不够的，因为线程的状态可能处于休眠态；另一个是仅检查线程的中断状态也是不够的，因为我们依赖的第三方类库很可能没有正确处理中断异常“。</p>
+<h2 id="Active-Object模式"><a href="#Active-Object模式" class="headerlink" title="Active Object模式"></a>Active Object模式</h2><p>Active Object模式，即主动对象模式。在此处，主动对象时指本身具有线程的对象。主动对象模式可将调用者任务提交和任务执行分离，任务的执行在Active Object对象的线程中执行。Active Object可以从外部接收和处理异步任务，并且在合适的时机可以将任务处理的结果返回给调用者。</p>
+<p>调用者在进行任务提交的时候，Active Object会将任务封装成统一的对象。如下述示例代码所示。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">ActiveObject</span> &#123;</span><br><span class="line">    Future&lt;String&gt; <span class="title function_">process</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ActiveObjectImpl</span> <span class="keyword">implements</span> <span class="title class_">ActiveObject</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">ExecutorService</span> <span class="variable">service</span> <span class="operator">=</span> Executors.newSingleThreadExecutor();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Future&lt;String&gt; <span class="title function_">process</span><span class="params">()</span> &#123;</span><br><span class="line">        Future&lt;String&gt; future = service.submit(() -&gt; <span class="string">&quot;result...&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> future;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag"># 多线程</a>
+          
+            <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag"># 设计模式</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2022/03/30/how-to-judge-maj-win/" rel="next" title="麻将和牌算法简介">
+                <i class="fa fa-chevron-left"></i> 麻将和牌算法简介
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2022/04/06/threadlocal/" rel="prev" title="ThreadLocal源码及内存泄漏可能性分析">
+                ThreadLocal源码及内存泄漏可能性分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Single-Threaded-Execution%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">Single Threaded Execution模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Immutable%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">Immutable模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Guarded-Suspension%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">Guarded Suspension模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Balking%E6%A8%A1%E5%BC%8F"><span class="nav-number">4.</span> <span class="nav-text">Balking模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Producer-Consumer%E6%A8%A1%E5%BC%8F"><span class="nav-number">5.</span> <span class="nav-text">Producer-Consumer模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Read-Write-Lock%E6%A8%A1%E5%BC%8F"><span class="nav-number">6.</span> <span class="nav-text">Read-Write-Lock模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Thread-Per-Message%E6%A8%A1%E5%BC%8F"><span class="nav-number">7.</span> <span class="nav-text">Thread-Per-Message模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Worker-Thread%E6%A8%A1%E5%BC%8F"><span class="nav-number">8.</span> <span class="nav-text">Worker Thread模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Future%E6%A8%A1%E5%BC%8F"><span class="nav-number">9.</span> <span class="nav-text">Future模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ThreadLocal%E6%A8%A1%E5%BC%8F"><span class="nav-number">10.</span> <span class="nav-text">ThreadLocal模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Two-Phase-Termination%E6%A8%A1%E5%BC%8F"><span class="nav-number">11.</span> <span class="nav-text">Two-Phase Termination模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Active-Object%E6%A8%A1%E5%BC%8F"><span class="nav-number">12.</span> <span class="nav-text">Active Object模式</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng.dianjun</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

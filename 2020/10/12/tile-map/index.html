@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh/cn">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+
+
+  <meta name="keywords" content="tile-map,baidu,gaode,google,tianditu," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="在使用openlayers等javascript库来加载互联网在线地图或是geoserver等发布的切片地图的时候，经常需要对地图服务的相关元数据进行配置，如size、origin、dpi、lods等。本文将对以上配置项进行详细的说明，并以天地图在线地图服务为例配合讲解。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="切片地图元信息配置说明">
+<meta property="og:url" content="http://yoursite.com/2020/10/12/tile-map/index.html">
+<meta property="og:site_name" content="maslke&#39;s blog">
+<meta property="og:description" content="在使用openlayers等javascript库来加载互联网在线地图或是geoserver等发布的切片地图的时候，经常需要对地图服务的相关元数据进行配置，如size、origin、dpi、lods等。本文将对以上配置项进行详细的说明，并以天地图在线地图服务为例配合讲解。">
+<meta property="og:locale">
+<meta property="og:image" content="http://yoursite.com/.com//tianditu-1.png">
+<meta property="og:image" content="http://yoursite.com/.com//tianditu-4x4.png">
+<meta property="og:image" content="http://yoursite.com/.com//tianditu-4326-1x2.png">
+<meta property="og:image" content="http://yoursite.com/.com//tianditu-4326-2x4.png">
+<meta property="og:image" content="http://yoursite.com/.com//gaode-2x2.png">
+<meta property="og:image" content="http://yoursite.com/.com//google-000.png">
+<meta property="og:image" content="http://yoursite.com/.com//google-2x2.png">
+<meta property="og:image" content="http://yoursite.com/.com//baidu-8x8.png">
+<meta property="article:published_time" content="2020-10-11T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-06-19T04:54:18.631Z">
+<meta property="article:author" content="feng.dianjun">
+<meta property="article:tag" content="tile-map">
+<meta property="article:tag" content="baidu">
+<meta property="article:tag" content="gaode">
+<meta property="article:tag" content="google">
+<meta property="article:tag" content="tianditu">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/.com//tianditu-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/10/12/tile-map/"/>
+
+
+
+
+
+  <title>切片地图元信息配置说明 | maslke's blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh/cn">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">maslke's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/12/tile-map/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="maslke's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">切片地图元信息配置说明</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-12T00:00:00+08:00">
+                2020-10-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在使用openlayers等javascript库来加载互联网在线地图或是geoserver等发布的切片地图的时候，经常需要对地图服务的相关元数据进行配置，如size、origin、dpi、lods等。本文将对以上配置项进行详细的说明，并以天地图在线地图服务为例配合讲解。</p>
+<span id="more"></span>
+
+<h2 id="配置项"><a href="#配置项" class="headerlink" title="配置项"></a>配置项</h2><h3 id="size"><a href="#size" class="headerlink" title="size"></a>size</h3><p>size即是切片地图每一个图片的大小，一般表示形式为数组形式，即[width, height]。当前阶段，常用的切片大小为[256, 256]，即每一个图片的大小为256 * 256，单位为px。</p>
+<h3 id="origin"><a href="#origin" class="headerlink" title="origin"></a>origin</h3><p>origin为切片计算的起点，用于确定在每一个比例尺下，行列号为(0,0)的切片的位置。origin通常使用一组数字来表示，分别表示x和y坐标。具体来说，origin所表示的位置，为行列号为(0,0)的切片的左上角所表示的位置。</p>
+<h3 id="dpi"><a href="#dpi" class="headerlink" title="dpi"></a>dpi</h3><p>dpi，它表示的意义是图片上每英寸长度内的像素的个数。常用的切片方案中，dpi为96，即每英寸长度内的像素的个数为96个（每英寸中像素为96px）。切图dpi也可自行定义，比如在某些版本的geoserver（geowebcache）服务器下，切图dpi为90。在使用arcgis server发布切片地图服务的过程中，也可自行更改dpi参数，默认情况下arcgis server切片的dpi为96。</p>
+<p>高德地图切片dpi不唯一，分两个阶段。在1-9层级，dpi为44.38498293515359。在10-18层级，dpi为96.04726735598229。（<strong>此处描述有误，详情见文末说明</strong>）</p>
+<p>天地图、谷歌地图的dpi为96.04726735598229。</p>
+<p>百度地图的切片dpi为72.00885935769656。</p>
+<p>以上dpi数字的计算方法是：</p>
+<ol>
+<li>获取对应切片，查看图片的长和宽（以cm为单位），计为width。将cm转换为对应的英寸，即为width &#x2F; 2.54</li>
+<li>根据dpi定义，计算dpi为 256 &#x2F; (width &#x2F; 2.54)。</li>
+</ol>
+<h3 id="lods"><a href="#lods" class="headerlink" title="lods"></a>lods</h3><p>lods为切片地图的重要参数，相对来说复杂一些。不同的切片地图，对应的lods参数也往往不同。lods的形式通常为数组形式，每一个数组项都表示了一个lod，lod中包含了level、resolution、scale等信息。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">	&#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">16</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">2.38865713397468</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">9027.977411</span></span><br><span class="line">    &#125;, </span><br><span class="line">    &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">17</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">1.19432856685505</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">4513.988705</span></span><br><span class="line">    &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<h4 id="level"><a href="#level" class="headerlink" title="level"></a>level</h4><p>level即为切片方案的层级，用数字表示，反应到地图上即表示的是地图的zoom信息，也可以称之为缩放级别。具体数字为0或是1，并不重要，可以自行定义。</p>
+<h4 id="resolution"><a href="#resolution" class="headerlink" title="resolution"></a>resolution</h4><p>resolution表示的为切片的分辨率，意义为图上1px的距离表示实际距离的多少。resolution的作用为确定当前点位置所在的切片的行列号。大致的计算的方法如下：</p>
+<ol>
+<li>计算出当前点位置和origin点位置的x和y的差值，表示了两点之间的实际距离。已知origin点所在的切片的行列号为(0,0)。</li>
+<li>使用两点之间的实际距离，去除当前的resolution，可以得出当前点和origin点之间的像素距离。</li>
+<li>计算出了两点之间的像素距离，并且已知了每一个切片的大小（比如为256px * 256px），则可以计算出两者之间的切片的个数，即大体可得当前点和origin点在水平方向和竖直方向上存在着多少个切片，即得出行号和列号。</li>
+</ol>
+<p>以上，说明了resolution参数的作用。下面，来说明如何来计算resolution的值。</p>
+<p>以天地图的web mercator投影（wkid:3857）的在线切片地图为例，其在线地图切片的第0个层级的resolution信息如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;level&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;resolution&quot;</span>: <span class="number">156543.033928</span>,</span><br><span class="line">    <span class="string">&quot;scale&quot;</span>: <span class="number">591657527.591555</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>那以上的resolution是如何计算出来的呢？</p>
+<p>计算过程如下：已知web mercator投影的地理坐标系为WGS84坐标系，参考椭球的长半轴长度为6378137米，那么此椭球的赤道周长为6378137 * 2 * math.pi &#x3D; 40075016.68557849米。天地图的切图方案中，在0层级，会使用一张256 * 256的图片来表示整个世界范围。根据resolution的定义，在第0层级中，resolution则可以计算得出40075016.68557849 &#x2F; 256 &#x3D; 156543.03392804097，即是上面写出的数字。</p>
+<p>上面已经说到，天地图的切图方案中，第0层级，使用一张256 * 256 大小的图片来表示整个世界范围。在下一个层级，即第1层级中，在水平方向和竖直方向，分别会一分为二，即使用共计4张256 * 256的图片来表示整个世界范围。由于同一方向上，图片一分为2，则可知resolution变为上一层级的二分之一，即78271.51696402048。往下的层级中，以此类推。</p>
+<p>（实际上，当前的天地图切图方案中，第0层级中并没有真正的进行切图，访问第0层级的切片地址，将返回一个空白图片。）</p>
+<p>说完了resolution之后，再回到上面提到的origin。回顾一下，origin是指切图方案中计算切片序号的起始点。起始点origin在一定程度上可以自行定义，只要定义的origin可以满足切图的需要。web mercator投影的天地图的切图方案origin定义为[-20037508.342787, 20037508.342787]，整个的切图范围为[-20037508.342787, -20037508.342787,20037508.342787, 20037508.342787]。在以上说明的基础上，可以给出此origin的计算方法。</p>
+<p>考虑把当前椭球的范围投影到一张平面上，以0度经线的位置为平面坐标系的y轴，赤道为x轴，赤道和0度经线的交点为坐标的原点，那平面坐标系的最大x坐标和最大y坐标将分别为20037508.342789244(此处暗含了一个设定：把椭球体看作一个正球体)。天地图的切图方案中，水平方向上，x坐标的正方向，是列号增加的方向；竖直方向上，y坐标的负方向，是行号增加的方向。在此种情况下，把切片计算的起始点定义在坐标轴的左上角(x的最小值和y的最大值)，在计算切片的时候，可以保证每一个切片的行号和列号都是正值，这是处于计算上的简便而选择的较优的方案。</p>
+<p>如下图所示，天地图的第0层级中，四张切片拼接之后，表示了整个的世界范围（从图上可以看出来，web mercator投影中，在高纬度地区，面积和形状的变形都相当之大，特别明显的就是北极附近的格陵兰岛。这也是为什么不推荐在web mercator投影下，计算大面积地物的面积。实践证明，对于省市行政区的面积计算，在web mercator投影下的面积计算，确定不具备现实意义）。</p>
+<p><img src="/.com//tianditu-1.png" alt="1"></p>
+<p>图片上的序号为切片的行号和列号，它们的url地址分别为，感兴趣的可以自行加载验证。</p>
+<p><a target="_blank" rel="noopener" href="https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL=0&TILEROW=0&TILEMATRIX=1&tk=cd7427b91c597d6e859908210e8cb5ed">https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=0&amp;TILEROW=0&amp;TILEMATRIX=1&amp;tk=cd7427b91c597d6e859908210e8cb5ed</a></p>
+<p><a target="_blank" rel="noopener" href="https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL=1&TILEROW=0&TILEMATRIX=1&tk=cd7427b91c597d6e859908210e8cb5ed">https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=1&amp;TILEROW=0&amp;TILEMATRIX=1&amp;tk=cd7427b91c597d6e859908210e8cb5ed</a></p>
+<p><a target="_blank" rel="noopener" href="https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL=0&TILEROW=1&TILEMATRIX=1&tk=cd7427b91c597d6e859908210e8cb5ed">https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=0&amp;TILEROW=1&amp;TILEMATRIX=1&amp;tk=cd7427b91c597d6e859908210e8cb5ed</a></p>
+<p><a target="_blank" rel="noopener" href="https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL=1&TILEROW=1&TILEMATRIX=1&tk=cd7427b91c597d6e859908210e8cb5ed">https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=1&amp;TILEROW=1&amp;TILEMATRIX=1&amp;tk=cd7427b91c597d6e859908210e8cb5ed</a></p>
+<p><img src="/.com//tianditu-4x4.png" alt="4x4"> </p>
+<p>如上所示，为天地图第2层级的16张切片拼接之后的展示效果，具体的切片地址就不再一一给出，从上述给出的地址中可以简单的推出。</p>
+<p>天地图在线地图与谷歌在线地图服务、高德在线地图服务一个显著的区别是，它除了提供web mercator投影的切片方案之外，还额外提供了wgs84坐标系的切片方案。这两种方案的最大差异是，origin和lods信息都不一致。根据上面所讲的计算方案，可以得出在wgs坐标系下的切片方案，其origin为[-180, 90]，整个切图范围在[-180,-90,180,90]，在第0层级下的resolution为180 * 2  &#x2F; 256 &#x3D;  1.40625，其余层级的resolution可以依次计算。</p>
+<p>在地理坐标系下，切图url地址如下所示。替换TILEMATRIX、TILEROW、TILECOL参数后，即可获取任一需要的切片。</p>
+<p><a target="_blank" rel="noopener" href="https://t0.tianditu.gov.cn/vec_c/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=c&FORMAT=tiles&TILECOL=0&TILEROW=0&TILEMATRIX=1&tk=cd7427b91c597d6e859908210e8cb5ed%E3%80%82">https://t0.tianditu.gov.cn/vec_c/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=c&amp;FORMAT=tiles&amp;TILECOL=0&amp;TILEROW=0&amp;TILEMATRIX=1&amp;tk=cd7427b91c597d6e859908210e8cb5ed。</a></p>
+<p>地理坐标系下，第1层级的切片拼接后，展示如下。由于地理坐标系下的切图整个范围为[-180,-90,180,90]。水平方向上的长度是竖直方向上的2倍，导致水平方向上需要的切片数量也将是竖直方向上切片数量的2倍。因此，(0,0)和(0,1)两张图片即可表示整个世界范围，(1,0)和(1,1)两张图片为空白图片。</p>
+<p><img src="/.com//tianditu-4326-1x2.png" alt="1x2"></p>
+<p>第2层级的切图拼接效果如下所示。</p>
+<p><img src="/.com//tianditu-4326-2x4.png" alt="2x4"></p>
+<h4 id="scale"><a href="#scale" class="headerlink" title="scale"></a>scale</h4><p>scale是指图上距离与实际距离的比值（表示形式为1:M，图上1cm，表示真实的距离为Mcm），表示的含义是放缩的尺度。scale与具体的切图方案无关，而是切图方案确定之后的衍生信息。根据以上的dpi、resolution等信息，可以计算出在给定resolution的情况下，比例尺的大小。</p>
+<p>scale的计算可以从以下的推导得出：</p>
+<ol>
+<li>已知resolution的概念为1px表示实际距离的多少（在投影坐标系下，以米为单位；在地理坐标系下，以度为单位），dpi的概念为1英寸中包含多少个像素（px）。</li>
+<li>从1可知，1英寸中包含的实际距离为dpi * resolution。</li>
+<li>1英寸等价于2.54cm。从2可知，图上距离的0.0254米，表示了真实距离的dpi * resolution 米，则可知比例尺的大小为 dpi * resolution &#x2F; 0.0254。</li>
+</ol>
+<p>再看一下，天地图的web mercator投影（wkid:3857）的在线切片地图，其在线地图切片的第0个层级的resolution信息如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;level&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;resolution&quot;</span>: <span class="number">156543.033928</span>,</span><br><span class="line">    <span class="string">&quot;scale&quot;</span>: <span class="number">591657527.591555</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根据我们以上的推导，计算出的比例尺应该为 96 * 156543.033928 &#x2F; 0.0254 &#x3D; 591658710.9089763。结果与以上的比例尺数字相符。</p>
+<p>以上，我们验证了在web mercator投影下的resolution和scale之间的关系，那这个计算方法在wgs84坐标下是否也成立呢？</p>
+<p>结果是显然的，这个计算公式并不成立。原因也很明显，resolution的概念是和具体坐标系相关，在投影坐标系下，表示1px表示实际距离多少米，而在地理坐标系下，表示1px表示实际距离多少度，而scale的概念则一直是图上1cm表示实际距离多少cm。这之间就出现了一个单位上的不一致。弥补的方法也非常的简单，通过dpi * resolution &#x2F; 0.0254，计算出的结果是图上1cm表示实际坐标单位。在投影坐标系的情况下，实际坐标单位为米，结果满足比例尺的定义，不需要再行计算。在地理坐标系的情况下，实际坐标单位为度，将此结果再乘以一个mpu（mpu &#x3D; meter per unit，每一坐标单位表示多少米）即可。</p>
+<p>对于投影坐标系，可以认为mpu为1。对于地理坐标系来说，可以认为mpu为赤道的周长 &#x2F; 360。</p>
+<p>先给出再wgs84坐标系下的某个lod定义，如下。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">           </span><br><span class="line">    <span class="string">&quot;resolution&quot;</span>: <span class="number">0.703125</span>,</span><br><span class="line">    <span class="string">&quot;scale&quot;</span>: <span class="number">2.958293554545656E8</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过我们上述的说明，计算scale &#x3D; 0.703125 * 96 &#x2F; 0.0254 * (math.pi * 2 * 6378137) &#x2F; 360 &#x3D; 295829355.45456564。和上述给出的scale数字相比，验证了计算方法的正确。</p>
+<p>以上，即对切片地图相关的配置信息、用途，以及如何对这些配置信息进行计算给出了详细的说明。具体的数字无需记忆。从定义入手，可以简单的计算得出。</p>
+<h2 id="常见地图切片方案总结"><a href="#常见地图切片方案总结" class="headerlink" title="常见地图切片方案总结"></a>常见地图切片方案总结</h2><h3 id="天地图"><a href="#天地图" class="headerlink" title="天地图"></a>天地图</h3><p>天地图的相关信息，在上文中已进行了详尽说明。此处为了使用上的方便，给出总结性信息。</p>
+<p>天地图切图方案的最小层级为1级，最大层级为18级。</p>
+<p>其web mercator投影的切片方案，切片地址格式为<a target="_blank" rel="noopener" href="https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL=%7Bx%7D&TILEROW=%7By%7D&TILEMATRIX=%7Blevel%7D&tk=cd7427b91c597d6e859908210e8cb5ed%EF%BC%8C%E5%85%B6%E4%B8%ADTILEMATRIX%E4%B8%BA%E5%88%87%E7%89%87%E5%B1%82%E7%BA%A7%EF%BC%8CTILEROW%E4%B8%BA%E5%88%87%E7%89%87%E8%A1%8C%E5%8F%B7%EF%BC%8CTILECOL%E4%B8%BA%E5%88%87%E7%89%87%E5%88%97%E5%8F%B7%EF%BC%8C%E7%AC%AC1%E7%BA%A7%E7%9A%84resolution%E4%B8%BA78271.5169639999%E3%80%82">https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL={x}&amp;TILEROW={y}&amp;TILEMATRIX={level}&amp;tk=cd7427b91c597d6e859908210e8cb5ed，其中TILEMATRIX为切片层级，TILEROW为切片行号，TILECOL为切片列号，第1级的resolution为78271.5169639999。</a></p>
+<p>其wgs84地理坐标的切片方案，切片地址格式为<a target="_blank" rel="noopener" href="https://t0.tianditu.gov.cn/vec_c/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=c&FORMAT=tiles&TILECOL=%7Bx%7D&TILEROW=%7By%7D&TILEMATRIX=%7Blevel%7D&tk=cd7427b91c597d6e859908210e8cb5ed%EF%BC%8C%E5%85%B6%E4%B8%ADTILEMATRIX%E4%B8%BA%E5%88%87%E7%89%87%E5%B1%82%E7%BA%A7%EF%BC%8CTILEROW%E4%B8%BA%E5%88%87%E7%89%87%E8%A1%8C%E5%8F%B7%EF%BC%8CTILECOL%E4%B8%BA%E5%88%87%E7%89%87%E5%88%97%E5%8F%B7%EF%BC%8C%E7%AC%AC1%E7%BA%A7%E7%9A%84resolution%E4%B8%BA0.703125%E3%80%82">https://t0.tianditu.gov.cn/vec_c/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=c&amp;FORMAT=tiles&amp;TILECOL={x}&amp;TILEROW={y}&amp;TILEMATRIX={level}&amp;tk=cd7427b91c597d6e859908210e8cb5ed，其中TILEMATRIX为切片层级，TILEROW为切片行号，TILECOL为切片列号，第1级的resolution为0.703125。</a></p>
+<h4 id="web-mercator投影切图方案"><a href="#web-mercator投影切图方案" class="headerlink" title="web mercator投影切图方案"></a>web mercator投影切图方案</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">dpi</span>: <span class="number">96</span>,</span><br><span class="line">    <span class="attr">size</span>: [<span class="number">256</span>, <span class="number">256</span>],</span><br><span class="line">    <span class="attr">origin</span>: [-<span class="number">20037508.342787</span>, <span class="number">20037508.342787</span>],</span><br><span class="line">    <span class="attr">fullExtent</span>: [-<span class="number">20037508.342787</span>, -<span class="number">20037508.342787</span>, <span class="number">20037508.342787</span>, <span class="number">20037508.342787</span>]</span><br><span class="line">    <span class="attr">lods</span>: [&#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">0</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">156543.033928</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">591657527.591555</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">1</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">78271.5169639999</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">295828763.795777</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">2</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">39135.7584820001</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">147914381.897889</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">3</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">19567.8792409999</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">73957190.948944</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">4</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">9783.93962049996</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">36978595.474472</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">5</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">4891.96981024998</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">18489297.737236</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">6</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">2445.98490512499</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">9244648.868618</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">7</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">1222.99245256249</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">4622324.434309</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">8</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">611.49622628138</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">2311162.217155</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">9</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">305.748113140558</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">1155581.108577</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">10</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">152.874056570411</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">577790.554289</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">11</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">76.4370282850732</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">288895.277144</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">12</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">38.2185141425366</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">144447.638572</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">13</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">19.1092570712683</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">72223.819286</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">14</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">9.55462853563415</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">36111.909643</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">15</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">4.77731426794937</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">18055.954822</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">16</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">2.38865713397468</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">9027.977411</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">17</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">1.19432856685505</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">4513.988705</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">&quot;level&quot;</span>: <span class="number">18</span>,</span><br><span class="line">            <span class="string">&quot;resolution&quot;</span>: <span class="number">0.597164283559817</span>,</span><br><span class="line">            <span class="string">&quot;scale&quot;</span>: <span class="number">2256.998866688275</span></span><br><span class="line">        &#125;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="wgs84地理坐标系切图方案"><a href="#wgs84地理坐标系切图方案" class="headerlink" title="wgs84地理坐标系切图方案"></a>wgs84地理坐标系切图方案</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">size</span>: [<span class="number">256</span>, <span class="number">256</span>],</span><br><span class="line">    <span class="attr">dpi</span>: <span class="number">96</span>,</span><br><span class="line">    <span class="attr">origin</span>: [-<span class="number">180</span>, <span class="number">90</span>],</span><br><span class="line">    <span class="attr">fullExtent</span>: [-<span class="number">180</span>, -<span class="number">90</span>, <span class="number">180</span>, <span class="number">90</span>],</span><br><span class="line">    <span class="attr">lods</span>: [&#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">0</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">1.40625</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">5.916587109091312E8</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">0.703125</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">2.958293554545656E8</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">2</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">0.351563</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">1.479146777272828E8</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">3</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">0.175781</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">7.39573388636414E7</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">4</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">0.0878906</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">3.69786694318207E7</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">5</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">0.0439453</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">1.848933471591035E7</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">6</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">0.0219727</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">9244667.357955175</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">7</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">0.0109863</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">4622333.678977588</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">8</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">0.00549316</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">2311166.839488794</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">9</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">0.00274658</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">1155583.419744397</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">10</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">0.00137329</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">577791.7098721985</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">11</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">0.000686646</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">288895.85493609926</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">12</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">0.000343323</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">144447.92746804963</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">13</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">0.000171661</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">72223.96373402482</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">14</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">8.58307e-005</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">36111.98186701241</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">15</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">4.29153e-005</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">18055.990933506204</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">16</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">2.14577e-005</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">9027.995466753102</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">17</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">1.07289e-005</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">4513.997733376551</span></span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        <span class="string">&quot;level&quot;</span>: <span class="number">18</span>,</span><br><span class="line">        <span class="string">&quot;resolution&quot;</span>: <span class="number">5.36445e-006</span>,</span><br><span class="line">        <span class="string">&quot;scale&quot;</span>: <span class="number">2256.994353</span></span><br><span class="line">    &#125;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="高德地图"><a href="#高德地图" class="headerlink" title="高德地图"></a>高德地图</h3><p>高德地图的切片方案和天地图的切片方案完全一致，包括dpi、lods、size等。</p>
+<p>最小层级为1，最大层级为18， 第1层级的resolution为78271.5169639999。高德在线地图只有web mercator投影的切片方案，其lods定义可以参考天地图在切片方案定义。</p>
+<p>高德地图，典型切片格式地址为<a target="_blank" rel="noopener" href="http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x=%7Bx%7D&y=%7By%7D&z=%7Bz%7D%E3%80%82%E5%85%B6%E4%B8%AD%EF%BC%8Cz%E4%B8%BA%E5%88%87%E7%89%87%E5%B1%82%E7%BA%A7%EF%BC%8Cy%E4%B8%BA%E5%88%87%E7%89%87%E8%A1%8C%E5%8F%B7%EF%BC%8Cx%E4%B8%BA%E5%88%87%E7%89%87%E5%88%97%E5%8F%B7%E3%80%82">http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&amp;size=1&amp;scale=1&amp;style=7&amp;x={x}&amp;y={y}&amp;z={z}。其中，z为切片层级，y为切片行号，x为切片列号。</a></p>
+<p><img src="/.com//gaode-2x2.png" alt="2x2"></p>
+<h3 id="谷歌地图"><a href="#谷歌地图" class="headerlink" title="谷歌地图"></a>谷歌地图</h3><p>谷歌地图服务的切片方案和天地图的切片方案也是大致相同，其dpi、lods、origin等定义相同。区别在于，谷歌地图服务的最小层级为0，最大层级为19。第0层级的resolution为156543.033928。</p>
+<p>国内谷歌在线地图地址，其切片地图地址格式为<a target="_blank" rel="noopener" href="https://mt1.google.cn/vt/lyrs=m@226000000&hl=zh-CN&gl=cn&x=%7Bx%7D&y=%7By%7D&z=%7Bz%7D&s=Gali%E3%80%82%E5%85%B6%E4%B8%AD%EF%BC%8Cz%E4%B8%BA%E5%88%87%E7%89%87%E5%B1%82%E7%BA%A7%EF%BC%8Cy%E4%B8%BA%E5%88%87%E7%89%87%E8%A1%8C%E5%8F%B7%EF%BC%8Cx%E4%B8%BA%E5%88%87%E7%89%87%E5%88%97%E5%8F%B7%E3%80%82">https://mt1.google.cn/vt/lyrs=m@226000000&amp;hl=zh-CN&amp;gl=cn&amp;x={x}&amp;y={y}&amp;z={z}&amp;s=Gali。其中，z为切片层级，y为切片行号，x为切片列号。</a></p>
+<p>谷歌国际在线地图地址，其切片地图地址格式为<a target="_blank" rel="noopener" href="https://mts0.google.com/vt/lyrs=m@186112443&hl=en&src=app&x=%7Bx%7D&y=%7By%7D&z=%7Bz%7D&s=Gali%E3%80%82%E5%85%B6%E4%B8%AD%EF%BC%8Cz%E4%B8%BA%E5%88%87%E7%89%87%E5%B1%82%E7%BA%A7%EF%BC%8Cy%E4%B8%BA%E5%88%87%E7%89%87%E8%A1%8C%E5%8F%B7%EF%BC%8Cx%E4%B8%BA%E5%88%87%E7%89%87%E5%88%97%E5%8F%B7%E3%80%82">https://mts0.google.com/vt/lyrs=m@186112443&amp;hl=en&amp;src=app&amp;x={x}&amp;y={y}&amp;z={z}&amp;s=Gali。其中，z为切片层级，y为切片行号，x为切片列号。</a></p>
+<p>第0层级，切片如下</p>
+<p><img src="/.com//google-000.png" alt="000"></p>
+<p>第1层级，切片如下</p>
+<p><img src="/.com//google-2x2.png" alt="2x2"></p>
+<h3 id="百度地图"><a href="#百度地图" class="headerlink" title="百度地图"></a>百度地图</h3><p>百度在线地图使用的坐标为百度投影米坐标，为自定义坐标格式，非标准web mercator投影坐标。百度在线地图的切片方案和上述几种在线地图的切片方案，存在着较大差异。除dpi因素和size因素一致之外，以下信息存在着区别：</p>
+<ol>
+<li><p>百度地图切片的起点为[-3.3554432E7, 3.3554432E7]，转换成经纬度表示为[-180, 85]，可以得出百度地图切片的实际全图范围为百度经纬度[-180,-85, 180, 85]这个范围，用百度米来表示的话全图范围为[-3.3554432E7, -3.3554432E7, 3.3554432E7,3.3554432E7]。</p>
+</li>
+<li><p>根据1中得出的百度切图全图范围和lods的计算公式，可以得出百度在线地图服务的resolutions信息如下，进而可以计算出对应的scale信息。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">    <span class="number">262144.0</span>,</span><br><span class="line">    <span class="number">131072.26214452417</span>,</span><br><span class="line">    <span class="number">65536.13107226208</span>,</span><br><span class="line">    <span class="number">32768.0</span>,</span><br><span class="line">    <span class="number">16384.0</span>,</span><br><span class="line">    <span class="number">8192.0</span>,</span><br><span class="line">    <span class="number">4096.0</span>,</span><br><span class="line">    <span class="number">2048.0</span>,</span><br><span class="line">    <span class="number">1024.0</span>,</span><br><span class="line">    <span class="number">512.0</span>,</span><br><span class="line">    <span class="number">256.0</span>,</span><br><span class="line">    <span class="number">128.0</span>,</span><br><span class="line">    <span class="number">64.0</span>,</span><br><span class="line">    <span class="number">32.0</span>,</span><br><span class="line">    <span class="number">16.0</span>,</span><br><span class="line">    <span class="number">8.0</span>,</span><br><span class="line">    <span class="number">4.0</span>,</span><br><span class="line">    <span class="number">2.0</span>,</span><br><span class="line">    <span class="number">1.0</span>,</span><br><span class="line">    <span class="number">0.5</span></span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>百度地图的最小层级为3， 最大层级为19。第3层级对应的resolution为32768.0。在第3层级中，使用8 * 8张图片来表示整个世界范围，其切片拼接之后效果如下所示(图片长宽不一致的原因为部分切片为空白图片，没有显示的原因）。</p>
+<p><img src="/.com//baidu-8x8.png" alt="8x8"></p>
+</li>
+<li><p>百度地图的切片的行列号计算方式为非标准形式，在根据行号、列号、切图层级计算其真实切图图片对应地址的过程中，需要进行一番转换，具体的运算过程如下所示。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">getTileUrl</span>: <span class="keyword">function</span> (<span class="params">level, row, col</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> zoom = level - <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">var</span> offsetX = <span class="built_in">parseInt</span>(<span class="title class_">Math</span>.<span class="title function_">pow</span>(<span class="number">2</span>, zoom));</span><br><span class="line">    <span class="keyword">var</span> offsetY = offsetX - <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">var</span> numX = col - offsetX, numY = (-row) + offsetY;</span><br><span class="line">    <span class="keyword">if</span> (numX &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        numX = <span class="string">&#x27;M&#x27;</span> + (-numX);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (numY &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        numY = <span class="string">&#x27;M&#x27;</span> + (-numY);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;http://online1.map.bdimg.com/tile/?qt=vtile&amp;x=&#x27;</span> + numX + <span class="string">&#x27;&amp;y=&#x27;</span> + numY + <span class="string">&#x27;&amp;z=&#x27;</span> + level + <span class="string">&#x27;&amp;styles=pl&amp;scaler=1&amp;udt=20190929&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>举例如下， 对于第3层级的行号（low）为0，列号（col）为0的切片，经过转换后，行号为3，列号为M4。对于第3层级的行号为2，列号为6的切片，转换后，行号为1，列号为2。其它的转换结果，可自行验证。</p>
+</li>
+<li><p>其切片地址格式为<a target="_blank" rel="noopener" href="http://online1.map.bdimg.com/tile/?qt=vtile&x=%7Bx%7D&y=%7By%7D&z=%7Blevel%7D&styles=pl&scaler=1&udt=20190929%EF%BC%8C%E5%85%B6%E4%B8%ADlevel%E4%B8%BA%E5%B1%82%E7%BA%A7%EF%BC%8Cx%E4%B8%BA%E5%88%97%E5%8F%B7%EF%BC%8Cy%E4%B8%BA%E8%A1%8C%E5%8F%B7%E3%80%82">http://online1.map.bdimg.com/tile/?qt=vtile&amp;x={x}&amp;y={y}&amp;z={level}&amp;styles=pl&amp;scaler=1&amp;udt=20190929，其中level为层级，x为列号，y为行号。</a></p>
+</li>
+</ol>
+<h3 id="ArcGIS-Server-切片地图"><a href="#ArcGIS-Server-切片地图" class="headerlink" title="ArcGIS Server 切片地图"></a>ArcGIS Server 切片地图</h3><p>在使用ArcGIS js api来加载ArcGIS Server发布的切片地图服务的时候，往往不需要额外的关心切片地图方案的上述配置项，原因是arcgis js api来加载arcgis server切片地图服务的过程中，中间有一个步骤是自动获取和服务的元数据页面获取相关配置项，获取方式为在服务地址后拼接?f&#x3D;json参数。</p>
+<h2 id="额外说明"><a href="#额外说明" class="headerlink" title="额外说明"></a>额外说明</h2><p>以上所说的相关信息，只适用于传统的切片地图服务。近段时间，矢量切片技术使用的愈加广泛，当前主流的地图服务厂商，如高德、百度等，都已经将站点切换到了新方案地图，访问最新的服务地址如map.baidu.com等，将不会再获取传统的切片地图。</p>
+<h2 id="勘误"><a href="#勘误" class="headerlink" title="勘误"></a>勘误</h2><ol>
+<li>关于高德地图的dpi。经过测试，访问如下地址的切片：<a target="_blank" rel="noopener" href="http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x=%7Bx%7D&y=%7By%7D&z=%7Bz%7D%EF%BC%8Cz%E5%9C%A80-9%E8%8C%83%E5%9B%B4%E6%97%B6%E5%80%99%EF%BC%8C%E8%8E%B7%E5%8F%96%E7%9A%84%E5%88%87%E7%89%87%E7%9A%84dpi%E7%BB%8F%E8%AE%A1%E7%AE%97%E4%B8%BA2%E3%80%82%E4%BD%86%E5%9C%A8%E8%AE%BF%E9%97%AE%E5%A6%82%E4%B8%8B%E5%9C%B0%E5%9D%80%E7%9A%84%E5%88%87%E7%89%87%EF%BC%9Ahttp://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x=%7Bx%7D&y=%7By%7D&z=%7Bz%7D%EF%BC%8Cz%E5%9C%A80-9%E8%8C%83%E5%9B%B4%E5%86%85%EF%BC%8C%E8%8E%B7%E5%8F%96%E7%9A%84%E5%88%87%E7%89%87%E7%9A%84dpi%E7%BB%8F%E8%AE%A1%E7%AE%97%E4%B8%BA96%E3%80%82%E5%85%B3%E4%BA%8Estyle%E7%9A%84%E5%90%AB%E4%B9%89%EF%BC%8C%E6%B2%A1%E6%9C%89%E6%9F%A5%E6%89%BE%E5%88%B0%E7%9B%B8%E5%85%B3%E8%B5%84%E6%96%99%EF%BC%8C%E5%9B%A0%E6%AD%A4%E5%B0%9A%E4%B8%8D%E6%98%8E%E7%A1%AE%E6%AD%A4%E5%A4%84%E7%9A%84%E5%B7%AE%E5%BC%82%E3%80%82%E6%A0%B9%E6%8D%AE%E7%BB%8F%E9%AA%8C%EF%BC%8C%E6%AD%A4%E5%A4%84%E4%BF%AE%E6%AD%A3%E9%AB%98%E5%BE%B7%E5%9C%B0%E5%9B%BE%E7%9A%84%E5%88%87%E7%89%87%E8%AE%BF%E9%97%AE%E5%9C%B0%E5%9D%80%E4%B8%BAstyle=">http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&amp;size=1&amp;scale=1&amp;style=7&amp;x={x}&amp;y={y}&amp;z={z}，z在0-9范围时候，获取的切片的dpi经计算为2。但在访问如下地址的切片：http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&amp;size=1&amp;scale=1&amp;style=8&amp;x={x}&amp;y={y}&amp;z={z}，z在0-9范围内，获取的切片的dpi经计算为96。关于style的含义，没有查找到相关资料，因此尚不明确此处的差异。根据经验，此处修正高德地图的切片访问地址为style=</a> 8。</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/tile-map/" rel="tag"># tile-map</a>
+          
+            <a href="/tags/baidu/" rel="tag"># baidu</a>
+          
+            <a href="/tags/gaode/" rel="tag"># gaode</a>
+          
+            <a href="/tags/google/" rel="tag"># google</a>
+          
+            <a href="/tags/tianditu/" rel="tag"># tianditu</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/06/21/expand-dubbo-website-table/" rel="next" title="扩展dubbo官网页面宽度的chrome插件">
+                <i class="fa fa-chevron-left"></i> 扩展dubbo官网页面宽度的chrome插件
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2022/03/30/how-to-judge-maj-win/" rel="prev" title="麻将和牌算法简介">
+                麻将和牌算法简介 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E9%A1%B9"><span class="nav-number">1.</span> <span class="nav-text">配置项</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#size"><span class="nav-number">1.1.</span> <span class="nav-text">size</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#origin"><span class="nav-number">1.2.</span> <span class="nav-text">origin</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#dpi"><span class="nav-number">1.3.</span> <span class="nav-text">dpi</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lods"><span class="nav-number">1.4.</span> <span class="nav-text">lods</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#level"><span class="nav-number">1.4.1.</span> <span class="nav-text">level</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#resolution"><span class="nav-number">1.4.2.</span> <span class="nav-text">resolution</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#scale"><span class="nav-number">1.4.3.</span> <span class="nav-text">scale</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E5%9C%B0%E5%9B%BE%E5%88%87%E7%89%87%E6%96%B9%E6%A1%88%E6%80%BB%E7%BB%93"><span class="nav-number">2.</span> <span class="nav-text">常见地图切片方案总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%A9%E5%9C%B0%E5%9B%BE"><span class="nav-number">2.1.</span> <span class="nav-text">天地图</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#web-mercator%E6%8A%95%E5%BD%B1%E5%88%87%E5%9B%BE%E6%96%B9%E6%A1%88"><span class="nav-number">2.1.1.</span> <span class="nav-text">web mercator投影切图方案</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#wgs84%E5%9C%B0%E7%90%86%E5%9D%90%E6%A0%87%E7%B3%BB%E5%88%87%E5%9B%BE%E6%96%B9%E6%A1%88"><span class="nav-number">2.1.2.</span> <span class="nav-text">wgs84地理坐标系切图方案</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E5%BE%B7%E5%9C%B0%E5%9B%BE"><span class="nav-number">2.2.</span> <span class="nav-text">高德地图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%B7%E6%AD%8C%E5%9C%B0%E5%9B%BE"><span class="nav-number">2.3.</span> <span class="nav-text">谷歌地图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%99%BE%E5%BA%A6%E5%9C%B0%E5%9B%BE"><span class="nav-number">2.4.</span> <span class="nav-text">百度地图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ArcGIS-Server-%E5%88%87%E7%89%87%E5%9C%B0%E5%9B%BE"><span class="nav-number">2.5.</span> <span class="nav-text">ArcGIS Server 切片地图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%9D%E5%A4%96%E8%AF%B4%E6%98%8E"><span class="nav-number">3.</span> <span class="nav-text">额外说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8B%98%E8%AF%AF"><span class="nav-number">4.</span> <span class="nav-text">勘误</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">feng.dianjun</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
