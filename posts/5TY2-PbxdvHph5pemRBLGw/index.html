@@ -74,20 +74,20 @@
 <meta name="description" content="在使用openlayers等javascript库来加载互联网在线地图或是geoserver等发布的切片地图的时候，经常需要对地图服务的相关元数据进行配置，如size、origin、dpi、lods等。本文将对以上配置项进行详细的说明，并以天地图在线地图服务为例配合讲解。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="切片地图元信息配置说明">
-<meta property="og:url" content="http://yoursite.com/2020/10/12/tile-map/index.html">
+<meta property="og:url" content="http://yoursite.com/posts/5TY2-PbxdvHph5pemRBLGw/index.html">
 <meta property="og:site_name" content="maslke&#39;s blog">
 <meta property="og:description" content="在使用openlayers等javascript库来加载互联网在线地图或是geoserver等发布的切片地图的时候，经常需要对地图服务的相关元数据进行配置，如size、origin、dpi、lods等。本文将对以上配置项进行详细的说明，并以天地图在线地图服务为例配合讲解。">
 <meta property="og:locale">
-<meta property="og:image" content="http://yoursite.com/2020/10/12/tile-map/tianditu-1.png">
-<meta property="og:image" content="http://yoursite.com/2020/10/12/tile-map/tianditu-4x4.png">
-<meta property="og:image" content="http://yoursite.com/2020/10/12/tile-map/tianditu-4326-1x2.png">
-<meta property="og:image" content="http://yoursite.com/2020/10/12/tile-map/tianditu-4326-2x4.png">
-<meta property="og:image" content="http://yoursite.com/2020/10/12/tile-map/gaode-2x2.png">
-<meta property="og:image" content="http://yoursite.com/2020/10/12/tile-map/google-000.png">
-<meta property="og:image" content="http://yoursite.com/2020/10/12/tile-map/google-2x2.png">
-<meta property="og:image" content="http://yoursite.com/2020/10/12/tile-map/baidu-8x8.png">
+<meta property="og:image" content="http://yoursite.com/posts/5TY2-PbxdvHph5pemRBLGw/tianditu-1.png">
+<meta property="og:image" content="http://yoursite.com/posts/5TY2-PbxdvHph5pemRBLGw/tianditu-4x4.png">
+<meta property="og:image" content="http://yoursite.com/posts/5TY2-PbxdvHph5pemRBLGw/tianditu-4326-1x2.png">
+<meta property="og:image" content="http://yoursite.com/posts/5TY2-PbxdvHph5pemRBLGw/tianditu-4326-2x4.png">
+<meta property="og:image" content="http://yoursite.com/posts/5TY2-PbxdvHph5pemRBLGw/gaode-2x2.png">
+<meta property="og:image" content="http://yoursite.com/posts/5TY2-PbxdvHph5pemRBLGw/google-000.png">
+<meta property="og:image" content="http://yoursite.com/posts/5TY2-PbxdvHph5pemRBLGw/google-2x2.png">
+<meta property="og:image" content="http://yoursite.com/posts/5TY2-PbxdvHph5pemRBLGw/baidu-8x8.png">
 <meta property="article:published_time" content="2020-10-11T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-06-20T00:28:25.833Z">
+<meta property="article:modified_time" content="2023-06-20T11:18:54.113Z">
 <meta property="article:author" content="feng.dianjun">
 <meta property="article:tag" content="tile-map">
 <meta property="article:tag" content="baidu">
@@ -95,7 +95,7 @@
 <meta property="article:tag" content="google">
 <meta property="article:tag" content="tianditu">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://yoursite.com/2020/10/12/tile-map/tianditu-1.png">
+<meta name="twitter:image" content="http://yoursite.com/posts/5TY2-PbxdvHph5pemRBLGw/tianditu-1.png">
 
 
 
@@ -125,7 +125,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2020/10/12/tile-map/"/>
+  <link rel="canonical" href="http://yoursite.com/posts/5TY2-PbxdvHph5pemRBLGw/"/>
 
 
 
@@ -258,7 +258,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/12/tile-map/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/posts/5TY2-PbxdvHph5pemRBLGw/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
@@ -360,21 +360,21 @@
 <p>说完了resolution之后，再回到上面提到的origin。回顾一下，origin是指切图方案中计算切片序号的起始点。起始点origin在一定程度上可以自行定义，只要定义的origin可以满足切图的需要。web mercator投影的天地图的切图方案origin定义为[-20037508.342787, 20037508.342787]，整个的切图范围为[-20037508.342787, -20037508.342787,20037508.342787, 20037508.342787]。在以上说明的基础上，可以给出此origin的计算方法。</p>
 <p>xxxxxxxxxx private static void decode(Line line, String part, BiConsumer&lt;Point, Double&gt; consumer) {        List<String> items &#x3D; extract(part);        int factor &#x3D; Integer.parseInt(items.get(0), 32);        int difference &#x3D; 0;        int inx &#x3D; 0;        for (int i &#x3D; 1; i &lt; items.size(); i++) {            int value &#x3D; Integer.parseInt(items.get(i), 32);            difference +&#x3D; value;            consumer.accept(line.getPoints()[inx++], difference * 1.0 &#x2F; factor);        }    }java</String></p>
 <p>如下图所示，天地图的第0层级中，四张切片拼接之后，表示了整个的世界范围（从图上可以看出来，web mercator投影中，在高纬度地区，面积和形状的变形都相当之大，特别明显的就是北极附近的格陵兰岛。这也是为什么不推荐在web mercator投影下，计算大面积地物的面积。实践证明，对于省市行政区的面积计算，在web mercator投影下的面积计算，确定不具备现实意义）。</p>
-<p><img src="/2020/10/12/tile-map/tianditu-1.png" alt="1"></p>
+<p><img src="/posts/5TY2-PbxdvHph5pemRBLGw/tianditu-1.png" alt="1"></p>
 <p>图片上的序号为切片的行号和列号，它们的url地址分别为，感兴趣的可以自行加载验证。</p>
 <p><a target="_blank" rel="noopener" href="https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL=0&TILEROW=0&TILEMATRIX=1&tk=cd7427b91c597d6e859908210e8cb5ed">https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=0&amp;TILEROW=0&amp;TILEMATRIX=1&amp;tk=cd7427b91c597d6e859908210e8cb5ed</a></p>
 <p><a target="_blank" rel="noopener" href="https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL=1&TILEROW=0&TILEMATRIX=1&tk=cd7427b91c597d6e859908210e8cb5ed">https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=1&amp;TILEROW=0&amp;TILEMATRIX=1&amp;tk=cd7427b91c597d6e859908210e8cb5ed</a></p>
 <p><a target="_blank" rel="noopener" href="https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL=0&TILEROW=1&TILEMATRIX=1&tk=cd7427b91c597d6e859908210e8cb5ed">https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=0&amp;TILEROW=1&amp;TILEMATRIX=1&amp;tk=cd7427b91c597d6e859908210e8cb5ed</a></p>
 <p><a target="_blank" rel="noopener" href="https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILECOL=1&TILEROW=1&TILEMATRIX=1&tk=cd7427b91c597d6e859908210e8cb5ed">https://t0.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=1&amp;TILEROW=1&amp;TILEMATRIX=1&amp;tk=cd7427b91c597d6e859908210e8cb5ed</a></p>
-<p><img src="/2020/10/12/tile-map/tianditu-4x4.png" alt="4x4"> </p>
+<p><img src="/posts/5TY2-PbxdvHph5pemRBLGw/tianditu-4x4.png" alt="4x4"> </p>
 <p>如上所示，为天地图第2层级的16张切片拼接之后的展示效果，具体的切片地址就不再一一给出，从上述给出的地址中可以简单的推出。</p>
 <p>天地图在线地图与谷歌在线地图服务、高德在线地图服务一个显著的区别是，它除了提供web mercator投影的切片方案之外，还额外提供了wgs84坐标系的切片方案。这两种方案的最大差异是，origin和lods信息都不一致。根据上面所讲的计算方案，可以得出在wgs坐标系下的切片方案，其origin为[-180, 90]，整个切图范围在[-180,-90,180,90]，在第0层级下的resolution为180 * 2  &#x2F; 256 &#x3D;  1.40625，其余层级的resolution可以依次计算。</p>
 <p>在地理坐标系下，切图url地址如下所示。替换TILEMATRIX、TILEROW、TILECOL参数后，即可获取任一需要的切片。</p>
 <p><a target="_blank" rel="noopener" href="https://t0.tianditu.gov.cn/vec_c/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=c&FORMAT=tiles&TILECOL=0&TILEROW=0&TILEMATRIX=1&tk=cd7427b91c597d6e859908210e8cb5ed%E3%80%82">https://t0.tianditu.gov.cn/vec_c/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=c&amp;FORMAT=tiles&amp;TILECOL=0&amp;TILEROW=0&amp;TILEMATRIX=1&amp;tk=cd7427b91c597d6e859908210e8cb5ed。</a></p>
 <p>地理坐标系下，第1层级的切片拼接后，展示如下。由于地理坐标系下的切图整个范围为[-180,-90,180,90]。水平方向上的长度是竖直方向上的2倍，导致水平方向上需要的切片数量也将是竖直方向上切片数量的2倍。因此，(0,0)和(0,1)两张图片即可表示整个世界范围，(1,0)和(1,1)两张图片为空白图片。</p>
-<p><img src="/2020/10/12/tile-map/tianditu-4326-1x2.png" alt="1x2"></p>
+<p><img src="/posts/5TY2-PbxdvHph5pemRBLGw/tianditu-4326-1x2.png" alt="1x2"></p>
 <p>第2层级的切图拼接效果如下所示。</p>
-<p><img src="/2020/10/12/tile-map/tianditu-4326-2x4.png" alt="2x4"></p>
+<p><img src="/posts/5TY2-PbxdvHph5pemRBLGw/tianditu-4326-2x4.png" alt="2x4"></p>
 <h4 id="scale"><a href="#scale" class="headerlink" title="scale"></a>scale</h4><p>scale是指图上距离与实际距离的比值（表示形式为1:M，图上1cm，表示真实的距离为Mcm），表示的含义是放缩的尺度。scale与具体的切图方案无关，而是切图方案确定之后的衍生信息。根据以上的dpi、resolution等信息，可以计算出在给定resolution的情况下，比例尺的大小。</p>
 <p>scale的计算可以从以下的推导得出：</p>
 <ol>
@@ -405,15 +405,15 @@
 <h3 id="高德地图"><a href="#高德地图" class="headerlink" title="高德地图"></a>高德地图</h3><p>高德地图的切片方案和天地图的切片方案完全一致，包括dpi、lods、size等。</p>
 <p>最小层级为1，最大层级为18， 第1层级的resolution为78271.5169639999。高德在线地图只有web mercator投影的切片方案，其lods定义可以参考天地图在切片方案定义。</p>
 <p>高德地图，典型切片格式地址为<a target="_blank" rel="noopener" href="http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x=%7Bx%7D&y=%7By%7D&z=%7Bz%7D%E3%80%82%E5%85%B6%E4%B8%AD%EF%BC%8Cz%E4%B8%BA%E5%88%87%E7%89%87%E5%B1%82%E7%BA%A7%EF%BC%8Cy%E4%B8%BA%E5%88%87%E7%89%87%E8%A1%8C%E5%8F%B7%EF%BC%8Cx%E4%B8%BA%E5%88%87%E7%89%87%E5%88%97%E5%8F%B7%E3%80%82">http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&amp;size=1&amp;scale=1&amp;style=7&amp;x={x}&amp;y={y}&amp;z={z}。其中，z为切片层级，y为切片行号，x为切片列号。</a></p>
-<p><img src="/2020/10/12/tile-map/gaode-2x2.png" alt="2x2"></p>
+<p><img src="/posts/5TY2-PbxdvHph5pemRBLGw/gaode-2x2.png" alt="2x2"></p>
 <h3 id="谷歌地图"><a href="#谷歌地图" class="headerlink" title="谷歌地图"></a>谷歌地图</h3><p>谷歌地图服务的切片方案和天地图的切片方案也是大致相同，其dpi、lods、origin等定义相同。区别在于，谷歌地图服务的最小层级为0，最大层级为19。第0层级的resolution为156543.033928。</p>
 <p>国内谷歌在线地图地址，其切片地图地址格式为<a target="_blank" rel="noopener" href="https://mt1.google.cn/vt/lyrs=m@226000000&hl=zh-CN&gl=cn&x=%7Bx%7D&y=%7By%7D&z=%7Bz%7D&s=Gali%E3%80%82%E5%85%B6%E4%B8%AD%EF%BC%8Cz%E4%B8%BA%E5%88%87%E7%89%87%E5%B1%82%E7%BA%A7%EF%BC%8Cy%E4%B8%BA%E5%88%87%E7%89%87%E8%A1%8C%E5%8F%B7%EF%BC%8Cx%E4%B8%BA%E5%88%87%E7%89%87%E5%88%97%E5%8F%B7%E3%80%82">https://mt1.google.cn/vt/lyrs=m@226000000&amp;hl=zh-CN&amp;gl=cn&amp;x={x}&amp;y={y}&amp;z={z}&amp;s=Gali。其中，z为切片层级，y为切片行号，x为切片列号。</a></p>
 <p>谷歌国际在线地图地址，其切片地图地址格式为<a target="_blank" rel="noopener" href="https://mts0.google.com/vt/lyrs=m@186112443&hl=en&src=app&x=%7Bx%7D&y=%7By%7D&z=%7Bz%7D&s=Gali%E3%80%82%E5%85%B6%E4%B8%AD%EF%BC%8Cz%E4%B8%BA%E5%88%87%E7%89%87%E5%B1%82%E7%BA%A7%EF%BC%8Cy%E4%B8%BA%E5%88%87%E7%89%87%E8%A1%8C%E5%8F%B7%EF%BC%8Cx%E4%B8%BA%E5%88%87%E7%89%87%E5%88%97%E5%8F%B7%E3%80%82">https://mts0.google.com/vt/lyrs=m@186112443&amp;hl=en&amp;src=app&amp;x={x}&amp;y={y}&amp;z={z}&amp;s=Gali。其中，z为切片层级，y为切片行号，x为切片列号。</a></p>
 <p>第0层级，切片如下</p>
-<p><img src="/2020/10/12/tile-map/google-000.png" alt="000"></p>
+<p><img src="/posts/5TY2-PbxdvHph5pemRBLGw/google-000.png" alt="000"></p>
 <p>第1层级，切片如下</p>
-<p><img src="/2020/10/12/tile-map/google-2x2.png" alt="2x2"></p>
-<h3 id="百度地图"><a href="#百度地图" class="headerlink" title="百度地图"></a>百度地图</h3><p><strong>2023年6月19日更新：以下关于百度切片方案的说明，存在着诸多错误或是不精确的的确，此处不再进行修改。修正信息请查看<a target="_blank" rel="noopener" href="https://maslke.github.io/2023/06/19/baidu-map-tile-info/#more">百度地图切片方案</a>这篇文章。</strong></p>
+<p><img src="/posts/5TY2-PbxdvHph5pemRBLGw/google-2x2.png" alt="2x2"></p>
+<h3 id="百度地图"><a href="#百度地图" class="headerlink" title="百度地图"></a>百度地图</h3><p><strong>2023年6月19日更新：以下关于百度切片方案的说明，存在着诸多错误或是不精确的的确，此处不再进行修改。修正信息请查看<a href="./posts/DxCG4fhmmrfuHtslrDfwIQ#more">百度地图切片方案</a>这篇文章。</strong></p>
 <p>百度在线地图使用的坐标为百度投影米坐标，为自定义坐标格式，非标准web mercator投影坐标。百度在线地图的切片方案和上述几种在线地图的切片方案，存在着较大差异。除dpi因素和size因素一致之外，以下信息存在着区别：</p>
 <ol>
 <li><p>百度地图切片的起点为[-3.3554432E7, 3.3554432E7]，转换成经纬度表示为[-180, 85]，可以得出百度地图切片的实际全图范围为百度经纬度[-180,-85, 180, 85]这个范围，用百度米来表示的话全图范围为[-3.3554432E7, -3.3554432E7, 3.3554432E7,3.3554432E7]。</p>
@@ -422,7 +422,7 @@
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">    <span class="number">262144.0</span>,</span><br><span class="line">    <span class="number">131072.26214452417</span>,</span><br><span class="line">    <span class="number">65536.13107226208</span>,</span><br><span class="line">    <span class="number">32768.0</span>,</span><br><span class="line">    <span class="number">16384.0</span>,</span><br><span class="line">    <span class="number">8192.0</span>,</span><br><span class="line">    <span class="number">4096.0</span>,</span><br><span class="line">    <span class="number">2048.0</span>,</span><br><span class="line">    <span class="number">1024.0</span>,</span><br><span class="line">    <span class="number">512.0</span>,</span><br><span class="line">    <span class="number">256.0</span>,</span><br><span class="line">    <span class="number">128.0</span>,</span><br><span class="line">    <span class="number">64.0</span>,</span><br><span class="line">    <span class="number">32.0</span>,</span><br><span class="line">    <span class="number">16.0</span>,</span><br><span class="line">    <span class="number">8.0</span>,</span><br><span class="line">    <span class="number">4.0</span>,</span><br><span class="line">    <span class="number">2.0</span>,</span><br><span class="line">    <span class="number">1.0</span>,</span><br><span class="line">    <span class="number">0.5</span></span><br><span class="line">];</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>百度地图的最小层级为3， 最大层级为19。第3层级对应的resolution为32768.0。在第3层级中，使用8 * 8张图片来表示整个世界范围，其切片拼接之后效果如下所示(图片长宽不一致的原因为部分切片为空白图片，没有显示的原因）。</p>
-<p><img src="/2020/10/12/tile-map/baidu-8x8.png" alt="8x8"></p>
+<p><img src="/posts/5TY2-PbxdvHph5pemRBLGw/baidu-8x8.png" alt="8x8"></p>
 </li>
 <li><p>百度地图的切片的行列号计算方式为非标准形式，在根据行号、列号、切图层级计算其真实切图图片对应地址的过程中，需要进行一番转换，具体的运算过程如下所示。</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">getTileUrl</span>: <span class="keyword">function</span> (<span class="params">level, row, col</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> zoom = level - <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">var</span> offsetX = <span class="built_in">parseInt</span>(<span class="title class_">Math</span>.<span class="title function_">pow</span>(<span class="number">2</span>, zoom));</span><br><span class="line">    <span class="keyword">var</span> offsetY = offsetX - <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">var</span> numX = col - offsetX, numY = (-row) + offsetY;</span><br><span class="line">    <span class="keyword">if</span> (numX &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        numX = <span class="string">&#x27;M&#x27;</span> + (-numX);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (numY &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        numY = <span class="string">&#x27;M&#x27;</span> + (-numY);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;http://online1.map.bdimg.com/tile/?qt=vtile&amp;x=&#x27;</span> + numX + <span class="string">&#x27;&amp;y=&#x27;</span> + numY + <span class="string">&#x27;&amp;z=&#x27;</span> + level + <span class="string">&#x27;&amp;styles=pl&amp;scaler=1&amp;udt=20190929&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -475,7 +475,7 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2020/06/21/expand-dubbo-website-table/" rel="next" title="扩展dubbo官网页面宽度的chrome插件">
+              <a href="/posts/GLDys3ByyyLOPhvImoLcfQ/" rel="next" title="扩展dubbo官网页面宽度的chrome插件">
                 <i class="fa fa-chevron-left"></i> 扩展dubbo官网页面宽度的chrome插件
               </a>
             
@@ -485,7 +485,7 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2022/03/30/how-to-judge-maj-win/" rel="prev" title="麻将和牌算法简介">
+              <a href="/posts/s53DLpwIWm4CtGkcx5elIw/" rel="prev" title="麻将和牌算法简介">
                 麻将和牌算法简介 <i class="fa fa-chevron-right"></i>
               </a>
             

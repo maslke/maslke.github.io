@@ -60,7 +60,7 @@
 
 
 
-  <meta name="keywords" content="arcgis,tile-map,baidu,openlayers," />
+  <meta name="keywords" content="tile-map,baidu,arcgis,openlayers," />
 
 
 
@@ -74,25 +74,25 @@
 <meta name="description" content="在使用arcgis js api 或是 openlayers 来进行百度地图切片加载的时候，由于百度地图采用的是私有、非标准的切片方案，不能像加载谷歌切片或是天地图切片一样，api原生支持、开箱即用，而是需要进行定制化的开发来实现切片的加载 定制化百度地图切片的加载策略，需要知道百度地图切片方案的切片起点(origin)、切片分辨率(resolutions)、切片范围(full extent)、切">
 <meta property="og:type" content="article">
 <meta property="og:title" content="百度地图切片方案">
-<meta property="og:url" content="http://yoursite.com/2023/06/19/baidu-map-tile-info/index.html">
+<meta property="og:url" content="http://yoursite.com/posts/DxCG4fhmmrfuHtslrDfwIQ/index.html">
 <meta property="og:site_name" content="maslke&#39;s blog">
 <meta property="og:description" content="在使用arcgis js api 或是 openlayers 来进行百度地图切片加载的时候，由于百度地图采用的是私有、非标准的切片方案，不能像加载谷歌切片或是天地图切片一样，api原生支持、开箱即用，而是需要进行定制化的开发来实现切片的加载 定制化百度地图切片的加载策略，需要知道百度地图切片方案的切片起点(origin)、切片分辨率(resolutions)、切片范围(full extent)、切">
 <meta property="og:locale">
-<meta property="og:image" content="http://yoursite.com/2023/06/19/baidu-map-tile-info/baidu-8x8.png">
-<meta property="og:image" content="http://yoursite.com/2023/06/19/baidu-map-tile-info/0-0-3.png">
-<meta property="og:image" content="http://yoursite.com/2023/06/19/baidu-map-tile-info/convert-1.png">
-<meta property="og:image" content="http://yoursite.com/2023/06/19/baidu-map-tile-info/convert-2.png">
-<meta property="og:image" content="http://yoursite.com/2023/06/19/baidu-map-tile-info/baidu.png">
-<meta property="og:image" content="http://yoursite.com/2023/06/19/baidu-map-tile-info/map-sdk.png">
+<meta property="og:image" content="http://yoursite.com/posts/DxCG4fhmmrfuHtslrDfwIQ/baidu-8x8.png">
+<meta property="og:image" content="http://yoursite.com/posts/DxCG4fhmmrfuHtslrDfwIQ/0-0-3.png">
+<meta property="og:image" content="http://yoursite.com/posts/DxCG4fhmmrfuHtslrDfwIQ/convert-1.png">
+<meta property="og:image" content="http://yoursite.com/posts/DxCG4fhmmrfuHtslrDfwIQ/convert-2.png">
+<meta property="og:image" content="http://yoursite.com/posts/DxCG4fhmmrfuHtslrDfwIQ/baidu.png">
+<meta property="og:image" content="http://yoursite.com/posts/DxCG4fhmmrfuHtslrDfwIQ/map-sdk.png">
 <meta property="article:published_time" content="2023-06-19T08:48:16.000Z">
-<meta property="article:modified_time" content="2023-06-19T12:16:12.606Z">
+<meta property="article:modified_time" content="2023-06-20T11:13:48.436Z">
 <meta property="article:author" content="feng.dianjun">
-<meta property="article:tag" content="arcgis">
 <meta property="article:tag" content="tile-map">
 <meta property="article:tag" content="baidu">
+<meta property="article:tag" content="arcgis">
 <meta property="article:tag" content="openlayers">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://yoursite.com/2023/06/19/baidu-map-tile-info/baidu-8x8.png">
+<meta name="twitter:image" content="http://yoursite.com/posts/DxCG4fhmmrfuHtslrDfwIQ/baidu-8x8.png">
 
 
 
@@ -122,7 +122,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2023/06/19/baidu-map-tile-info/"/>
+  <link rel="canonical" href="http://yoursite.com/posts/DxCG4fhmmrfuHtslrDfwIQ/"/>
 
 
 
@@ -255,7 +255,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2023/06/19/baidu-map-tile-info/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/posts/DxCG4fhmmrfuHtslrDfwIQ/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
@@ -338,11 +338,11 @@
 <p>带着以上配置，我编写了代码进行了测试。不过很遗憾，测试结果表明以上的信息有假有真，使用以上的配置，切片死活加载不出来，或者加载出来坐标也是错误的。由此，也可以看出中文文章（尤其是发布在csdn上的），大多是人云亦云，不求甚解。很多时候，明明是错误的信息，还是会被人抄来抄去。关于这点，就不发散了。</p>
 <p>回到正题，那百度地图切片方案到底是如何定义的呢？下面我们就来试着推导一下。</p>
 <h2 id="推导的信息"><a href="#推导的信息" class="headerlink" title="推导的信息"></a>推导的信息</h2><h3 id="positive-directions"><a href="#positive-directions" class="headerlink" title="positive directions"></a>positive directions</h3><p>我们已经知道，百度地图的最小层级为3。在level&#x3D;3中，百度地市使用8 * 8张切片来表示整个切片范围。如下图所示。结合下图和组成下图的每一个小图片具体的行号和列号，可以确定“切片x正方向是由left到right，切片y正方向是从bottom到top”这句话是正确的。</p>
-<p><img src="/2023/06/19/baidu-map-tile-info/baidu-8x8.png" alt="baidu"></p>
+<p><img src="/posts/DxCG4fhmmrfuHtslrDfwIQ/baidu-8x8.png" alt="baidu"></p>
 <p>可以发现，关于正方向的定义，百度切片方案和标准web mercator切片方案对于x正方向的定义相同，对于y正方向的定义是相反的。此处定义的不同，结合百度切片方案对于起点的定义，就会产生一个百度方案独有的地方，下面我们介绍了起点之后会着重说。</p>
 <h3 id="origin"><a href="#origin" class="headerlink" title="origin"></a>origin</h3><p>在以上的图片中，行号和列号为0的图片，如下所示。可以看到，图片最左端、上半部分为英国区域，为本初子午线穿过的地方。因此可以确定，百度地图切片方案的起点确确实实的是**[0,0]**，而不是[-20037508.3427892,20037508.3427892]。关于20037508.3427892这个数字是如何计算出来的，我们可以简单说一下：</p>
 <p>标准web mercator切片方案下，整个切片范围为[180,85]经纬度范围，即整个经度范围。web mercator投影坐标使用的地球半径为6378137米，那么地球的周长为6378137 * Math.PI * 2米，均匀的分成2部分，即为20037508.342789244米。</p>
-<p><img src="/2023/06/19/baidu-map-tile-info/0-0-3.png" alt="1x1"></p>
+<p><img src="/posts/DxCG4fhmmrfuHtslrDfwIQ/0-0-3.png" alt="1x1"></p>
 <p>说完了正方向和起点之后，细心的人应该已经发现了，在百度的方案中，起点不在地图的左上角，而是在中心，那么在百度切片方案中，存在着行号、列号为负数的清明的。在百度地图中，对于负数的行号和列号进行了特殊规定。简而言之，对于负数的行列号，使用M + 绝对值来进行表示。即，对于(-3,-4)这种行列号，在百度地图中使用(M3, M4)来进行表示。</p>
 <h3 id="full-extent"><a href="#full-extent" class="headerlink" title="full extent"></a>full extent</h3><p>关于整个切图范围，我始终没有找到推导的方式。只能基于实际测试数据，得出一个经验值。此经验值是基于实际的代码加载测试得出的：**[-33554432, -33554432, 33554432, 33554432]**。如果此数值不正确，或是哪位有推导方式，还望告知。</p>
 <p>虽然此范围，没有任何的科学推导过程，但好在可以经受住实际代码的测试。并且，使用百度在线坐标转换服务将此坐标进行转换，得到的结果如下图所示，也算是从侧面进行了验证吧。</p>
@@ -365,7 +365,7 @@
 <p>我翻遍了全网，只能看到此代码片段，却找不到任何对此代码的解释。不知道是不是太简单了，不值一提？还是大家都不求甚解，能解决问题即可，底层原因懒得深究（包括我）。</p>
 <p>其实，以上的转换方式某种意义上是对的，但前提是建立在定义origin在[-33554432, 33554432]，即切片方案左上角的基础上。</p>
 <p>以上关于行号和列号的转换方式，如果你感觉到困惑的画，配合下面这张图，就会让你豁然开朗了。</p>
-<p><img src="/2023/06/19/baidu-map-tile-info/convert-1.png" alt="convert"></p>
+<p><img src="/posts/DxCG4fhmmrfuHtslrDfwIQ/convert-1.png" alt="convert"></p>
 <p>上图中，左侧为百度切片方案对x和y正方向的定义，右侧为标准web mercator切片方案对的定义。我们使用js api是使用右侧的定义对切片进行加载，要想获取到正确的百度切片地址，必须要进行转换。观察以上左右两侧的图片，可以发现，标准切片方案下获取到的x列号，需要减去全图范围一行中一半的切片个数，是百度切片方案下的列号。而标准切片方案下的y列号，被全图范围一行中一半切片个数减，再减去1，即使百度切片方案下的列号。即如下公式表示：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x1 = x2 - offset</span><br><span class="line">y1 = offset - <span class="number">1</span> - y2</span><br></pre></td></tr></table></figure>
 
@@ -375,10 +375,10 @@
 
 <p>在以上的代码中，level为当前的层级，此层级下一行总的切片个数为math.pow(2, level)个，一半还需要除以2，这种方式和先计算level-1，再进行乘方运算等价。因此，就有了上述代码。</p>
 <p>前面说到，这段代码正确的前提是orign定义在切片方案的左上角。那么，如果origin定义在[0,0]的话，还可以实现正确加载吗？关于此问题，感兴趣的可以自行探索一番。答案当然是可以的，转换方式参见下图即可。</p>
-<p><img src="/2023/06/19/baidu-map-tile-info/convert-2.png" alt="convert-2"></p>
+<p><img src="/posts/DxCG4fhmmrfuHtslrDfwIQ/convert-2.png" alt="convert-2"></p>
 <p>明确了以上信息之后，就可以正确的进行百度地图切片的加载了。使用以上的参数进行切片的加载，可以保证坐标精度十分精准。下图中，上方为百度坐标拾取页面，下方为自行加载页面，使用的坐标为(13267851.39994815, 3876775.155571565)。</p>
-<p><img src="/2023/06/19/baidu-map-tile-info/baidu.png" alt="baidu"></p>
-<p><img src="/2023/06/19/baidu-map-tile-info/map-sdk.png" alt="map-sdk"></p>
+<p><img src="/posts/DxCG4fhmmrfuHtslrDfwIQ/baidu.png" alt="baidu"></p>
+<p><img src="/posts/DxCG4fhmmrfuHtslrDfwIQ/map-sdk.png" alt="map-sdk"></p>
 <h2 id="PS"><a href="#PS" class="headerlink" title="PS"></a>PS</h2><p>关于tileinfo中origin的定义，arcgis js api和openlayers对此的定义不尽相同。</p>
 <p>在openlayers中对origin的定义是</p>
 <blockquote>
@@ -406,11 +406,11 @@
       
         <div class="post-tags">
           
-            <a href="/tags/arcgis/" rel="tag"># arcgis</a>
-          
             <a href="/tags/tile-map/" rel="tag"># tile-map</a>
           
             <a href="/tags/baidu/" rel="tag"># baidu</a>
+          
+            <a href="/tags/arcgis/" rel="tag"># arcgis</a>
           
             <a href="/tags/openlayers/" rel="tag"># openlayers</a>
           
@@ -425,7 +425,7 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2022/04/02/multi-thread-design-pattern/" rel="next" title="多线程设计模式简介">
+              <a href="/posts/9_NWv-WlILJ7IEIQgU8WTQ/" rel="next" title="多线程设计模式简介">
                 <i class="fa fa-chevron-left"></i> 多线程设计模式简介
               </a>
             

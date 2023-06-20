@@ -74,21 +74,21 @@
 <meta name="description" content="最近，我又一次的开始了对apache dubbo框架的学习。过去的一年里，陆陆续续的投入了一些时间在这个框架上面。无奈，工作的限制让我在日常中并不会用到这个框架，导致我对dubbo的掌握总是不太牢固。希望这一次可以在以往的基础上更进一步，对它的掌握更加彻底一些。 这几天，在浏览dubbo官方页面上的用户手册的时候，对页面的展示效果是越来越不满意。不满主要集中在，官方页面中的默认宽度实在是太小了，导">
 <meta property="og:type" content="article">
 <meta property="og:title" content="扩展dubbo官网页面宽度的chrome插件">
-<meta property="og:url" content="http://yoursite.com/2020/06/21/expand-dubbo-website-table/index.html">
+<meta property="og:url" content="http://yoursite.com/posts/GLDys3ByyyLOPhvImoLcfQ/index.html">
 <meta property="og:site_name" content="maslke&#39;s blog">
 <meta property="og:description" content="最近，我又一次的开始了对apache dubbo框架的学习。过去的一年里，陆陆续续的投入了一些时间在这个框架上面。无奈，工作的限制让我在日常中并不会用到这个框架，导致我对dubbo的掌握总是不太牢固。希望这一次可以在以往的基础上更进一步，对它的掌握更加彻底一些。 这几天，在浏览dubbo官方页面上的用户手册的时候，对页面的展示效果是越来越不满意。不满主要集中在，官方页面中的默认宽度实在是太小了，导">
 <meta property="og:locale">
-<meta property="og:image" content="http://yoursite.com/2020/06/21/expand-dubbo-website-table/before.png">
-<meta property="og:image" content="http://yoursite.com/2020/06/21/expand-dubbo-website-table/after.png">
-<meta property="og:image" content="http://yoursite.com/2020/06/21/expand-dubbo-website-table/expand.png">
-<meta property="og:image" content="http://yoursite.com/2020/06/21/expand-dubbo-website-table/extensions.png">
+<meta property="og:image" content="http://yoursite.com/posts/GLDys3ByyyLOPhvImoLcfQ/before.png">
+<meta property="og:image" content="http://yoursite.com/posts/GLDys3ByyyLOPhvImoLcfQ/after.png">
+<meta property="og:image" content="http://yoursite.com/posts/GLDys3ByyyLOPhvImoLcfQ/expand.png">
+<meta property="og:image" content="http://yoursite.com/posts/GLDys3ByyyLOPhvImoLcfQ/extensions.png">
 <meta property="article:published_time" content="2020-06-20T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-06-19T04:54:18.628Z">
+<meta property="article:modified_time" content="2023-06-20T11:13:48.437Z">
 <meta property="article:author" content="feng.dianjun">
 <meta property="article:tag" content="dubbo">
 <meta property="article:tag" content="chrome-extension">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://yoursite.com/2020/06/21/expand-dubbo-website-table/before.png">
+<meta name="twitter:image" content="http://yoursite.com/posts/GLDys3ByyyLOPhvImoLcfQ/before.png">
 
 
 
@@ -118,7 +118,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2020/06/21/expand-dubbo-website-table/"/>
+  <link rel="canonical" href="http://yoursite.com/posts/GLDys3ByyyLOPhvImoLcfQ/"/>
 
 
 
@@ -251,7 +251,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/21/expand-dubbo-website-table/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/posts/GLDys3ByyyLOPhvImoLcfQ/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
@@ -322,12 +322,12 @@
 <p>这几天，在浏览dubbo官方页面上的用户手册的时候，对页面的展示效果是越来越不满意。不满主要集中在，官方页面中的默认宽度实在是太小了，导致页面中的表格内容稍微多一些，表格底下就会出现一个大大的滚动条，展示效果如图所示。</p>
 <span id="more"></span>
 
-<p><img src="/2020/06/21/expand-dubbo-website-table/before.png" alt="before"></p>
+<p><img src="/posts/GLDys3ByyyLOPhvImoLcfQ/before.png" alt="before"></p>
 <p>滚动条的存在，导致文字浏览起来十分的不便。而这个时候，其实屏幕上还有大片的空白区域没有利用起来。通过f12查看页面源代码可以发现，页面展示区域是设置了最大宽度为1280px。</p>
 <figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.content-section</span> &#123;</span><br><span class="line">    <span class="attribute">max-width</span>: <span class="number">1280px</span>;</span><br><span class="line">    <span class="attribute">margin</span>: <span class="number">0</span> auto;</span><br><span class="line">    <span class="attribute">box-sizing</span>: border-box;</span><br><span class="line">    <span class="attribute">padding</span>: <span class="number">40px</span> <span class="number">40px</span> <span class="number">60px</span>;</span><br><span class="line">    <span class="attribute">position</span>: relative;</span><br><span class="line">    <span class="attribute">min-height</span>: <span class="number">1100px</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>如果取消了max-width属性的设置，则效果将会变为下图所示。表格中文字的展示看起来舒服了很多，很多之前需要拖动滚动条才能展示的内容，已经直接展示了出来。</p>
-<p><img src="/2020/06/21/expand-dubbo-website-table/after.png" alt="after"></p>
+<p><img src="/posts/GLDys3ByyyLOPhvImoLcfQ/after.png" alt="after"></p>
 <p>现在的问题就很明确了，每次打开一个新页面之后，我们f12一下，稍作改动，问题就可以圆满解决，看上去也不是太麻烦。</p>
 <p>但是，这样重复的动作，如果你还是像我一样觉得还是有些麻烦。那该怎么办呢？</p>
 <p>思考一下，今天的主角chrome插件就呼之欲出了。</p>
@@ -339,7 +339,7 @@
 <p>以上内容中，需要关注的是content_scripts节点。其中，matches节点定义了插件起作用的url地址，如上的配置表明了插件只在dubbo官方网站页面上生效。js和css分别配置了嵌入到dubbo页面中的js脚本和css样式文件。run_at表示是在页面加载完成之后再执行嵌入的脚本、插入样式文件。</p>
 <p>在这里需要区分插件使用的脚本和嵌入到页面中的脚本。插件的dom和页面中的dom是隔离的，我们不能通过插件的脚本来直接操作页面中的dom，对页面dom的操作只能通过嵌入到页面中的脚本来执行。</p>
 <p>本文的插件就只有两个功能，分别为扩展表格宽度和恢复，分别由两个菜单来进行触发。点击菜单之后，页面展示如下</p>
-<p><img src="/2020/06/21/expand-dubbo-website-table/expand.png" alt="expand"></p>
+<p><img src="/posts/GLDys3ByyyLOPhvImoLcfQ/expand.png" alt="expand"></p>
 <p>页面的html实现如下</p>
 <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">&quot;en&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;utf-8&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">title</span>&gt;</span>Expander<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">&quot;viewport&quot;</span> <span class="attr">content</span>=<span class="string">&quot;width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">&quot;stylesheet&quot;</span> <span class="attr">href</span>=<span class="string">&quot;css/index.css&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">&quot;opts&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span> <span class="attr">id</span>=<span class="string">&quot;expand&quot;</span>&gt;</span>expand<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span> <span class="attr">id</span>=<span class="string">&quot;reset&quot;</span>&gt;</span>reset<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;js/index.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
@@ -351,7 +351,7 @@
 
 <p>以上即是全部的实现逻辑了。虽然功能简单，但一个chrome插件的相关基本元素都已经具备了：描述文件、弹出页面popup.html、插件逻辑、消息通信。正所谓，麻雀虽小，五脏俱全。有了以上的相关知识，后续如果有更加复杂的需求，想必也可以在此基础上扩展实现。</p>
 <p>编写完成之后，在插件的管理页面，选择Load unpacked按钮，即可将插件添加到chrome中去了。由于这个插件过于简单，就没必要上传到chrome商店了。自己用着开心就好。</p>
-<p><img src="/2020/06/21/expand-dubbo-website-table/extensions.png" alt="extensions"></p>
+<p><img src="/posts/GLDys3ByyyLOPhvImoLcfQ/extensions.png" alt="extensions"></p>
 <p>我将所有的代码上传到了github上，地址为<a target="_blank" rel="noopener" href="https://github.com/maslke/expand-dubbo-table.git">expand-dubbo-table</a>。感兴趣的可以尝试一下。</p>
 
       
@@ -385,7 +385,7 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2020/03/28/arcgis-geometry-compress/" rel="next" title="如何解码arcgis compressed geometry">
+              <a href="/posts/Va5796SN9k_J4MVzJe1_bA/" rel="next" title="如何解码arcgis compressed geometry">
                 <i class="fa fa-chevron-left"></i> 如何解码arcgis compressed geometry
               </a>
             
@@ -395,7 +395,7 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2020/10/12/tile-map/" rel="prev" title="切片地图元信息配置说明">
+              <a href="/posts/5TY2-PbxdvHph5pemRBLGw/" rel="prev" title="切片地图元信息配置说明">
                 切片地图元信息配置说明 <i class="fa fa-chevron-right"></i>
               </a>
             
