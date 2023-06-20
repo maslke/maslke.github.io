@@ -79,7 +79,7 @@
 <meta property="og:description" content="简介arcgis compressed geometry 是一种编码过的线图形格式。线图形经过编码后，体积变小，可以高效的在网络中进行传输。 compressed geometry常用于arcgis网络数据集的路径查询和导航相关接口的返回结果中。 compressed geometry的格式为形如“+0+1+3+1+emjd+3j07m+3+0+0+1-3-1|+9og+0+lv4+0+lv4|+">
 <meta property="og:locale">
 <meta property="article:published_time" content="2020-03-27T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-06-20T11:13:48.438Z">
+<meta property="article:modified_time" content="2023-06-20T11:24:50.328Z">
 <meta property="article:author" content="feng.dianjun">
 <meta property="article:tag" content="arcgis">
 <meta name="twitter:card" content="summary">
@@ -193,6 +193,16 @@
         </li>
       
         
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            Categories
+          </a>
+        </li>
+      
+        
         <li class="menu-item menu-item-archives">
           <a href="/archives/" rel="section">
             
@@ -285,6 +295,28 @@
           </span>
 
           
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/gis/" itemprop="url" rel="index">
+                    <span itemprop="name">gis</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -348,6 +380,7 @@
 
 <p>对于z坐标或是m坐标的处理逻辑大致相同。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">decode</span><span class="params">(Line line, String part, BiConsumer&lt;Point, Double&gt; consumer)</span> &#123;</span><br><span class="line">        List&lt;String&gt; items = extract(part);</span><br><span class="line">        <span class="type">int</span> <span class="variable">factor</span> <span class="operator">=</span> Integer.parseInt(items.get(<span class="number">0</span>), <span class="number">32</span>);</span><br><span class="line">        <span class="type">int</span> <span class="variable">difference</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">inx</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; items.size(); i++) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">value</span> <span class="operator">=</span> Integer.parseInt(items.get(i), <span class="number">32</span>);</span><br><span class="line">            difference += value;</span><br><span class="line">            consumer.accept(line.getPoints()[inx++], difference * <span class="number">1.0</span> / factor);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
       
     </div>
     
@@ -472,6 +505,15 @@
               </div>
             
 
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
             
 
             
