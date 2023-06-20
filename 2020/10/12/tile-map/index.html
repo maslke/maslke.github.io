@@ -87,7 +87,7 @@
 <meta property="og:image" content="http://yoursite.com/2020/10/12/tile-map/google-2x2.png">
 <meta property="og:image" content="http://yoursite.com/2020/10/12/tile-map/baidu-8x8.png">
 <meta property="article:published_time" content="2020-10-11T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-06-19T10:21:20.154Z">
+<meta property="article:modified_time" content="2023-06-20T00:28:25.833Z">
 <meta property="article:author" content="feng.dianjun">
 <meta property="article:tag" content="tile-map">
 <meta property="article:tag" content="baidu">
@@ -413,7 +413,7 @@
 <p><img src="/2020/10/12/tile-map/google-000.png" alt="000"></p>
 <p>第1层级，切片如下</p>
 <p><img src="/2020/10/12/tile-map/google-2x2.png" alt="2x2"></p>
-<h3 id="百度地图"><a href="#百度地图" class="headerlink" title="百度地图"></a>百度地图</h3><p><strong>2023年6月19日更新：以下关于百度切片方案的说明，存在着诸多错误或是不精确的的确，此处不再进行修改。修正信息请查看《百度地图切片方案》这篇文章。</strong></p>
+<h3 id="百度地图"><a href="#百度地图" class="headerlink" title="百度地图"></a>百度地图</h3><p><strong>2023年6月19日更新：以下关于百度切片方案的说明，存在着诸多错误或是不精确的的确，此处不再进行修改。修正信息请查看<a target="_blank" rel="noopener" href="https://maslke.github.io/2023/06/19/baidu-map-tile-info/#more">百度地图切片方案</a>这篇文章。</strong></p>
 <p>百度在线地图使用的坐标为百度投影米坐标，为自定义坐标格式，非标准web mercator投影坐标。百度在线地图的切片方案和上述几种在线地图的切片方案，存在着较大差异。除dpi因素和size因素一致之外，以下信息存在着区别：</p>
 <ol>
 <li><p>百度地图切片的起点为[-3.3554432E7, 3.3554432E7]，转换成经纬度表示为[-180, 85]，可以得出百度地图切片的实际全图范围为百度经纬度[-180,-85, 180, 85]这个范围，用百度米来表示的话全图范围为[-3.3554432E7, -3.3554432E7, 3.3554432E7,3.3554432E7]。</p>
@@ -435,8 +435,7 @@
 <h3 id="ArcGIS-Server-切片地图"><a href="#ArcGIS-Server-切片地图" class="headerlink" title="ArcGIS Server 切片地图"></a>ArcGIS Server 切片地图</h3><p>在使用ArcGIS js api来加载ArcGIS Server发布的切片地图服务的时候，往往不需要额外的关心切片地图方案的上述配置项，原因是arcgis js api来加载arcgis server切片地图服务的过程中，中间有一个步骤是自动获取和服务的元数据页面获取相关配置项，获取方式为在服务地址后拼接?f&#x3D;json参数。</p>
 <h2 id="额外说明"><a href="#额外说明" class="headerlink" title="额外说明"></a>额外说明</h2><p>以上所说的相关信息，只适用于传统的切片地图服务。近段时间，矢量切片技术使用的愈加广泛，当前主流的地图服务厂商，如高德、百度等，都已经将站点切换到了新方案地图，访问最新的服务地址如map.baidu.com等，将不会再获取传统的切片地图。</p>
 <h2 id="勘误"><a href="#勘误" class="headerlink" title="勘误"></a>勘误</h2><ol>
-<li>关于高德地图的dpi。经过测试，访问如下地址的切片：<a target="_blank" rel="noopener" href="http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x=%7Bx%7D&y=%7By%7D&z=%7Bz%7D%EF%BC%8Cz%E5%9C%A80-9%E8%8C%83%E5%9B%B4%E6%97%B6%E5%80%99%EF%BC%8C%E8%8E%B7%E5%8F%96%E7%9A%84%E5%88%87%E7%89%87%E7%9A%84dpi%E7%BB%8F%E8%AE%A1%E7%AE%97%E4%B8%BA2%E3%80%82%E4%BD%86%E5%9C%A8%E8%AE%BF%E9%97%AE%E5%A6%82%E4%B8%8B%E5%9C%B0%E5%9D%80%E7%9A%84%E5%88%87%E7%89%87%EF%BC%9Ahttp://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x=%7Bx%7D&y=%7By%7D&z=%7Bz%7D%EF%BC%8Cz%E5%9C%A80-9%E8%8C%83%E5%9B%B4%E5%86%85%EF%BC%8C%E8%8E%B7%E5%8F%96%E7%9A%84%E5%88%87%E7%89%87%E7%9A%84dpi%E7%BB%8F%E8%AE%A1%E7%AE%97%E4%B8%BA96%E3%80%82%E5%85%B3%E4%BA%8Estyle%E7%9A%84%E5%90%AB%E4%B9%89%EF%BC%8C%E6%B2%A1%E6%9C%89%E6%9F%A5%E6%89%BE%E5%88%B0%E7%9B%B8%E5%85%B3%E8%B5%84%E6%96%99%EF%BC%8C%E5%9B%A0%E6%AD%A4%E5%B0%9A%E4%B8%8D%E6%98%8E%E7%A1%AE%E6%AD%A4%E5%A4%84%E7%9A%84%E5%B7%AE%E5%BC%82%E3%80%82%E6%A0%B9%E6%8D%AE%E7%BB%8F%E9%AA%8C%EF%BC%8C%E6%AD%A4%E5%A4%84%E4%BF%AE%E6%AD%A3%E9%AB%98%E5%BE%B7%E5%9C%B0%E5%9B%BE%E7%9A%84%E5%88%87%E7%89%87%E8%AE%BF%E9%97%AE%E5%9C%B0%E5%9D%80%E4%B8%BAstyle=">http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&amp;size=1&amp;scale=1&amp;style=7&amp;x={x}&amp;y={y}&amp;z={z}，z在0-9范围时候，获取的切片的dpi经计算为2。但在访问如下地址的切片：http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&amp;size=1&amp;scale=1&amp;style=8&amp;x={x}&amp;y={y}&amp;z={z}，z在0-9范围内，获取的切片的dpi经计算为96。关于style的含义，没有查找到相关资料，因此尚不明确此处的差异。根据经验，此处修正高德地图的切片访问地址为style=</a> 8。</li>
-<li>关于百度地图的相关说明，请查看《百度地图切片方案》这篇文档。</li>
+<li>关于高德地图的dpi。经过测试，访问如下地址的切片：<a target="_blank" rel="noopener" href="http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x=%7Bx%7D&y=%7By%7D&z=%7Bz%7D">http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&amp;size&#x3D;1&amp;scale&#x3D;1&amp;style&#x3D;7&amp;x&#x3D;{x}&amp;y&#x3D;{y}&amp;z&#x3D;{z}</a>，z在0-9范围时候，获取的切片的dpi经计算为2。但在访问如下地址的切片：<a target="_blank" rel="noopener" href="http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x=%7Bx%7D&y=%7By%7D&z=%7Bz%7D">http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&amp;size&#x3D;1&amp;scale&#x3D;1&amp;style&#x3D;8&amp;x&#x3D;{x}&amp;y&#x3D;{y}&amp;z&#x3D;{z}</a>，z在0-9范围内，获取的切片的dpi经计算为96。关于style的含义，没有查找到相关资料，因此尚不明确此处的差异。根据经验，此处修正高德地图的切片访问地址为style&#x3D;8。</li>
 </ol>
 
       
