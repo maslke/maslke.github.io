@@ -76,8 +76,8 @@
 <meta property="og:site_name" content="maslke&#39;s blog">
 <meta property="og:description" content="Sodoku              .fix {             font-size: 25px;             border: none;             background-color: transparent;             WIDTH: 30px;             HEIGHT: 30px;             LINE-">
 <meta property="og:locale">
-<meta property="article:published_time" content="2023-06-20T04:26:32.515Z">
-<meta property="article:modified_time" content="2023-06-20T04:26:32.515Z">
+<meta property="article:published_time" content="2023-06-20T05:14:26.122Z">
+<meta property="article:modified_time" content="2023-06-20T05:14:26.122Z">
 <meta property="article:author" content="feng.dianjun">
 <meta name="twitter:card" content="summary">
 
@@ -721,15 +721,12 @@
 </table>
 <script type="text/javascript">
     const { clientWidth } = document.documentElement;
-    if (clientWidth > 1000) {
-        const width = 800;
-        const operator = document.querySelector('#operator');
-        operator.style.width = `${width}px`;
-        const container = document.querySelector('#container');
-        container.style.width = `${width}px`;
-        container.style.height = `${width}px`;
-    }
-
+    const width = clientWidth > 1000 ? 800 : 280;
+    const operator = document.querySelector('#operator');
+    operator.style.width = `${width}px`;
+    const container = document.querySelector('#container');
+    container.style.width = `${width}px`;
+    container.style.height = `${width}px`;
 </script>
 </body>
 </html>
