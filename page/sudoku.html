@@ -76,8 +76,8 @@
 <meta property="og:site_name" content="maslke&#39;s blog">
 <meta property="og:description" content="Sodoku              .fix {             font-size: 25px;             border: none;             background-color: transparent;             WIDTH: 30px;             HEIGHT: 30px;             LINE-">
 <meta property="og:locale">
-<meta property="article:published_time" content="2023-06-20T03:02:30.280Z">
-<meta property="article:modified_time" content="2023-06-20T03:02:30.280Z">
+<meta property="article:published_time" content="2023-06-20T04:26:32.515Z">
+<meta property="article:modified_time" content="2023-06-20T04:26:32.515Z">
 <meta property="article:author" content="feng.dianjun">
 <meta name="twitter:card" content="summary">
 
@@ -264,25 +264,11 @@
             COLOR: #000000;
             FONT-FAMILY: Verdana;
         }
-
-        .big {
-            font-size: 25px;
-            border: none;
-            background-color: transparent;
-            WIDTH: 30px;
-            HEIGHT: 30px;
-            LINE-HEIGHT: 28px;
-            TEXT-ALIGN: center;
-            margin: 0px;
-            COLOR: #0000FF;
-            FONT-FAMILY: Verdana;
-        }
-
         td.xx {
             border-right: #999 1px solid;
             border-top: #999 1px solid;
-            width: 30px;
-            height: 30px;
+            width: 11%;
+            height: 11%;
             text-align: center;
             LINE-height: 30px;
         }
@@ -290,8 +276,8 @@
         td.rr {
             border-right: #443 2px solid;
             border-top: #999 1px solid;
-            width: 30px;
-            height: 30px;
+            width: 11%;
+            height: 11%;
             text-align: center;
             LINE-height: 30px;
         }
@@ -300,8 +286,8 @@
             border-right: #999 1px solid;
             border-top: #999 1px solid;
             border-bottom: #443 2px solid;
-            width: 30px;
-            height: 30px;
+            width: 11%;
+            height: 11%;
             text-align: center;
             LINE-height: 30px;
         }
@@ -310,8 +296,8 @@
             border-right: #443 2px solid;
             border-top: #999 1px solid;
             border-bottom: #443 2px solid;
-            width: 30px;
-            height: 30px;
+            width: 11%;
+            height: 11%;
             text-align: center;
             LINE-height: 30px;
         }
@@ -319,8 +305,6 @@
         .sd {
             table-layout: fixed;
             border: #443 3px solid;
-            width: 320px;
-            height: 320px;
             margin: auto;
             background-color: #fff;
             vertical-align: middle;
@@ -460,7 +444,7 @@
 </head>
 
 <body onload="init()">
-<table class="sd" style="height:30px;border:none" align="center" cellspacing="1" cellpadding="1">
+<table class="sd" id="operator" style="height:30px;border:none" align="center" cellspacing="1" cellpadding="1">
     <tbody>
     <tr>
         <td width="100%">
@@ -469,7 +453,7 @@
     </tr>
     </tbody>
 </table>
-<table class="sd" border="0" align="center" cellspacing="1" cellpadding="1">
+<table class="sd" id="container" border="0" align="center" cellspacing="1" cellpadding="1">
     <tbody>
     <tr>
         <td class="xx">
@@ -735,8 +719,19 @@
 
     </tbody>
 </table>
-</body>
+<script type="text/javascript">
+    const { clientWidth } = document.documentElement;
+    if (clientWidth > 1000) {
+        const width = 800;
+        const operator = document.querySelector('#operator');
+        operator.style.width = `${width}px`;
+        const container = document.querySelector('#container');
+        container.style.width = `${width}px`;
+        container.style.height = `${width}px`;
+    }
 
+</script>
+</body>
 </html>
 
 
