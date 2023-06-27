@@ -76,8 +76,8 @@
 <meta property="og:site_name" content="maslke&#39;s blog">
 <meta property="og:description" content="Sodoku              .fix {             font-size: 25px;             border: none;             background-color: transparent;             WIDTH: 30px;             HEIGHT: 30px;             LINE-">
 <meta property="og:locale">
-<meta property="article:published_time" content="2023-06-21T10:03:26.716Z">
-<meta property="article:modified_time" content="2023-06-21T10:03:26.716Z">
+<meta property="article:published_time" content="2023-06-27T00:32:21.448Z">
+<meta property="article:modified_time" content="2023-06-27T00:32:21.448Z">
 <meta property="article:author" content="feng.dianjun">
 <meta name="twitter:card" content="summary">
 
@@ -355,8 +355,18 @@
             return copyed;
         }
 
+
+        function clearBoard() {
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    document.querySelector(`#s${i}${j}`).value = '';
+                }
+            }
+        }
+
         // generate a valid board
         function generate() {
+            clearBoard();
             const board = [];
             for (let inx = 0; inx < 9; inx += 1) {
                 board.push(new Array(9).fill(0));
@@ -373,10 +383,10 @@
                     orders.push(v);
                 }
             }
-            // empty 60 numbers
-           let count = 0;
+            const maxEmpty = 45;
+            let count = 0;
             for (let inx = 0; inx < 81; inx += 1) {
-                if (count === 61) {
+                if (count === maxEmpty + 1) {
                     break;
                 }
                 const v = orders[inx];
@@ -493,6 +503,7 @@
                 alert('are you serious?');
             }
         }
+
     </script>
 </head>
 
@@ -500,6 +511,9 @@
 <table class="sd" id="operator" style="height:30px;border:none;margin: 0 auto" cellspacing="1" cellpadding="1">
     <tbody>
     <tr>
+        <td width="100%">
+            <input type="button" style="width:100%" value="REFRESH" id="refresh" onclick="generate()">
+        </td>
         <td width="100%">
             <input type="button" style="width:100%" value="SOLVE" id="solve" onclick="beginSolve()">
         </td>
