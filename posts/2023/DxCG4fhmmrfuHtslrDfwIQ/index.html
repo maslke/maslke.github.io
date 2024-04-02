@@ -1,0 +1,606 @@
+
+<!DOCTYPE html><html lang="zh/cn">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.27.0" theme-name="Stellar" theme-version="1.27.0">
+  
+  <meta name="generator" content="Hexo 6.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin><link rel="preconnect" href="https://unpkg.com" crossorigin><link rel="preconnect" href="https://cdn.bootcdn.net" crossorigin>
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>百度地图切片方案 - maslke's space</title>
+
+  
+    <meta name="description" content="在使用arcgis js api 或是 openlayers 来进行百度地图切片加载的时候，由于百度地图采用的是私有、非标准的切片方案，不能像加载谷歌切片或是天地图切片一样，api原生支持、开箱即用，而是需要进行定制化的开发来实现切片的加载 定制化百度地图切片的加载策略，需要知道百度地图切片方案的切片起点(origin)、切片分辨率(resolutions)、切片范围(full extent)、切">
+<meta property="og:type" content="article">
+<meta property="og:title" content="百度地图切片方案">
+<meta property="og:url" content="https://maslke.space/posts/2023/DxCG4fhmmrfuHtslrDfwIQ/index.html">
+<meta property="og:site_name" content="maslke&#39;s space">
+<meta property="og:description" content="在使用arcgis js api 或是 openlayers 来进行百度地图切片加载的时候，由于百度地图采用的是私有、非标准的切片方案，不能像加载谷歌切片或是天地图切片一样，api原生支持、开箱即用，而是需要进行定制化的开发来实现切片的加载 定制化百度地图切片的加载策略，需要知道百度地图切片方案的切片起点(origin)、切片分辨率(resolutions)、切片范围(full extent)、切">
+<meta property="og:locale">
+<meta property="og:image" content="https://maslke.space/posts/2023/DxCG4fhmmrfuHtslrDfwIQ/baidu-8x8.png">
+<meta property="og:image" content="https://maslke.space/posts/2023/DxCG4fhmmrfuHtslrDfwIQ/0-0-3.png">
+<meta property="og:image" content="https://maslke.space/posts/2023/DxCG4fhmmrfuHtslrDfwIQ/convert-1.png">
+<meta property="og:image" content="https://maslke.space/posts/2023/DxCG4fhmmrfuHtslrDfwIQ/convert-2.png">
+<meta property="og:image" content="https://maslke.space/posts/2023/DxCG4fhmmrfuHtslrDfwIQ/baidu.png">
+<meta property="og:image" content="https://maslke.space/posts/2023/DxCG4fhmmrfuHtslrDfwIQ/map-sdk.png">
+<meta property="article:published_time" content="2023-06-19T08:48:16.000Z">
+<meta property="article:modified_time" content="2023-06-20T11:24:50.343Z">
+<meta property="article:author" content="feng.dianjun">
+<meta property="article:tag" content="arcgis">
+<meta property="article:tag" content="tile-map">
+<meta property="article:tag" content="baidu">
+<meta property="article:tag" content="openlayers">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://maslke.space/posts/2023/DxCG4fhmmrfuHtslrDfwIQ/baidu-8x8.png">
+  
+  
+  
+  <meta name="keywords" content="arcgis,tile-map,baidu,openlayers">
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.27.0">
+
+  
+
+  
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/xaoxuu/favicon/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/xaoxuu/favicon/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/xaoxuu/favicon/favicon-16x16.png"><link rel="manifest" href="/assets/xaoxuu/favicon/site.webmanifest"><link rel="shortcut icon" href="/assets/xaoxuu/favicon/favicon.ico"><meta name="theme-color" content="#f8f8f8"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" media="all" />
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="https://avatars.githubusercontent.com/u/6869592?v=4" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">maslke's space</div><div class="sub cap">记录&分享</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"><a class="nav-item active" title="博客" href="/" style="color:#1BCDFC"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M5.879 2.879C5 3.757 5 5.172 5 8v8c0 2.828 0 4.243.879 5.121C6.757 22 8.172 22 11 22h2c2.828 0 4.243 0 5.121-.879C19 20.243 19 18.828 19 16V8c0-2.828 0-4.243-.879-5.121C17.243 2 15.828 2 13 2h-2c-2.828 0-4.243 0-5.121.879M8.25 17a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75M9 12.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5zM8.25 9A.75.75 0 0 1 9 8.25h6a.75.75 0 0 1 0 1.5H9A.75.75 0 0 1 8.25 9" clip-rule="evenodd"/><path fill="currentColor" d="M5.235 4.058C5 4.941 5 6.177 5 8v8c0 1.823 0 3.058.235 3.942L5 19.924c-.975-.096-1.631-.313-2.121-.803C2 18.243 2 16.828 2 14v-4c0-2.829 0-4.243.879-5.121c.49-.49 1.146-.707 2.121-.803zm13.53 15.884C19 19.058 19 17.822 19 16V8c0-1.823 0-3.059-.235-3.942l.235.018c.975.096 1.631.313 2.121.803C22 5.757 22 7.17 22 9.999v4c0 2.83 0 4.243-.879 5.122c-.49.49-1.146.707-2.121.803z" opacity=".5"/></svg></a><a class="nav-item" title="数独" href="/page/sudoku.html" style="color:#3DC550"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><path fill="none" stroke="#4da8a2" stroke-linecap="round" stroke-linejoin="round" d="M5.5 17.89h37m-37 12.22h37M30.11 5.5v37m-12.22-37v37m20.93-19.74a2.52 2.52 0 0 0-2.65-2.51a2.61 2.61 0 0 0-2.38 2.66v2.33a2.52 2.52 0 0 0 2.52 2.51h0a2.52 2.52 0 0 0 2.51-2.51zM21.48 32.85v5a2.52 2.52 0 0 0 2.52 2.5h0a2.52 2.52 0 0 0 2.52-2.51v-5M21.48 7v5A2.51 2.51 0 0 0 24 14.45h0a2.51 2.51 0 0 0 2.52-2.51V7m-5.03 20.75v-7.5h1.27A3.75 3.75 0 0 1 26.51 24h0a3.75 3.75 0 0 1-3.75 3.75ZM14.2 7h-3.14a1.88 1.88 0 0 0-1.88 1.83h0a1.88 1.88 0 0 0 1.88 1.87h.63m0 0h.64a1.87 1.87 0 0 1 1.87 1.88h0a1.87 1.87 0 0 1-1.87 1.87H9.18m.65 18.58v7.49m.97-3.75l2.76-3.72m-2.76 3.72l2.76 3.76m-2.76-3.76h-.97"/></svg></a></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/posts/2020/43467A63/"><span class="title">切片地图元信息配置说明</span></a><a class="item title" href="/posts/2020/385BA9A7/"><span class="title">如何解码arcgis compressed geometry</span></a><a class="item title" href="/posts/2020/0BED1D48/"><span class="title">扩展dubbo官网页面宽度的chrome插件</span></a><a class="item title" href="/posts/2022/2E51C785/"><span class="title">麻将和牌算法简介</span></a><a class="item title" href="/posts/2022/9_NWv-WlILJ7IEIQgU8WTQ/"><span class="title">多线程设计模式简介</span></a><a class="item title" href="/posts/2023/DxCG4fhmmrfuHtslrDfwIQ/"><span class="title">百度地图切片方案</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/gis/">gis</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2023-06-19T08:48:16.000Z">2023-06-19</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2023-06-20T11:24:50.343Z">2023-06-20</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>百度地图切片方案</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><p>在使用arcgis js api 或是 openlayers 来进行百度地图切片加载的时候，由于百度地图采用的是私有、非标准的切片方案，不能像加载谷歌切片或是天地图切片一样，api原生支持、开箱即用，而是需要进行定制化的开发来实现切片的加载</p>
+<p>定制化百度地图切片的加载策略，需要知道百度地图切片方案的切片起点(origin)、切片分辨率(resolutions)、切片范围(full extent)、切片正方向定义(x positive direction 、y positive direction)、切片尺寸等。百度切片方案的以上信息，都与标准web mercator切片方案有着差异。我们知道，标准web mercator切片方案的切片起点为切片范围的左上角（top,left)，切片范围为[-180,-85,180,85]范围，切片x正方向由left到right列号递增，切片y正方向由top到bottom行号递增，切片尺寸为[256,256]大小。那百度地图是怎样的呢？</p>
+<span id="more"></span>
+
+<h2 id="网上的信息"><a href="#网上的信息" class="headerlink" title="网上的信息"></a>网上的信息</h2><p>带着这些问题，我查阅了很多资料。由于百度地图的使用者大多是中国人，因此网络上的资料也多是国人开发者写就。查了资料之后，不仅没有解决我的疑惑，反而使我的疑惑更加深了。汇总查找到的资料，百度地图切片方案:</p>
+<ol>
+<li><p>起点是[-20037508.3427892,20037508.3427892]</p>
+</li>
+<li><p>切片的范围是[-20037508.3427892, -20037508.3427892, 20037508.3427892, 20037508.3427892]，</p>
+</li>
+<li><p>切片x正方向是由left到right，切片y正方向是从bottom到top。</p>
+</li>
+</ol>
+<p>带着以上配置，我编写了代码进行了测试。不过很遗憾，测试结果表明以上的信息有假有真，使用以上的配置，切片死活加载不出来，或者加载出来坐标也是错误的。由此，也可以看出中文文章（尤其是发布在csdn上的），大多是人云亦云，不求甚解。很多时候，明明是错误的信息，还是会被人抄来抄去。关于这点，就不发散了。</p>
+<p>回到正题，那百度地图切片方案到底是如何定义的呢？下面我们就来试着推导一下。</p>
+<h2 id="推导的信息"><a href="#推导的信息" class="headerlink" title="推导的信息"></a>推导的信息</h2><h3 id="positive-directions"><a href="#positive-directions" class="headerlink" title="positive directions"></a>positive directions</h3><p>我们已经知道，百度地图的最小层级为3。在level&#x3D;3中，百度地市使用8 * 8张切片来表示整个切片范围。如下图所示。结合下图和组成下图的每一个小图片具体的行号和列号，可以确定“切片x正方向是由left到right，切片y正方向是从bottom到top”这句话是正确的。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/2023/DxCG4fhmmrfuHtslrDfwIQ/baidu-8x8.png" alt="baidu"></p>
+<p>可以发现，关于正方向的定义，百度切片方案和标准web mercator切片方案对于x正方向的定义相同，对于y正方向的定义是相反的。此处定义的不同，结合百度切片方案对于起点的定义，就会产生一个百度方案独有的地方，下面我们介绍了起点之后会着重说。</p>
+<h3 id="origin"><a href="#origin" class="headerlink" title="origin"></a>origin</h3><p>在以上的图片中，行号和列号为0的图片，如下所示。可以看到，图片最左端、上半部分为英国区域，为本初子午线穿过的地方。因此可以确定，百度地图切片方案的起点确确实实的是**[0,0]**，而不是[-20037508.3427892,20037508.3427892]。关于20037508.3427892这个数字是如何计算出来的，我们可以简单说一下：</p>
+<p>标准web mercator切片方案下，整个切片范围为[180,85]经纬度范围，即整个经度范围。web mercator投影坐标使用的地球半径为6378137米，那么地球的周长为6378137 * Math.PI * 2米，均匀的分成2部分，即为20037508.342789244米。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/2023/DxCG4fhmmrfuHtslrDfwIQ/0-0-3.png" alt="1x1"></p>
+<p>说完了正方向和起点之后，细心的人应该已经发现了，在百度的方案中，起点不在地图的左上角，而是在中心，那么在百度切片方案中，存在着行号、列号为负数的清明的。在百度地图中，对于负数的行号和列号进行了特殊规定。简而言之，对于负数的行列号，使用M + 绝对值来进行表示。即，对于(-3,-4)这种行列号，在百度地图中使用(M3, M4)来进行表示。</p>
+<h3 id="full-extent"><a href="#full-extent" class="headerlink" title="full extent"></a>full extent</h3><p>关于整个切图范围，我始终没有找到推导的方式。只能基于实际测试数据，得出一个经验值。此经验值是基于实际的代码加载测试得出的：**[-33554432, -33554432, 33554432, 33554432]**。如果此数值不正确，或是哪位有推导方式，还望告知。</p>
+<p>虽然此范围，没有任何的科学推导过程，但好在可以经受住实际代码的测试。并且，使用百度在线坐标转换服务将此坐标进行转换，得到的结果如下图所示，也算是从侧面进行了验证吧。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// https://api.map.baidu.com/geoconv/v1/?coords=-33554432,33554432&amp;from=6&amp;to=5</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;status&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;result&quot;</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="string">&quot;x&quot;</span>: -<span class="number">179.99999999851323</span>,</span><br><span class="line">            <span class="string">&quot;y&quot;</span>: <span class="number">89.40915130133585</span></span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>说句题外话，使用百度在线坐标转换服务，对坐标[-33554432, 33554432]进行连续的转换测试，先从投影坐标转换成经纬度，然后将经纬度再转换生成投影坐标，最后得到的结果与原始的坐标千差万别。不知道问题出在哪里。能想到的最可能的原因是，此坐标超过了接口适用范围。</p>
+<h3 id="resolution"><a href="#resolution" class="headerlink" title="resolution"></a>resolution</h3><p>确定了切片范围之后，分辨率（分辨率的意义是：图片中每px像素所表示的实际距离的大小。）也就可以确定了。我们已知百度地图最小层级为3，在level&#x3D;3上，使用64张切片来表示整个切片范围。那么，level&#x3D;3时，分辨率为</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">resolution = <span class="number">33554432</span> * <span class="number">2</span> / <span class="number">256</span> / <span class="number">8</span></span><br></pre></td></tr></table></figure>
+
+<p>随着level的递增，分辨率会成倍的递减。汇总可知百度切片的分辨率信息为</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">262144</span>, <span class="number">131072</span>, <span class="number">65536</span>, <span class="number">32768</span>, <span class="number">16384</span>, <span class="number">8192</span>, <span class="number">4096</span>, <span class="number">2048</span>, <span class="number">1024</span>, <span class="number">512</span>, <span class="number">256</span>, <span class="number">128</span>, <span class="number">64</span>, <span class="number">32</span>, <span class="number">16</span>, <span class="number">8</span>, <span class="number">4</span>, <span class="number">2</span>, <span class="number">1</span>, <span class="number">0.5</span>]</span><br></pre></td></tr></table></figure>
+
+<h3 id="tilesize"><a href="#tilesize" class="headerlink" title="tilesize"></a>tilesize</h3><p>关于切片尺寸，由切片图片可以确定，为[256,256]大小。</p>
+<h2 id="切片加载"><a href="#切片加载" class="headerlink" title="切片加载"></a>切片加载</h2><p>汇总了以上信息之后，我们就可以定义百度切片地图tileinfo进行切片加载了。</p>
+<h3 id="tileinfo"><a href="#tileinfo" class="headerlink" title="tileinfo"></a>tileinfo</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	<span class="attr">resolutions</span>: [<span class="number">262144</span>, <span class="number">131072</span>, <span class="number">65536</span>, <span class="number">32768</span>, <span class="number">16384</span>, <span class="number">8192</span>, <span class="number">4096</span>, <span class="number">2048</span>, <span class="number">1024</span>, <span class="number">512</span>, <span class="number">256</span>, <span class="number">128</span>, <span class="number">64</span>, <span class="number">32</span>, <span class="number">16</span>, <span class="number">8</span>, <span class="number">4</span>, <span class="number">2</span>, <span class="number">1</span>, <span class="number">0.5</span>],</span><br><span class="line">	<span class="attr">origin</span>: [<span class="number">0</span>, <span class="number">0</span>],</span><br><span class="line">	<span class="attr">tileSize</span>: [<span class="number">256</span>, <span class="number">256</span>],</span><br><span class="line">	<span class="attr">fullExtent</span>: [<span class="number">33554432</span>, -<span class="number">33554432</span>, <span class="number">33554432</span>, <span class="number">33554432</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="切片地址拼接"><a href="#切片地址拼接" class="headerlink" title="切片地址拼接"></a>切片地址拼接</h3><p>前面说到，百度切片方案的y正方向和标准web mercator方案不同，因此在进行切片加载的时候需要自定义切片获取函数，进行行号和列号的转换。具体如何转换呢，查阅的资料大多都是按照如下的方式：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> zoom = level - <span class="number">1</span>;</span><br><span class="line"><span class="keyword">const</span> offsetX = <span class="built_in">parseInt</span>(<span class="number">2</span> ** zoom, <span class="number">10</span>);</span><br><span class="line"><span class="keyword">const</span> offsetY = offsetX - <span class="number">1</span>;</span><br><span class="line"><span class="keyword">let</span> numX = col - offsetX;</span><br><span class="line"><span class="keyword">let</span> numY = (-row) + offsetY;</span><br><span class="line"><span class="keyword">if</span> (numX &lt; <span class="number">0</span>) &#123;</span><br><span class="line">  numX = <span class="string">`M<span class="subst">$&#123;-numX&#125;</span>`</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (numY &lt; <span class="number">0</span>) &#123;</span><br><span class="line">  numY = <span class="string">`M<span class="subst">$&#123;-numY&#125;</span>`</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> url = <span class="title function_">getLayerUrl</span>(<span class="variable language_">this</span>.<span class="property">layerType</span>);</span><br><span class="line"><span class="keyword">return</span> url</span><br><span class="line">  .<span class="title function_">replaceAll</span>(<span class="string">&#x27;&#123;server&#125;&#x27;</span>, <span class="title class_">Math</span>.<span class="title function_">floor</span>(<span class="title class_">Math</span>.<span class="title function_">random</span>() * <span class="number">10</span>))</span><br><span class="line">  .<span class="title function_">replaceAll</span>(<span class="string">&#x27;&#123;x&#125;&#x27;</span>, numX)</span><br><span class="line">  .<span class="title function_">replaceAll</span>(<span class="string">&#x27;&#123;y&#125;&#x27;</span>, numY)</span><br><span class="line">  .<span class="title function_">replaceAll</span>(<span class="string">&#x27;&#123;z&#125;&#x27;</span>, level);</span><br></pre></td></tr></table></figure>
+
+<p>我翻遍了全网，只能看到此代码片段，却找不到任何对此代码的解释。不知道是不是太简单了，不值一提？还是大家都不求甚解，能解决问题即可，底层原因懒得深究（包括我）。</p>
+<p>其实，以上的转换方式某种意义上是对的，但前提是建立在定义origin在[-33554432, 33554432]，即切片方案左上角的基础上。</p>
+<p>以上关于行号和列号的转换方式，如果你感觉到困惑的画，配合下面这张图，就会让你豁然开朗了。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/2023/DxCG4fhmmrfuHtslrDfwIQ/convert-1.png" alt="convert"></p>
+<p>上图中，左侧为百度切片方案对x和y正方向的定义，右侧为标准web mercator切片方案对的定义。我们使用js api是使用右侧的定义对切片进行加载，要想获取到正确的百度切片地址，必须要进行转换。观察以上左右两侧的图片，可以发现，标准切片方案下获取到的x列号，需要减去全图范围一行中一半的切片个数，是百度切片方案下的列号。而标准切片方案下的y列号，被全图范围一行中一半切片个数减，再减去1，即使百度切片方案下的列号。即如下公式表示：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x1 = x2 - offset</span><br><span class="line">y1 = offset - <span class="number">1</span> - y2</span><br></pre></td></tr></table></figure>
+
+<p>其中，(x1,y1)为百度切片方案下的行列号，(x2,y2)为标准web mercator切片方案下的行列号，offset为当前层级下全图切片范围一行中切片个数的一半。x为列号，y为行号。如果得到的x1和y1为负数，还需要按照前面介绍的规则进行转换（添加M）。</p>
+<p>回头再来看，上面的转换代码。为了查看的方便，在此处再贴一遍。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> zoom = level - <span class="number">1</span>;</span><br><span class="line"><span class="keyword">const</span> offsetX = <span class="built_in">parseInt</span>(<span class="number">2</span> ** zoom, <span class="number">10</span>);</span><br><span class="line"><span class="keyword">const</span> offsetY = offsetX - <span class="number">1</span>;</span><br><span class="line"><span class="keyword">let</span> numX = col - offsetX;</span><br><span class="line"><span class="keyword">let</span> numY = (-row) + offsetY;</span><br><span class="line"><span class="keyword">if</span> (numX &lt; <span class="number">0</span>) &#123;</span><br><span class="line">  numX = <span class="string">`M<span class="subst">$&#123;-numX&#125;</span>`</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (numY &lt; <span class="number">0</span>) &#123;</span><br><span class="line">  numY = <span class="string">`M<span class="subst">$&#123;-numY&#125;</span>`</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在以上的代码中，level为当前的层级，此层级下一行总的切片个数为math.pow(2, level)个，一半还需要除以2，这种方式和先计算level-1，再进行乘方运算等价。因此，就有了上述代码。</p>
+<p>前面说到，这段代码正确的前提是orign定义在切片方案的左上角。那么，如果origin定义在[0,0]的话，还可以实现正确加载吗？关于此问题，感兴趣的可以自行探索一番。答案当然是可以的，转换方式参见下图即可。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/2023/DxCG4fhmmrfuHtslrDfwIQ/convert-2.png" alt="convert-2"></p>
+<p>明确了以上信息之后，就可以正确的进行百度地图切片的加载了。使用以上的参数进行切片的加载，可以保证坐标精度十分精准。下图中，上方为百度坐标拾取页面，下方为自行加载页面，使用的坐标为(13267851.39994815, 3876775.155571565)。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/2023/DxCG4fhmmrfuHtslrDfwIQ/baidu.png" alt="baidu"></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/posts/2023/DxCG4fhmmrfuHtslrDfwIQ/map-sdk.png" alt="map-sdk"></p>
+<h2 id="PS"><a href="#PS" class="headerlink" title="PS"></a>PS</h2><p>关于tileinfo中origin的定义，arcgis js api和openlayers对此的定义不尽相同。</p>
+<p>在openlayers中对origin的定义是</p>
+<blockquote>
+<p>The tile grid origin, i.e. where the x and y axes meet ([z, 0, 0]). Tile coordinates increase left to right and downwards. If not specified, extent or origins must be provided.</p>
+</blockquote>
+<p>而在arcgis js api中对origin的定义是</p>
+<blockquote>
+<p>The tiling scheme origin. The upper left corner of the tiling scheme, in coordinates of the spatial reference of the source data.</p>
+</blockquote>
+<p>即，openlayers对origin的定义是行列号坐标原点，而arcgis js api中对origin的定义是切片范围的左上角点。因此，在使用arcgis js api来加载百度切片的时候，只能将origin定义在[-33554432, 33554432]，并使用转换方式一。而在openlayers中，则两种方式都可以。</p>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">较早文章</div><a href="/posts/2022/9_NWv-WlILJ7IEIQgU8WTQ/">多线程设计模式简介</a></div></section></div>
+
+
+
+
+  <div class="related-wrap md-text" id="comments">
+    <section class='header cmt-title cap theme'>
+      <p>快来参与讨论吧~</p>
+
+    </section>
+    <section class='body cmt-body waline'>
+      
+
+<div id="waline_container" class="waline_thread"><svg class="loading" style="vertical-align:middle;fill:currentColor;overflow:hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg></div>
+
+    </section>
+  </div>
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">feng.dianjun</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.27.0">Stellar 1.27.0</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E4%B8%8A%E7%9A%84%E4%BF%A1%E6%81%AF"><span class="toc-text">网上的信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A8%E5%AF%BC%E7%9A%84%E4%BF%A1%E6%81%AF"><span class="toc-text">推导的信息</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#positive-directions"><span class="toc-text">positive directions</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#origin"><span class="toc-text">origin</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#full-extent"><span class="toc-text">full extent</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#resolution"><span class="toc-text">resolution</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tilesize"><span class="toc-text">tilesize</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%87%E7%89%87%E5%8A%A0%E8%BD%BD"><span class="toc-text">切片加载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#tileinfo"><span class="toc-text">tileinfo</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%87%E7%89%87%E5%9C%B0%E5%9D%80%E6%8B%BC%E6%8E%A5"><span class="toc-text">切片地址拼接</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PS"><span class="toc-text">PS</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js`,
+    marked: `https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+
+<!-- required -->
+<script src="/js/main.js?v=1.27.0" async></script>
+
+<!-- optional -->
+
+  <script type="module">
+  import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js'
+
+  function load_comment(){
+    if(!document.getElementById("waline_container"))return;
+
+    utils.css('https://unpkg.com/@waline/client@v3/dist/waline.css');
+    utils.css('https://gcore.jsdelivr.net/npm/@waline/client@3.1.2/dist/waline-meta.css');
+
+    const el = document.getElementById("waline_container");
+    var path = el.getAttribute('comment_id');
+    if (!path) {
+      path = decodeURI(window.location.pathname);
+    }
+
+    const waline = init(Object.assign({"js":"https://unpkg.com/@waline/client@v3/dist/waline.js","css":"https://unpkg.com/@waline/client@v3/dist/waline.css","meta_css":"https://gcore.jsdelivr.net/npm/@waline/client@3.1.2/dist/waline-meta.css","serverURL":"https://thbiia09.api.lncldglobal.com","commentCount":true,"pageview":false,"locale":{"placeholder":null},"emoji":["https://gcore.jsdelivr.net/gh/norevi/waline-blobcatemojis@1.0/blobs"]}, {
+      el: '#waline_container',
+      path: path,
+      
+    }));
+
+  }
+  window.addEventListener('DOMContentLoaded', (event) => {
+    load_comment();
+  });
+
+</script>
+
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.bootcdn.net/ajax/libs/flying-pages/2.1.2/flying-pages.min.js"></script><script defer src="https://cdn.bootcdn.net/ajax/libs/vanilla-lazyload/17.8.4/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.min.css`,
+    js: `https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.umd.min.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || null
+        }
+      });
+    })
+  }
+</script><script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          loop: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script><script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>
